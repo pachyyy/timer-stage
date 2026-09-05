@@ -63,8 +63,20 @@ deliberately asymmetric round trips) — see `src/lib/timer/model.test.ts` and
 ## Deploying
 
 Deploy to Vercel as usual (`vercel.json` pins the function region so all clients sync against the
-same reference clock). Before going live, provision a Turso database and an Ably app, then set the
-environment variables above in the Vercel project settings.
+same reference clock). Before going live:
+
+1. Provision a Turso database (turso.tech) and set `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` in
+   the Vercel project's environment variables.
+2. Vercel runs `vercel-build` instead of `build` when it's present — it's set here to
+   `drizzle-kit migrate && next build`, so schema migrations apply automatically on every deploy
+   using those same env vars. No manual migration step needed.
+3. Optional: provision an Ably app (ably.com), set `ABLY_API_KEY` and
+   `NEXT_PUBLIC_REALTIME_ENABLED=true`. Without this the app runs on polling alone — fully
+   functional, just up to ~2s of latency on cross-screen updates instead of near-instant.
+   `NEXT_PUBLIC_*` vars are inlined at build time, so flipping this later requires a redeploy.
+
+If you use Vercel preview deployments, point them at a separate Turso database (or at least be
+aware `vercel-build` will run migrations against whatever DB the preview's env vars target).
 
 ## What's not in v1
 
