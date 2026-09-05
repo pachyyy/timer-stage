@@ -4,7 +4,7 @@ import { checkRoomAccess } from '@/lib/auth/guard'
 import { db } from '@/lib/db/client'
 import { timers } from '@/lib/db/schema'
 import { generateId } from '@/lib/auth/tokens'
-import { loadRoomStatePayload } from '@/lib/db/room-state'
+import { bumpVersion, loadRoomStatePayload } from '@/lib/db/room-state'
 import { publishRoomState } from '@/lib/sync/publish'
 
 export const dynamic = 'force-dynamic'
@@ -15,7 +15,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ roo
   return NextResponse.json(rows)
 }
 
-/** Append a timer to the agenda. Controller-only; re-broadcasts the room snapshot afterward. */
+/**
+ * Append a timer to the agenda. Controller-only; bumps the room's version and re-broadcasts,
+ * and returns the fresh payload so the caller can apply it to its own screen immediately instead
+ * of waiting for the next poll/broadcast to deliver the same thing a few seconds later.
+ */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = await params
   const body = await req.json().catch(() => null)
@@ -39,8 +43,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ roo
     wrapUpMs: Number.isFinite(body.wrapUpMs) ? body.wrapUpMs : 60_000,
   })
 
+  await bumpVersion(roomId)
   const payload = await loadRoomStatePayload(roomId)
   if (payload) await publishRoomState(roomId, payload)
 
-  return NextResponse.json({ id }, { status: 201 })
+  return NextResponse.json({ id, ...payload }, { status: 201 })
 }

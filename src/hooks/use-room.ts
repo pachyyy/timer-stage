@@ -16,7 +16,7 @@ export function useRoom(roomId: string, token: string) {
   const [clientId] = useState(() => crypto.randomUUID())
 
   const transport = useMemo(() => createRoomTransport(clientId, token), [clientId, token])
-  const { state, status } = useRoomState(roomId, transport)
+  const { state, status, applyPayload } = useRoomState(roomId, transport)
   const { isSynced, syncedNow, resync } = useSyncedClock()
 
   // Re-sync the clock whenever the transport comes back live, closing any drift that
@@ -27,5 +27,5 @@ export function useRoom(roomId: string, token: string) {
 
   const activeTimer = state?.timers.find((t) => t.id === state.activeTimerId) ?? null
 
-  return { state, status, isSynced, syncedNow, activeTimer }
+  return { state, status, isSynced, syncedNow, activeTimer, applyPayload }
 }

@@ -1,14 +1,30 @@
-/** Thin client-side wrappers around the controller-only API routes. */
+/**
+ * Thin client-side wrappers around the controller-only API routes. Every one of these resolves
+ * with the fresh RoomStatePayload the mutation produced — callers should feed that straight into
+ * useRoomState's `applyPayload` so the actor's own screen updates the instant the response
+ * arrives, instead of waiting for the next poll/broadcast to deliver the same thing later.
+ */
+import type { RoomStatePayload } from '@/lib/sync/transport'
 
-async function post(url: string, body: unknown) {
-  const res = await fetch(url, {
+async function request(url: string, init: RequestInit): Promise<RoomStatePayload> {
+  const res = await fetch(url, init)
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+  return res.json()
+}
+
+const post = (url: string, body: unknown) =>
+  request(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
-  return res.json()
-}
+
+const del = (url: string, body: unknown) =>
+  request(url, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
 
 export const roomActions = {
   start: (roomId: string, token: string) => post(`/api/rooms/${roomId}/actions`, { action: 'start', token }),
@@ -23,9 +39,5 @@ export const roomActions = {
   addTimer: (roomId: string, token: string, input: { name: string; durationMs: number }) =>
     post(`/api/rooms/${roomId}/timers`, { token, ...input }),
   deleteTimer: (roomId: string, token: string, timerId: string) =>
-    fetch(`/api/rooms/${roomId}/timers/${timerId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    }),
+    del(`/api/rooms/${roomId}/timers/${timerId}`, { token }),
 }

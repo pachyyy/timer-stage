@@ -1,4 +1,4 @@
-import { eq, asc } from 'drizzle-orm'
+import { eq, asc, sql } from 'drizzle-orm'
 import { db } from './client'
 import { roomState, timers } from './schema'
 import type { RoomStatePayload, TimerRow } from '@/lib/sync/transport'
@@ -78,6 +78,22 @@ export async function mutateRunState(
     .where(eq(roomState.roomId, roomId))
 
   return loadRoomStatePayload(roomId)
+}
+
+/**
+ * Bump `version` (and `updatedAt`) with no other change — for agenda mutations (add/edit/delete
+ * timer), which don't touch run state but still need every connected client to notice. Without
+ * this, a client whose cached version is already >= the room's stored version would silently
+ * drop the next payload under the version guard, even though the *agenda* actually changed —
+ * not just delayed, invisible until some unrelated action happened to bump the version later.
+ * Uses a raw SQL increment (not read-then-write) so two concurrent agenda edits can't lose one
+ * one's version bump to the other.
+ */
+export async function bumpVersion(roomId: string): Promise<void> {
+  await db
+    .update(roomState)
+    .set({ version: sql`${roomState.version} + 1`, updatedAt: Date.now() })
+    .where(eq(roomState.roomId, roomId))
 }
 
 export { TimerModel }

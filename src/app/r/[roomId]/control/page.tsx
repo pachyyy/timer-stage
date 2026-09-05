@@ -29,7 +29,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
     return getControllerToken(roomId) ?? ''
   }, [roomId, searchParams])
 
-  const { state, status, activeTimer, syncedNow } = useRoom(roomId, token)
+  const { state, status, activeTimer, syncedNow, applyPayload } = useRoom(roomId, token)
   // Only meaningful if `token` is a promoted participant's sessionToken — stays null forever for
   // the room's own (permanent, non-revocable) controllerToken. Lets a demoted co-controller's
   // page react immediately instead of leaving live controls on screen.
@@ -57,12 +57,12 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
       e.preventDefault()
       if (!state) return
-      if (state.status === 'running') void roomActions.pause(roomId, token)
-      else void roomActions.start(roomId, token)
+      const action = state.status === 'running' ? roomActions.pause : roomActions.start
+      action(roomId, token).then(applyPayload)
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [roomId, token, state])
+  }, [roomId, token, state, applyPayload])
 
   if (!token) {
     return (
@@ -115,11 +115,11 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
             syncedNow={syncedNow}
             isRunning={state.status === 'running'}
             blackout={state.blackout}
-            onStart={() => roomActions.start(roomId, token)}
-            onPause={() => roomActions.pause(roomId, token)}
-            onReset={() => roomActions.reset(roomId, token)}
-            onAdjust={(delta) => roomActions.adjust(roomId, token, delta)}
-            onBlackoutChange={(v) => roomActions.blackout(roomId, token, v)}
+            onStart={() => roomActions.start(roomId, token).then(applyPayload)}
+            onPause={() => roomActions.pause(roomId, token).then(applyPayload)}
+            onReset={() => roomActions.reset(roomId, token).then(applyPayload)}
+            onAdjust={(delta) => roomActions.adjust(roomId, token, delta).then(applyPayload)}
+            onBlackoutChange={(v) => roomActions.blackout(roomId, token, v).then(applyPayload)}
           />
 
           <Card>
@@ -130,8 +130,8 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
               <AgendaList
                 timers={state.timers}
                 activeTimerId={state.activeTimerId}
-                onSelect={(timerId) => roomActions.select(roomId, token, timerId)}
-                onDelete={(timerId) => roomActions.deleteTimer(roomId, token, timerId)}
+                onSelect={(timerId) => roomActions.select(roomId, token, timerId).then(applyPayload)}
+                onDelete={(timerId) => roomActions.deleteTimer(roomId, token, timerId).then(applyPayload)}
               />
 
               <div className="flex items-center gap-2 pt-2">
@@ -154,10 +154,11 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
                   variant="outline"
                   onClick={async () => {
                     if (!newTimerName.trim()) return
-                    await roomActions.addTimer(roomId, token, {
+                    const payload = await roomActions.addTimer(roomId, token, {
                       name: newTimerName.trim(),
                       durationMs: parseMinutesInput(newTimerMinutes) * 60_000,
                     })
+                    applyPayload(payload)
                     setNewTimerName('')
                   }}
                 >

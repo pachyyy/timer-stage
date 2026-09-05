@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkRoomAccess } from '@/lib/auth/guard'
 import { db } from '@/lib/db/client'
 import { timers, roomState } from '@/lib/db/schema'
-import { loadRoomStatePayload } from '@/lib/db/room-state'
+import { bumpVersion, loadRoomStatePayload } from '@/lib/db/room-state'
 import { publishRoomState } from '@/lib/sync/publish'
+import type { RoomStatePayload } from '@/lib/sync/transport'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,9 +13,14 @@ async function requireController(roomId: string, token: unknown) {
   return checkRoomAccess(roomId, typeof token === 'string' ? token : null)
 }
 
-async function rebroadcast(roomId: string) {
+/** Bumps version (so every connected client is guaranteed to notice — see bumpVersion's doc
+ * comment), re-broadcasts, and returns the fresh payload so the caller can apply it to its own
+ * screen immediately instead of waiting for the next poll/broadcast. */
+async function rebroadcast(roomId: string): Promise<RoomStatePayload | null> {
+  await bumpVersion(roomId)
   const payload = await loadRoomStatePayload(roomId)
   if (payload) await publishRoomState(roomId, payload)
+  return payload
 }
 
 export async function PATCH(
@@ -41,8 +47,8 @@ export async function PATCH(
     .set(patch)
     .where(and(eq(timers.id, timerId), eq(timers.roomId, roomId)))
 
-  await rebroadcast(roomId)
-  return NextResponse.json({ ok: true })
+  const payload = await rebroadcast(roomId)
+  return NextResponse.json({ ok: true, ...payload })
 }
 
 export async function DELETE(
@@ -58,14 +64,16 @@ export async function DELETE(
   await db.delete(timers).where(and(eq(timers.id, timerId), eq(timers.roomId, roomId)))
 
   // If the deleted timer was active, clear it so the controller/viewer don't reference a ghost.
+  // Version is bumped once, uniformly, by rebroadcast() below — not here — so this never
+  // double-bumps.
   const [state] = await db.select().from(roomState).where(eq(roomState.roomId, roomId))
   if (state?.activeTimerId === timerId) {
     await db
       .update(roomState)
-      .set({ activeTimerId: null, status: 'stopped', startedAtMs: null, elapsedBeforeMs: 0, version: state.version + 1 })
+      .set({ activeTimerId: null, status: 'stopped', startedAtMs: null, elapsedBeforeMs: 0 })
       .where(eq(roomState.roomId, roomId))
   }
 
-  await rebroadcast(roomId)
-  return NextResponse.json({ ok: true })
+  const payload = await rebroadcast(roomId)
+  return NextResponse.json({ ok: true, ...payload })
 }
