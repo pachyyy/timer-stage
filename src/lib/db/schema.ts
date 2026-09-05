@@ -56,9 +56,35 @@ export const roomState = sqliteTable(
   (table) => [primaryKey({ columns: [table.roomId] })],
 )
 
+/**
+ * A named viewer who joined the room (via the direct link or the "join with code" flow — both
+ * funnel through the same join step, see /api/rooms/[roomId]/participants). `sessionToken` is a
+ * private bearer credential held only by that participant's browser (localStorage), distinct
+ * from the room-wide controller/viewer tokens above.
+ *
+ * `role` starts at 'viewer' and can be promoted to 'controller' by whoever holds the room's
+ * controllerToken — see checkRoomAccess, which treats a participant's sessionToken as an
+ * equally-valid controller credential once promoted. This is what lets the admin grant control
+ * to a specific joined person without a second room-wide secret.
+ */
+export const participants = sqliteTable('participants', {
+  id: text('id').primaryKey(),
+  roomId: text('room_id')
+    .notNull()
+    .references(() => rooms.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  sessionToken: text('session_token').notNull(),
+  role: text('role', { enum: ['viewer', 'controller'] })
+    .notNull()
+    .default('viewer'),
+  joinedAt: integer('joined_at').notNull(),
+})
+
 export type Room = typeof rooms.$inferSelect
 export type NewRoom = typeof rooms.$inferInsert
 export type Timer = typeof timers.$inferSelect
 export type NewTimer = typeof timers.$inferInsert
 export type RoomState = typeof roomState.$inferSelect
 export type NewRoomState = typeof roomState.$inferInsert
+export type Participant = typeof participants.$inferSelect
+export type NewParticipant = typeof participants.$inferInsert

@@ -44,6 +44,14 @@ export class PollingTransport implements RoomTransport {
           this.setStatus('live')
           return
         }
+        if (res.status === 404) {
+          // The room genuinely doesn't exist (e.g. a mistyped join code) — this will never
+          // resolve itself, so stop polling rather than retrying forever.
+          this.setStatus('not-found')
+          cancelled = true
+          if (this.timer) clearInterval(this.timer)
+          return
+        }
         if (!res.ok) {
           this.setStatus('degraded')
           return

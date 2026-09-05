@@ -35,7 +35,7 @@ export interface RoomStatePayload {
   updatedAtMs: number
 }
 
-export type TransportStatus = 'connecting' | 'live' | 'degraded' | 'offline'
+export type TransportStatus = 'connecting' | 'live' | 'degraded' | 'offline' | 'not-found'
 
 export interface RoomTransport {
   /** Subscribe to state updates for a room. Returns an unsubscribe function. */

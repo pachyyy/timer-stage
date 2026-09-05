@@ -3,10 +3,12 @@
 import { use, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useRoom } from '@/hooks/use-room'
+import { useOwnRole } from '@/hooks/use-own-role'
 import { getControllerToken, setControllerToken } from '@/lib/auth/local-tokens'
 import { roomActions } from '@/lib/api/room-actions'
 import { ControllerPanel } from '@/components/controller-panel'
 import { AgendaList } from '@/components/agenda-list'
+import { ParticipantsPanel } from '@/components/participants-panel'
 import { ConnectionBadge } from '@/components/connection-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +30,11 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   }, [roomId, searchParams])
 
   const { state, status, activeTimer, syncedNow } = useRoom(roomId, token)
+  // Only meaningful if `token` is a promoted participant's sessionToken — stays null forever for
+  // the room's own (permanent, non-revocable) controllerToken. Lets a demoted co-controller's
+  // page react immediately instead of leaving live controls on screen.
+  const ownRole = useOwnRole(roomId, token)
+  const wasDemoted = ownRole === 'viewer'
   const [newTimerName, setNewTimerName] = useState('')
   // Free-form text while editing, parsed via parseMinutesInput only when "Add" is clicked — see
   // the comment on DraftTimer.minutes in src/app/page.tsx for why this can't be a clamped number.
@@ -64,6 +71,18 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
         <p className="text-sm text-muted-foreground">
           Open this room using the controller link you received when you created it.
         </p>
+      </main>
+    )
+  }
+
+  if (wasDemoted) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 px-4 text-center">
+        <h1 className="text-xl font-semibold">Your controller access was removed</h1>
+        <p className="text-sm text-muted-foreground">The room&apos;s admin took back control access.</p>
+        <Button asChild variant="outline">
+          <a href={`/r/${roomId}`}>Go to viewer screen</a>
+        </Button>
       </main>
     )
   }
@@ -150,21 +169,47 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
 
           <Card>
             <CardHeader>
-              <CardTitle>Viewer link</CardTitle>
+              <CardTitle>Share this room</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div>
+                <p className="mb-1.5 text-sm text-muted-foreground">
+                  Room code — read aloud or typed into &quot;Join with code&quot; on the homepage
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    readOnly
+                    value={roomId}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="font-mono text-lg tracking-widest"
+                  />
+                  <Button variant="outline" onClick={() => navigator.clipboard.writeText(roomId)}>
+                    Copy
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <p className="mb-1.5 text-sm text-muted-foreground">Direct viewer link</p>
+                <div className="flex items-center gap-2">
+                  <Input readOnly value={viewerUrl} onFocus={(e) => e.currentTarget.select()} />
+                  <Button variant="outline" onClick={() => navigator.clipboard.writeText(viewerUrl)}>
+                    Copy
+                  </Button>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Either way, whoever opens it enters their name and shows up below — you can grant
+                them controller access if you want.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Participants</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-2">
-                <Input readOnly value={viewerUrl} onFocus={(e) => e.currentTarget.select()} />
-                <Button
-                  variant="outline"
-                  onClick={() => navigator.clipboard.writeText(viewerUrl)}
-                >
-                  Copy
-                </Button>
-              </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Share this with the stage/confidence monitor. It has no controls — read only.
-              </p>
+              <ParticipantsPanel roomId={roomId} token={token} />
             </CardContent>
           </Card>
         </>

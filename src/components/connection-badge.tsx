@@ -7,6 +7,7 @@ const LABEL: Record<TransportStatus, string> = {
   live: 'Live',
   degraded: 'Reconnecting…',
   offline: 'Offline',
+  'not-found': 'Room not found',
 }
 
 const DOT_CLASS: Record<TransportStatus, string> = {
@@ -14,6 +15,7 @@ const DOT_CLASS: Record<TransportStatus, string> = {
   live: 'bg-emerald-500',
   degraded: 'bg-amber-400',
   offline: 'bg-red-500',
+  'not-found': 'bg-red-500',
 }
 
 /**
