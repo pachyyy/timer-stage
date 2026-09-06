@@ -42,7 +42,7 @@ export class AblyTransport implements RoomTransport {
   subscribe(roomId: string, onState: (state: RoomStatePayload) => void): () => void {
     const client = new Ably.Realtime({
       authUrl: '/api/ably/auth',
-      authParams: { roomId, token: this.roomToken },
+      authParams: { roomId, token: this.roomToken, clientId: this.clientId },
       clientId: this.clientId,
     })
     this.client = client

@@ -13,7 +13,9 @@ export const dynamic = 'force-dynamic'
 export async function GET(req: NextRequest) {
   const roomId = req.nextUrl.searchParams.get('roomId')
   const token = req.nextUrl.searchParams.get('token')
+  const clientId = req.nextUrl.searchParams.get('clientId')
   if (!roomId) return NextResponse.json({ error: 'roomId required' }, { status: 400 })
+  if (!clientId) return NextResponse.json({ error: 'clientId required' }, { status: 400 })
 
   const access = await checkRoomAccess(roomId, token)
   if (access === 'none') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
@@ -25,6 +27,8 @@ export async function GET(req: NextRequest) {
   const ops: Ably.CapabilityOp[] = access === 'controller' ? ['publish', 'subscribe'] : ['subscribe']
   const capability: Record<string, Ably.CapabilityOp[]> = { [`room:${roomId}`]: ops }
 
-  const tokenRequest = await client.auth.createTokenRequest({ capability })
+  // Must match the clientId the Realtime client on the other end connects with (ably-transport.ts)
+  // — Ably rejects the connection with 40102 "invalid clientId for credentials" otherwise.
+  const tokenRequest = await client.auth.createTokenRequest({ capability, clientId })
   return NextResponse.json(tokenRequest)
 }
