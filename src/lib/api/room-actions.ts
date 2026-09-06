@@ -36,6 +36,11 @@ export const roomActions = {
     post(`/api/rooms/${roomId}/actions`, { action: 'select', token, timerId }),
   blackout: (roomId: string, token: string, blackout: boolean) =>
     post(`/api/rooms/${roomId}/actions`, { action: 'blackout', token, blackout }),
+  /** `durationMs: null` keeps the message up until it's explicitly cleared. */
+  sendMessage: (roomId: string, token: string, text: string, durationMs: number | null) =>
+    post(`/api/rooms/${roomId}/actions`, { action: 'message', token, text, durationMs }),
+  clearMessage: (roomId: string, token: string) =>
+    post(`/api/rooms/${roomId}/actions`, { action: 'message', token, text: null, durationMs: null }),
   addTimer: (roomId: string, token: string, input: { name: string; durationMs: number }) =>
     post(`/api/rooms/${roomId}/timers`, { token, ...input }),
   deleteTimer: (roomId: string, token: string, timerId: string) =>

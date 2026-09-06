@@ -15,6 +15,13 @@
       "when": 1788599891329,
       "tag": "0001_peaceful_owl",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788691440375,
+      "tag": "0002_worried_toxin",
+      "breakpoints": true
     }
   ]
 }

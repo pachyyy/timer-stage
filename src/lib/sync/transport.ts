@@ -31,6 +31,14 @@ export interface RoomStatePayload {
   startedAtMs: number | null
   elapsedBeforeMs: number
   blackout: boolean
+  /** Controller-to-viewer cue text; null when there's nothing to show. */
+  message: string | null
+  /** Server clock. Viewers alert only when this *increases*, which is what distinguishes a genuinely
+   * new message from the same one arriving again via a poll or a reconnect resync. */
+  messageSentAtMs: number | null
+  /** Absolute expiry, or null for "until cleared". Viewers derive the hide from their own synced
+   * clock rather than waiting for a server-sent expiry event. */
+  messageExpiresAtMs: number | null
   timers: TimerRow[]
   updatedAtMs: number
 }

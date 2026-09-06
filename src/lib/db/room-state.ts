@@ -34,6 +34,9 @@ export async function loadRoomStatePayload(roomId: string): Promise<RoomStatePay
     startedAtMs: state.startedAtMs,
     elapsedBeforeMs: state.elapsedBeforeMs,
     blackout: state.blackout,
+    message: state.message,
+    messageSentAtMs: state.messageSentAtMs,
+    messageExpiresAtMs: state.messageExpiresAtMs,
     timers: timerPayload,
     updatedAtMs: state.updatedAt,
   }
@@ -55,6 +58,9 @@ export async function mutateRunState(
     runState: RunState
     activeTimerId: string | null
     blackout: boolean
+    /** `text: null` clears. `expiresAtMs` is a *duration-derived absolute* the caller computes from
+     * the `nowMs` handed to it, so the expiry instant is anchored to the server clock too. */
+    message: { text: string | null; expiresAtMs: number | null }
   }>,
 ): Promise<RoomStatePayload | null> {
   const nowMs = Date.now()
@@ -63,6 +69,16 @@ export async function mutateRunState(
 
   const patch = mutate(toRunState(current), nowMs, current.activeTimerId)
   const nextRun = patch.runState ?? toRunState(current)
+
+  // Sending stamps messageSentAtMs with the server's own clock (that increment is what triggers the
+  // viewer's vibrate/flash); clearing wipes all three fields together.
+  const messagePatch = patch.message
+    ? {
+        message: patch.message.text,
+        messageSentAtMs: patch.message.text === null ? null : nowMs,
+        messageExpiresAtMs: patch.message.text === null ? null : patch.message.expiresAtMs,
+      }
+    : {}
 
   await db
     .update(roomState)
@@ -73,6 +89,7 @@ export async function mutateRunState(
       elapsedBeforeMs: nextRun.elapsedBeforeMs,
       activeTimerId: patch.activeTimerId !== undefined ? patch.activeTimerId : current.activeTimerId,
       blackout: patch.blackout !== undefined ? patch.blackout : current.blackout,
+      ...messagePatch,
       updatedAt: nowMs,
     })
     .where(eq(roomState.roomId, roomId))

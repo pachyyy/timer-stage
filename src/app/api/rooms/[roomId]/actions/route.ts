@@ -12,6 +12,9 @@ type ActionBody =
   | { action: 'adjust'; token: string; deltaMs: number }
   | { action: 'select'; token: string; timerId: string }
   | { action: 'blackout'; token: string; blackout: boolean }
+  | { action: 'message'; token: string; text: string | null; durationMs: number | null }
+
+const MAX_MESSAGE_LENGTH = 200
 
 /**
  * All state transitions go through here. Every timestamp used is the SERVER's Date.now() (inside
@@ -42,6 +45,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ roo
         return { runState: TimerModel.reset(), activeTimerId: body.timerId }
       case 'blackout':
         return { blackout: body.blackout }
+      case 'message': {
+        const text = body.text?.trim().slice(0, MAX_MESSAGE_LENGTH) || null
+        // Resolve the duration against the server's nowMs so every viewer hides it at the same
+        // instant regardless of their own clock.
+        const expiresAtMs = text && body.durationMs ? nowMs + body.durationMs : null
+        return { message: { text, expiresAtMs } }
+      }
       default:
         return {}
     }

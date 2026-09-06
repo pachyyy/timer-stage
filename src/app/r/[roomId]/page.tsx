@@ -1,9 +1,10 @@
 'use client'
 
-import { use, useEffect, useState } from 'react'
+import { use, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useRoom } from '@/hooks/use-room'
 import { useParticipant } from '@/hooks/use-participant'
+import { useMessageAlert } from '@/hooks/use-message-alert'
 import { TimerDisplay } from '@/components/timer-display'
 import { ConnectionBadge } from '@/components/connection-badge'
 import { JoinGate } from '@/components/join-gate'
@@ -22,7 +23,11 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   const token = searchParams.get('t') ?? ''
   const { state, status, activeTimer, syncedNow } = useRoom(roomId, token)
   const { session, role, checkedStorage, join } = useParticipant(roomId)
+  const { message, flashing } = useMessageAlert(state, syncedNow)
   const [wakeLockError, setWakeLockError] = useState(false)
+  // Handed to TimerDisplay so the final-minute blink can invert the background from inside the same
+  // animation-frame loop that drives the digits.
+  const surfaceRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     let lock: WakeLockSentinel | null = null
@@ -74,12 +79,23 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
 
   return (
     <div
-      className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black"
+      ref={surfaceRef}
+      className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black text-white"
       onClick={requestFullscreen}
     >
       <div className="fixed top-4 right-4">
         <ConnectionBadge status={status} />
       </div>
+
+      {message && (
+        <div
+          className={`fixed inset-x-0 top-14 z-10 mx-auto max-w-3xl rounded-lg px-6 py-4 text-center text-2xl font-semibold text-black transition-colors duration-200 ${
+            flashing ? 'bg-white ring-4 ring-white' : 'bg-amber-400'
+          }`}
+        >
+          {message}
+        </div>
+      )}
 
       {role === 'controller' && (
         <a
@@ -92,7 +108,8 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
 
       {activeTimer ? (
         <>
-          <div className="text-lg text-white/50">{activeTimer.name}</div>
+          {/* Colour is inherited from the surface so the final-minute blink inverts it too. */}
+          <div className="text-lg opacity-50">{activeTimer.name}</div>
           <TimerDisplay
             runState={{
               status: state.status,
@@ -102,14 +119,15 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
             durationMs={activeTimer.durationMs}
             wrapUpMs={activeTimer.wrapUpMs}
             syncedNow={syncedNow}
+            surfaceRef={surfaceRef}
           />
         </>
       ) : (
-        <div className="text-2xl text-white/40">No timer selected</div>
+        <div className="text-2xl opacity-40">No timer selected</div>
       )}
 
       {wakeLockError && (
-        <div className="fixed bottom-4 left-4 text-xs text-white/30">
+        <div className="fixed bottom-4 left-4 text-xs opacity-30">
           Screen may sleep — wake lock unavailable
         </div>
       )}

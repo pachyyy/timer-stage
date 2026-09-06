@@ -51,6 +51,13 @@ export const roomState = sqliteTable(
     startedAtMs: integer('started_at_ms'),
     elapsedBeforeMs: integer('elapsed_before_ms').notNull().default(0),
     blackout: integer('blackout', { mode: 'boolean' }).notNull().default(false),
+    /** Controller-to-viewer cue text. Null when there's nothing to show. */
+    message: text('message'),
+    /** Server clock. Clients alert (vibrate/flash) only when this value *increases*. */
+    messageSentAtMs: integer('message_sent_at_ms'),
+    /** Absolute expiry; null means "until the controller clears it". Clients derive the hide
+     * themselves by comparing against their synced clock — no server-side timer involved. */
+    messageExpiresAtMs: integer('message_expires_at_ms'),
     updatedAt: integer('updated_at').notNull(),
   },
   (table) => [primaryKey({ columns: [table.roomId] })],
