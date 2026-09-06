@@ -2,6 +2,7 @@
 
 import { use, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { useRoom } from '@/hooks/use-room'
 import { useParticipant } from '@/hooks/use-participant'
 import { useMessageAlert } from '@/hooks/use-message-alert'
@@ -89,6 +90,8 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
         <ConnectionBadge status={status} />
       </div>
 
+      <Image src="/cue.svg" alt="" width={28} height={28} unoptimized className="fixed top-4 left-4 rounded-md opacity-60" />
+
       {message && (
         <div
           className={`fixed inset-x-0 top-14 z-10 mx-auto max-w-3xl rounded-lg px-6 py-4 text-center text-2xl font-semibold text-black transition-colors duration-200 ${
@@ -102,7 +105,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
       {role === 'controller' && (
         <a
           href={`/r/${roomId}/control?t=${encodeURIComponent(session.sessionToken)}`}
-          className={`fixed top-4 left-4 rounded-full px-3 py-1 text-xs font-medium text-black transition-colors duration-200 ${
+          className={`fixed top-14 left-4 rounded-full px-3 py-1 text-xs font-medium text-black transition-colors duration-200 ${
             promotionFlashing ? 'bg-white ring-4 ring-emerald-400' : 'bg-emerald-500 hover:bg-emerald-400'
           }`}
         >

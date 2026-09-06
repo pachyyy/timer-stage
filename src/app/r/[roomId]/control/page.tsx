@@ -2,6 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { useRoom } from '@/hooks/use-room'
 import { useOwnRole } from '@/hooks/use-own-role'
 import { useMessageAlert } from '@/hooks/use-message-alert'
@@ -44,9 +45,10 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   // page react immediately instead of leaving live controls on screen.
   const ownRole = useOwnRole(roomId, token)
   const wasDemoted = ownRole === 'viewer'
-  // Same expiry derivation the viewers use, so "Showing now" can't claim a timed message is still
-  // up after it has already dropped off everyone's screen.
-  const { message: liveMessage } = useMessageAlert(state, syncedNow)
+  // Same hook the viewer screen uses, so "Showing now" can't claim a timed message is still up
+  // after it has already dropped off everyone's screen, and so the operator sees the exact same
+  // banner + flash treatment their audience does, without needing a second window open.
+  const { message: liveMessage, flashing: messageFlashing } = useMessageAlert(state, syncedNow)
   const [newTimerName, setNewTimerName] = useState('')
   // Free-form text while editing, parsed via parseMinutesInput only when "Add" is clicked — see
   // the comment on DraftTimer.minutes in src/app/page.tsx for why this can't be a clamped number.
@@ -141,7 +143,10 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Controller</h1>
+        <div className="flex items-center gap-2">
+          <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+          <h1 className="text-xl font-semibold">Controller</h1>
+        </div>
         <ConnectionBadge status={status} />
       </div>
 
@@ -149,6 +154,16 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
         <p className="text-muted-foreground">Loading room…</p>
       ) : (
         <>
+          {liveMessage && (
+            <div
+              className={`rounded-lg px-4 py-3 text-center text-lg font-semibold text-black transition-colors duration-200 ${
+                messageFlashing ? 'bg-white ring-4 ring-amber-400' : 'bg-amber-400'
+              }`}
+            >
+              {liveMessage}
+            </div>
+          )}
+
           <ControllerPanel
             timerName={activeTimer?.name ?? null}
             runState={{
