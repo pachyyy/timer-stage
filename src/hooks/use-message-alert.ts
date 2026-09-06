@@ -2,25 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { RoomStatePayload } from '@/lib/sync/transport'
-
-const FLASH_DURATION_MS = 1200
-const VIBRATE_PATTERN = [120, 60, 120]
-
-/**
- * Android only. iOS Safari has never implemented the Vibration API and the call is a silent no-op
- * there, so the visual flash is what actually reaches every viewer — vibration is a bonus, not the
- * mechanism. Chrome also ignores it until the page has had at least one user interaction, which the
- * viewer's tap-to-fullscreen handler generally satisfies.
- *
- * Routed through a helper (rather than calling the setter directly in the effect body) to match the
- * idiom used in use-participant.ts for the same lint rule.
- */
-function fireAlert(onFlash: (on: boolean) => void) {
-  if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-    navigator.vibrate(VIBRATE_PATTERN)
-  }
-  onFlash(true)
-}
+import { fireAlert, ALERT_FLASH_DURATION_MS } from '@/lib/alert'
 
 function setExpiredTo(onExpired: (value: boolean) => void, value: boolean) {
   onExpired(value)
@@ -62,7 +44,7 @@ export function useMessageAlert(state: RoomStatePayload | null, syncedNow: () =>
     if (previous === null || sentAtMs <= previous) return
 
     fireAlert(setFlashing)
-    const timeout = setTimeout(() => setFlashing(false), FLASH_DURATION_MS)
+    const timeout = setTimeout(() => setFlashing(false), ALERT_FLASH_DURATION_MS)
     return () => clearTimeout(timeout)
   }, [sentAtMs])
 

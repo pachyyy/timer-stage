@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { useRoom } from '@/hooks/use-room'
 import { useParticipant } from '@/hooks/use-participant'
 import { useMessageAlert } from '@/hooks/use-message-alert'
+import { useRoleAlert } from '@/hooks/use-role-alert'
 import { TimerDisplay } from '@/components/timer-display'
 import { ConnectionBadge } from '@/components/connection-badge'
 import { JoinGate } from '@/components/join-gate'
@@ -24,6 +25,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   const { state, status, activeTimer, syncedNow } = useRoom(roomId, token)
   const { session, role, checkedStorage, join } = useParticipant(roomId)
   const { message, flashing } = useMessageAlert(state, syncedNow)
+  const promotionFlashing = useRoleAlert(role)
   const [wakeLockError, setWakeLockError] = useState(false)
   // Handed to TimerDisplay so the final-minute blink can invert the background from inside the same
   // animation-frame loop that drives the digits.
@@ -100,7 +102,9 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
       {role === 'controller' && (
         <a
           href={`/r/${roomId}/control?t=${encodeURIComponent(session.sessionToken)}`}
-          className="fixed top-4 left-4 rounded-full bg-emerald-500 px-3 py-1 text-xs font-medium text-black hover:bg-emerald-400"
+          className={`fixed top-4 left-4 rounded-full px-3 py-1 text-xs font-medium text-black transition-colors duration-200 ${
+            promotionFlashing ? 'bg-white ring-4 ring-emerald-400' : 'bg-emerald-500 hover:bg-emerald-400'
+          }`}
         >
           You&apos;ve been made a controller — open panel
         </a>
