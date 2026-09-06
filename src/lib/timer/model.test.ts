@@ -59,10 +59,18 @@ describe('timer model', () => {
 
   it('adjustElapsed shifts remaining time without disturbing running status', () => {
     let s = start(initialRunState, 0)
-    // 10s in, add 1 minute back (i.e. reduce elapsed by 60s, clamped at 0)
+    // 10s in, add 1 minute back (i.e. reduce elapsed by 60s)
     s = adjustElapsed(s, 10_000, 60_000)
     expect(s.status).toBe('running')
-    expect(elapsedMs(s, 10_000)).toBe(0) // clamped, can't go negative
+    expect(elapsedMs(s, 10_000)).toBe(-50_000)
+  })
+
+  it('adjustElapsed can push elapsed negative, letting remaining exceed the original duration', () => {
+    // An operator adding time to a segment that's barely started must be able to extend it past
+    // its original length, not just top it back up to it — see the comment on adjustElapsed.
+    let s = start(initialRunState, 0)
+    s = adjustElapsed(s, 10_000, 60_000) // 10s in, +1 min
+    expect(remainingMs(s, 5 * 60_000, 10_000)).toBe(5 * 60_000 + 50_000)
   })
 
   it('adjustElapsed on a paused timer updates the banked elapsed directly', () => {

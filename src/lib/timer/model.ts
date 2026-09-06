@@ -71,10 +71,16 @@ export function reset(): RunState {
  * Adjust the banked elapsed time directly, e.g. for "+1 min" / "-1 min" controls that should
  * shift the remaining time without disturbing whether the timer is running.
  * `deltaMs` is subtracted from elapsed (so a positive delta = more time remaining).
+ *
+ * Deliberately unclamped: elapsed can go negative, meaning remaining can exceed the segment's
+ * original duration. This is the same "no special-casing" treatment overtime already gets (see
+ * remainingMs) — it lets an operator hand a speaker extra time past what was printed on the
+ * agenda, rather than "+1 min" only ever being able to top the segment back up to its original
+ * length and no further.
  */
 export function adjustElapsed(state: RunState, nowMs: number, deltaMs: number): RunState {
   const currentElapsed = elapsedMs(state, nowMs)
-  const nextElapsed = Math.max(0, currentElapsed - deltaMs)
+  const nextElapsed = currentElapsed - deltaMs
   if (state.status === 'running' && state.startedAtMs !== null) {
     return { ...state, elapsedBeforeMs: nextElapsed, startedAtMs: nowMs }
   }
