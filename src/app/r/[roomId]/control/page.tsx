@@ -9,6 +9,7 @@ import { getControllerToken, setControllerToken } from '@/lib/auth/local-tokens'
 import { roomActions } from '@/lib/api/room-actions'
 import { ControllerPanel } from '@/components/controller-panel'
 import { AgendaList } from '@/components/agenda-list'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { ParticipantsPanel } from '@/components/participants-panel'
 import { ConnectionBadge } from '@/components/connection-badge'
 import { Button } from '@/components/ui/button'
@@ -55,11 +56,35 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   const [messageDraft, setMessageDraft] = useState('')
   // null = stays up until explicitly cleared.
   const [messageDurationMs, setMessageDurationMs] = useState<number | null>(null)
+  // Guards two accidental-click risks in the agenda list: switching away from a timer that still
+  // has progress on it, and deleting a segment outright. Both are one mis-click away from each
+  // other in that list, so both go through a confirm dialog instead of firing immediately.
+  const [pendingSwitch, setPendingSwitch] = useState<{ timerId: string; name: string } | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<{ timerId: string; name: string } | null>(null)
 
   const copy = (which: 'code' | 'link', text: string) => {
     navigator.clipboard.writeText(text)
     setCopied(which)
     setTimeout(() => setCopied((c) => (c === which ? null : c)), 5000)
+  }
+
+  const handleSelect = (timerId: string) => {
+    if (!state || timerId === state.activeTimerId) return
+    // Switching resets run state unconditionally (see mutateRunState's 'select' case), so anything
+    // other than a fresh/never-started active timer would silently lose progress on a bare click.
+    const hasProgress = state.status === 'running' || (state.status === 'paused' && state.elapsedBeforeMs > 0)
+    if (hasProgress) {
+      const name = state.timers.find((t) => t.id === timerId)?.name ?? 'this segment'
+      setPendingSwitch({ timerId, name })
+    } else {
+      roomActions.select(roomId, token, timerId).then(applyPayload)
+    }
+  }
+
+  const handleDelete = (timerId: string) => {
+    if (!state) return
+    const name = state.timers.find((t) => t.id === timerId)?.name ?? 'this segment'
+    setPendingDelete({ timerId, name })
   }
 
   useEffect(() => {
@@ -151,8 +176,8 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
               <AgendaList
                 timers={state.timers}
                 activeTimerId={state.activeTimerId}
-                onSelect={(timerId) => roomActions.select(roomId, token, timerId).then(applyPayload)}
-                onDelete={(timerId) => roomActions.deleteTimer(roomId, token, timerId).then(applyPayload)}
+                onSelect={handleSelect}
+                onDelete={handleDelete}
               />
 
               <div className="flex items-center gap-2 pt-2">
@@ -303,6 +328,44 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
               <ParticipantsPanel roomId={roomId} token={token} />
             </CardContent>
           </Card>
+
+          <ConfirmDialog
+            open={pendingSwitch !== null}
+            title="Switch timers?"
+            description={
+              pendingSwitch
+                ? `"${activeTimer?.name ?? 'The current timer'}" is still ${
+                    state.status === 'running' ? 'running' : 'paused partway through'
+                  }. Switching to "${pendingSwitch.name}" will stop it and reset its progress to zero.`
+                : ''
+            }
+            confirmLabel="Switch"
+            onConfirm={() => {
+              if (pendingSwitch) roomActions.select(roomId, token, pendingSwitch.timerId).then(applyPayload)
+              setPendingSwitch(null)
+            }}
+            onCancel={() => setPendingSwitch(null)}
+          />
+
+          <ConfirmDialog
+            open={pendingDelete !== null}
+            title="Delete this segment?"
+            description={
+              pendingDelete
+                ? `Delete "${pendingDelete.name}"? This can't be undone.${
+                    pendingDelete.timerId === state.activeTimerId
+                      ? " It's the segment currently selected — deleting it will also stop the show."
+                      : ''
+                  }`
+                : ''
+            }
+            confirmLabel="Delete"
+            onConfirm={() => {
+              if (pendingDelete) roomActions.deleteTimer(roomId, token, pendingDelete.timerId).then(applyPayload)
+              setPendingDelete(null)
+            }}
+            onCancel={() => setPendingDelete(null)}
+          />
         </>
       )}
     </main>
