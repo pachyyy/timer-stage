@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, type RefObject } from 'react'
-import type { RunState } from '@/lib/timer/model'
+import { formatDuration, type RunState } from '@/lib/timer/model'
 import { useTimerTick } from '@/hooks/use-timer-tick'
 import { phaseFor, blinkStep, type TimerPhase } from '@/lib/timer/phase'
 
@@ -24,6 +24,20 @@ const BLINK_SURFACE_TEXT = ['#ffffff', '#ffffff', '#000000'] as const
 const SURFACE_TEXT_DEFAULT = '#ffffff'
 
 const BASE_CLASS = 'font-mono tabular-nums leading-none'
+
+/**
+ * A pure CSS clamp() can't see how many characters are actually on screen, so a fixed vw-based
+ * size that looks right for "5:00" cuts off "-1:23:45" on a narrow phone — same font-size, longer
+ * string, wider box. Sizing is instead measured against the container in JS: render the digits at
+ * REFERENCE_FONT_PX, read their natural (unclamped) width, then scale that reference size by
+ * however much headroom the container actually has, bounded by MIN/MAX so it never gets
+ * unreadably tiny or absurdly huge. This shrinks long/negative strings to fit AND grows short ones
+ * to fill the space, on any screen size, without hand-picked breakpoints.
+ */
+const REFERENCE_FONT_PX = 112 // 7rem
+const MIN_FONT_PX = 40 // 2.5rem — absolute floor so overtime on a narrow phone stays readable
+const MAX_FONT_PX = 256 // 16rem — absolute ceiling, unchanged from the previous static cap
+const CONTAINER_WIDTH_MARGIN = 0.92 // leave ~8% breathing room on each side
 
 /**
  * Fullscreen countdown readout. Ticks at animation-frame rate via useTimerTick without causing a
@@ -49,14 +63,44 @@ export function TimerDisplay({
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const lastKeyRef = useRef<string | null>(null)
+  const lastFitTextRef = useRef<string | null>(null)
   const reducedMotionRef = useRef(false)
 
   useEffect(() => {
     reducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }, [])
 
+  // Renders at REFERENCE_FONT_PX to read the digits' true unclamped width, then scales that
+  // reference size by how much room the container actually has. A forced layout read
+  // (scrollWidth), so this only runs when the string's length could have changed or the
+  // container was resized — never per animation frame.
+  const fitToContainer = () => {
+    const el = wrapperRef.current
+    if (!el) return
+    const availableWidth = (surfaceRef?.current?.clientWidth ?? window.innerWidth) * CONTAINER_WIDTH_MARGIN
+    el.style.fontSize = `${REFERENCE_FONT_PX}px`
+    const naturalWidth = el.scrollWidth
+    if (naturalWidth === 0) return
+    const fitted = REFERENCE_FONT_PX * (availableWidth / naturalWidth)
+    el.style.fontSize = `${Math.min(MAX_FONT_PX, Math.max(MIN_FONT_PX, fitted))}px`
+  }
+
+  useEffect(() => {
+    fitToContainer()
+    window.addEventListener('resize', fitToContainer)
+    return () => window.removeEventListener('resize', fitToContainer)
+    // fitToContainer reads current refs each call; it doesn't need to be a dependency itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const elementRef = useTimerTick(runState, durationMs, syncedNow, {
     onFrame: (remaining) => {
+      const text = formatDuration(remaining)
+      if (text !== lastFitTextRef.current) {
+        lastFitTextRef.current = text
+        fitToContainer()
+      }
+
       const phase = phaseFor(remaining, wrapUpMs)
       // Anyone who's asked for reduced motion gets the steady phase colour instead of the flash.
       const step = reducedMotionRef.current ? null : blinkStep(remaining)
@@ -98,6 +142,9 @@ export function TimerDisplay({
         elementRef.current = node
       }}
       className={`${BASE_CLASS} transition-colors duration-300 text-white`}
+      // Pre-JS/first-paint fallback only — fitToContainer overrides this on mount and whenever the
+      // digit count or container width changes. clamp() still keeps this reasonable if JS is
+      // somehow disabled, but that's belt-and-suspenders, not the real sizing mechanism anymore.
       style={{ fontSize: 'clamp(7rem, 18vw, 16rem)' }}
     />
   )
