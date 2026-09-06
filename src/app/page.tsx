@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -69,7 +70,12 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center gap-6 px-4 py-12">
       <div className="text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Stage Timer</h1>
+        <div className="flex items-center justify-center gap-2">
+          <Image src="/cue.svg" alt="" width={36} height={36} unoptimized className="rounded-md" />
+          <h1 className="bg-[linear-gradient(135deg,var(--primary-gradient-from),var(--primary-gradient-to))] bg-clip-text text-3xl font-semibold tracking-tight text-transparent">
+            Cue
+          </h1>
+        </div>
         <p className="mt-2 text-muted-foreground">
           Create a room and share the code, or join one someone shared with you.
         </p>

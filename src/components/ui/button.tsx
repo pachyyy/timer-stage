@@ -9,7 +9,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
+        // Gradient (not a flat fill) to match the brand red in public/cue.svg — endpoints are
+        // separate --primary-gradient-* tokens (globals.css) rather than derived from --primary,
+        // so each theme can pick a pairing that stays legible under --primary-foreground.
+        default:
+          'bg-[linear-gradient(135deg,var(--primary-gradient-from),var(--primary-gradient-to))] text-primary-foreground shadow-xs hover:brightness-110',
         destructive:
           'bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20',
         outline:
