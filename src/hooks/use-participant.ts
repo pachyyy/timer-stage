@@ -1,7 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { getParticipantSession, setParticipantSession, type ParticipantSession } from '@/lib/auth/participant'
+import {
+  clearParticipantSession,
+  getParticipantSession,
+  setParticipantSession,
+  type ParticipantSession,
+} from '@/lib/auth/participant'
 
 const ROLE_POLL_INTERVAL_MS = 4000
 
@@ -17,14 +22,16 @@ function readStoredSession(roomId: string, cb: (session: ParticipantSession | nu
  * participant's own current role so a promotion (or demotion) made from the controller's
  * participants panel takes effect here without a manual refresh.
  *
- * Not used for the room's original controllerToken flow — that credential lives in a different
- * table entirely and is never revocable through this mechanism, so there's nothing to poll for
- * that case (see the 404-means-"not a tracked participant" note on /api/rooms/[roomId]/participants/me).
+ * Unlike useOwnRole (which also has to cover the room's permanent, never-tracked controllerToken),
+ * every session this hook ever polls came from a real join — so a 404 here is unambiguous: the
+ * admin removed this participant. That clears the cached session and flips `removed` so the
+ * caller can show a "you were removed" notice instead of just silently re-showing the join gate.
  */
 export function useParticipant(roomId: string) {
   const [session, setSession] = useState<ParticipantSession | null>(null)
   const [role, setRole] = useState<ParticipantRole | null>(null)
   const [checkedStorage, setCheckedStorage] = useState(false)
+  const [removed, setRemoved] = useState(false)
 
   // localStorage can only be read client-side (SSR has no access to it), so this has to happen
   // in an effect rather than a lazy useState initializer, to avoid a hydration mismatch. Routed
@@ -48,7 +55,15 @@ export function useParticipant(roomId: string) {
           `/api/rooms/${roomId}/participants/me?sessionToken=${encodeURIComponent(session.sessionToken)}`,
           { cache: 'no-store' },
         )
-        if (cancelled || !res.ok) return
+        if (cancelled) return
+        if (res.status === 404) {
+          clearParticipantSession(roomId)
+          setSession(null)
+          setRole(null)
+          setRemoved(true)
+          return
+        }
+        if (!res.ok) return // some other transient failure — next tick retries
         const data = (await res.json()) as { role: ParticipantRole }
         setRole(data.role)
       } catch {
@@ -81,9 +96,10 @@ export function useParticipant(roomId: string) {
       setParticipantSession(roomId, newSession)
       setSession(newSession)
       setRole('viewer')
+      setRemoved(false)
     },
     [roomId],
   )
 
-  return { session, role, checkedStorage, join }
+  return { session, role, checkedStorage, removed, join }
 }

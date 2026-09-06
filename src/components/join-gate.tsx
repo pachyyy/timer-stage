@@ -6,8 +6,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 /** Shown before a viewer sees the timer — lets the admin know who's watching, and is the
- * identity a promotion to controller attaches to. */
-export function JoinGate({ onJoin }: { onJoin: (name: string) => Promise<void> }) {
+ * identity a promotion to controller attaches to. `removed` shows a distinct notice when this is
+ * reached because the admin removed the previous session, not just a first-time visit. */
+export function JoinGate({
+  onJoin,
+  removed = false,
+}: {
+  onJoin: (name: string) => Promise<void>
+  removed?: boolean
+}) {
   const [name, setName] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,8 +35,12 @@ export function JoinGate({ onJoin }: { onJoin: (name: string) => Promise<void> }
     <div className="flex min-h-screen items-center justify-center bg-black px-4">
       <div className="flex w-full max-w-sm flex-col gap-4 rounded-xl border border-white/10 bg-white/5 p-6">
         <div>
-          <h1 className="text-lg font-semibold text-white">Join this room</h1>
-          <p className="mt-1 text-sm text-white/50">Enter your name to see the timer.</p>
+          <h1 className="text-lg font-semibold text-white">
+            {removed ? 'You were removed from this room' : 'Join this room'}
+          </h1>
+          <p className="mt-1 text-sm text-white/50">
+            {removed ? 'Enter your name to rejoin.' : 'Enter your name to see the timer.'}
+          </p>
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="join-name" className="text-white/70">

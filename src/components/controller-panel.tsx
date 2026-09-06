@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTimerTick } from '@/hooks/use-timer-tick'
 import type { RunState } from '@/lib/timer/model'
 import { phaseFor, type TimerPhase } from '@/lib/timer/phase'
@@ -14,6 +14,8 @@ const PHASE_CLASS: Record<TimerPhase, string> = {
   wrapup: 'text-amber-600 dark:text-amber-400',
   overtime: 'text-destructive',
 }
+
+const ADJUST_FLASH_DURATION_MS = 500
 
 export function ControllerPanel({
   timerName,
@@ -44,6 +46,21 @@ export function ControllerPanel({
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const lastPhaseRef = useRef<TimerPhase | null>(null)
+  // Confirms a +/-1 min click actually registered — the timer's own number only updates once a
+  // second (see useTimerTick), which isn't fast enough feedback for a rapid double-click.
+  const [flashDirection, setFlashDirection] = useState<'minus' | 'plus' | null>(null)
+  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current)
+  }, [])
+
+  const handleAdjust = (deltaMs: number, direction: 'minus' | 'plus') => {
+    onAdjust(deltaMs)
+    if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current)
+    setFlashDirection(direction)
+    flashTimeoutRef.current = setTimeout(() => setFlashDirection(null), ADJUST_FLASH_DURATION_MS)
+  }
 
   const elementRef = useTimerTick<HTMLDivElement>(runState, durationMs, syncedNow, {
     onFrame: (remaining) => {
@@ -78,10 +95,26 @@ export function ControllerPanel({
           Reset
         </Button>
         <div className="mx-1 h-6 w-px bg-border" />
-        <Button variant="outline" size="sm" onClick={() => onAdjust(-60_000)} disabled={!timerName}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleAdjust(-60_000, 'minus')}
+          disabled={!timerName}
+          className={
+            flashDirection === 'minus' ? 'bg-destructive text-white border-destructive hover:bg-destructive' : ''
+          }
+        >
           <Minus className="size-4" /> 1 min
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onAdjust(60_000)} disabled={!timerName}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleAdjust(60_000, 'plus')}
+          disabled={!timerName}
+          className={
+            flashDirection === 'plus' ? 'bg-destructive text-white border-destructive hover:bg-destructive' : ''
+          }
+        >
           <Plus className="size-4" /> 1 min
         </Button>
       </div>

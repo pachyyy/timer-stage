@@ -29,3 +29,14 @@ export function getParticipantSession(roomId: string): ParticipantSession | null
     return null
   }
 }
+
+/** Called when the admin removes this participant from the room — their sessionToken no longer
+ * resolves to anything server-side, so the cached copy must go too or a refresh would just read
+ * it back and skip the join gate again. */
+export function clearParticipantSession(roomId: string) {
+  try {
+    localStorage.removeItem(PREFIX + roomId)
+  } catch {
+    // localStorage unavailable — nothing to clear
+  }
+}

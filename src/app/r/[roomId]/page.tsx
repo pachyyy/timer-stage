@@ -24,7 +24,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   const searchParams = useSearchParams()
   const token = searchParams.get('t') ?? ''
   const { state, status, activeTimer, syncedNow } = useRoom(roomId, token)
-  const { session, role, checkedStorage, join } = useParticipant(roomId)
+  const { session, role, checkedStorage, removed, join } = useParticipant(roomId)
   const { message, flashing } = useMessageAlert(state, syncedNow)
   const promotionFlashing = useRoleAlert(role)
   const [wakeLockError, setWakeLockError] = useState(false)
@@ -65,7 +65,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   if (!checkedStorage) return <div className="min-h-screen bg-black" />
 
   if (!session) {
-    return <JoinGate onJoin={join} />
+    return <JoinGate onJoin={join} removed={removed} />
   }
 
   if (!state) {
