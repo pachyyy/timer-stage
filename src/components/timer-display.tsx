@@ -98,7 +98,7 @@ export function TimerDisplay({
         elementRef.current = node
       }}
       className={`${BASE_CLASS} transition-colors duration-300 text-white`}
-      style={{ fontSize: 'clamp(3rem, 18vw, 16rem)' }}
+      style={{ fontSize: 'clamp(7rem, 18vw, 16rem)' }}
     />
   )
 }
