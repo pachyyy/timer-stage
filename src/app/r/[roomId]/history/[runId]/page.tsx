@@ -128,7 +128,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
             </a>
           </div>
 
-          <Card>
+          <Card className="min-w-0">
             <CardHeader>
               <CardTitle>Summary</CardTitle>
             </CardHeader>
@@ -208,7 +208,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="min-w-0">
             <CardHeader>
               <CardTitle>Timeline</CardTitle>
             </CardHeader>
