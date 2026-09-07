@@ -25,6 +25,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }),
   providers: [Google],
   session: { strategy: 'database' },
+  callbacks: {
+    // The default session callback (see @auth/core's defaultCallbacks.session) rebuilds
+    // `session.user` from scratch with only name/email/image — `id` is dropped unless a callback
+    // restores it. Every owner check in this app (resolveRoomAccess, /control's isOwner, the
+    // /api/me/* routes) keys off `session.user.id`, so without this it's silently `undefined`
+    // everywhere: control-from-any-device never actually worked, masked on the device that
+    // created the room because that device also holds the room's token in localStorage.
+    session({ session, user }) {
+      session.user.id = user.id
+      return session
+    },
+  },
   pages: {
     // Skip Auth.js's default sign-in page — every entry point here starts the Google flow
     // directly from a button (see src/components/auth-buttons.tsx), there's no form to render.

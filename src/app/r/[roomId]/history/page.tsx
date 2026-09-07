@@ -2,6 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { ArrowLeft } from 'lucide-react'
 import { getControllerToken, setControllerToken } from '@/lib/auth/local-tokens'
@@ -18,6 +19,7 @@ import type { RunSummary } from '@/lib/history/types'
 export default function HistoryPage({ params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = use(params)
   const searchParams = useSearchParams()
+  const { status: sessionStatus } = useSession()
 
   const token = useMemo(() => {
     const fromUrl = searchParams.get('t')
@@ -30,16 +32,34 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
 
   const [runs, setRuns] = useState<RunSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [forbidden, setForbidden] = useState(false)
+  // Same idea as /control's `resolvingAccess`: with no token, an owner still needs the session to
+  // finish loading before this page can tell "no access" apart from "haven't checked yet".
+  const resolvingAccess = !token && sessionStatus === 'loading'
 
   useEffect(() => {
-    if (!token) return
-    fetch(`/api/rooms/${roomId}/runs?token=${encodeURIComponent(token)}`)
-      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+    if (resolvingAccess) return
+    const qs = token ? `?token=${encodeURIComponent(token)}` : ''
+    fetch(`/api/rooms/${roomId}/runs${qs}`)
+      .then((res) => {
+        if (res.status === 403) {
+          setForbidden(true)
+          return Promise.reject(res.status)
+        }
+        return res.ok ? res.json() : Promise.reject(res.status)
+      })
       .then(setRuns)
-      .catch(() => setError('Could not load history for this room.'))
-  }, [roomId, token])
+      .catch(() => setError((prev) => prev ?? 'Could not load history for this room.'))
+  }, [roomId, token, resolvingAccess])
 
-  if (!token) return <MissingToken />
+  if (resolvingAccess) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-4">
+        <p className="text-muted-foreground">Loading…</p>
+      </main>
+    )
+  }
+  if (forbidden) return <MissingToken />
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-4 py-8">
@@ -49,7 +69,7 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
           <h1 className="text-xl font-semibold">History</h1>
         </div>
         <Button asChild variant="outline" size="sm">
-          <a href={`/r/${roomId}/control?t=${token}`}>
+          <a href={`/r/${roomId}/control${token ? `?t=${token}` : ''}`}>
             <ArrowLeft className="size-3.5" /> Back to live
           </a>
         </Button>
@@ -68,7 +88,7 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
           {runs?.map((summary) => (
             <li key={summary.run.id}>
               <a
-                href={`/r/${roomId}/history/${summary.run.id}?t=${token}`}
+                href={`/r/${roomId}/history/${summary.run.id}${token ? `?t=${token}` : ''}`}
                 className="block rounded-md border transition-colors hover:bg-accent/50"
               >
                 <Card className="border-0 shadow-none">
