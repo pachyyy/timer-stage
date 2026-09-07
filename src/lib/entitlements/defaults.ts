@@ -13,7 +13,7 @@ export const FALLBACK_LIMITS: CueLimits = {
   activeRooms: 1,
   history: false,
   export: false,
-  participantsPerRoom: 10,
+  participantsPerRoom: 5,
 }
 
 export function fallbackEntitlement(source: 'anonymous' | 'fallback'): Entitlement {

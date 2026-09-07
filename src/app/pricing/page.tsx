@@ -12,6 +12,16 @@ export const dynamic = 'force-dynamic'
 // plans are granted by email, by hand. This is where a visitor is told how to actually get one.
 const UPGRADE_EMAIL = process.env.NEXT_PUBLIC_UPGRADE_EMAIL || 'hello@example.com'
 
+// Hardcoded display copy, deliberately not part of the shared CueLimits/pachy-core contract —
+// price is Cue's own marketing concern, not something the control-plane DB (or any other app
+// reading the same plans) needs to know about. Edit these directly when the price changes.
+const PLAN_PRICES: Record<string, string> = {
+  free: 'Free',
+  mid: 'Rp75.000/month',
+  top: 'Rp100.000/month',
+  lifetime: 'Rp750.000 one-time',
+}
+
 function limitLines(limits: CueLimits): string[] {
   return [
     limits.activeRooms === null ? 'Unlimited active rooms' : `${limits.activeRooms} active room${limits.activeRooms === 1 ? '' : 's'}`,
@@ -27,7 +37,7 @@ export default async function PricingPage() {
   const plans = await listPublicPlans()
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-12">
+    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-12">
       <div className="text-center">
         <Link href="/" className="inline-flex items-center gap-2">
           <Image src="/cue.svg" alt="" width={28} height={28} unoptimized className="rounded-md" />
@@ -40,14 +50,15 @@ export default async function PricingPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {plans.map((plan) => (
           <Card key={plan.key} className={plan.key === 'top' ? 'border-primary' : undefined}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 {plan.name}
-                {plan.key === 'top' && <Badge>Most rooms</Badge>}
+                {plan.key === 'top' && <Badge>Recommended</Badge>}
               </CardTitle>
+              <p className="text-lg font-semibold">{PLAN_PRICES[plan.key] ?? ''}</p>
             </CardHeader>
             <CardContent>
               <ul className="flex flex-col gap-2 text-sm text-muted-foreground">

@@ -78,14 +78,15 @@ export interface PublicPlan {
   limits: CueLimits
 }
 
-// Mirrors the free/mid/top rows in 03_pachy_panel/scripts/seed.ts, minus "permanent" — that tier
-// is for manual VIP/lifetime grants (see the seed script's own comment), not something to
-// advertise on a public pricing page. Served only if the core DB is unreachable, so /pricing
-// always renders something rather than an empty page.
+// Mirrors the free/mid/top/lifetime rows in 03_pachy_panel/scripts/seed.ts, minus "permanent" —
+// that tier is for hand-picked, fully-uncapped VIP grants (see the seed script's own comment), not
+// something to advertise on a public pricing page. Served only if the core DB is unreachable, so
+// /pricing always renders something rather than an empty page.
 const FALLBACK_PUBLIC_PLANS: PublicPlan[] = [
-  { key: 'free', name: 'Free', limits: { activeRooms: 1, history: false, export: false, participantsPerRoom: 10 } },
-  { key: 'mid', name: 'Mid', limits: { activeRooms: 2, history: true, export: false, participantsPerRoom: 20 } },
-  { key: 'top', name: 'Top', limits: { activeRooms: 5, history: true, export: true, participantsPerRoom: 50 } },
+  { key: 'free', name: 'Free', limits: { activeRooms: 1, history: false, export: false, participantsPerRoom: 5 } },
+  { key: 'mid', name: 'Mid', limits: { activeRooms: 2, history: true, export: false, participantsPerRoom: 10 } },
+  { key: 'top', name: 'Top', limits: { activeRooms: 5, history: true, export: true, participantsPerRoom: 20 } },
+  { key: 'lifetime', name: 'Lifetime', limits: { activeRooms: 5, history: true, export: true, participantsPerRoom: 20 } },
 ]
 
 /** Every publicly-listed plan for Cue, cheapest first — the data source for /pricing. Not
