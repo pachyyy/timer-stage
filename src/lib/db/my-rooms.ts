@@ -8,6 +8,9 @@ export interface OwnedRoomSummary {
   createdAt: number
   runCount: number
   lastRunAtMs: number | null
+  /** Null = active — see rooms.archivedAt's doc comment in schema.ts. Surfaced here so
+   * /my-rooms can render an Archive/Unarchive toggle without a second fetch per room. */
+  archivedAt: number | null
 }
 
 /** Every room a signed-in user owns, newest first — the raw material for /my-rooms. Purely
@@ -30,6 +33,7 @@ export async function listOwnedRooms(userId: string): Promise<OwnedRoomSummary[]
       createdAt: room.createdAt,
       runCount: stats?.runCount ?? 0,
       lastRunAtMs: stats?.lastRunAtMs ?? null,
+      archivedAt: room.archivedAt,
     })
   }
   return summaries

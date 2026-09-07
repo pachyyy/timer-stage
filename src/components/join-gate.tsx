@@ -25,8 +25,8 @@ export function JoinGate({
     setError(null)
     try {
       await onJoin(name.trim())
-    } catch {
-      setError('Something went wrong joining. Please try again.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong joining. Please try again.')
       setSubmitting(false)
     }
   }

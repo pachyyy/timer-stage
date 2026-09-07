@@ -4,6 +4,7 @@ import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { generateId, generateToken } from '@/lib/auth/tokens'
 import { db } from '@/lib/db/client'
 import { participants, rooms } from '@/lib/db/schema'
+import { canJoinParticipant } from '@/lib/entitlements/gate'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,6 +22,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ roo
 
   const [room] = await db.select().from(rooms).where(eq(rooms.id, roomId))
   if (!room) return NextResponse.json({ error: 'room not found' }, { status: 404 })
+
+  // Gated by the ROOM's plan (its owner's), not the joining person's — a viewer never has a plan
+  // of their own here.
+  const gate = await canJoinParticipant(roomId, room.ownerUserId)
+  if (!gate.allowed) {
+    return NextResponse.json({ error: gate.reason ?? 'This room is full' }, { status: 402 })
+  }
 
   const participantId = generateId()
   const sessionToken = generateToken()

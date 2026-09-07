@@ -99,12 +99,17 @@ export default function Home() {
             .map((t) => ({ name: t.name.trim(), durationMs: parseMinutesInput(t.minutes) * 60_000 })),
         }),
       })
-      if (!res.ok) throw new Error('Failed to create room')
+      if (!res.ok) {
+        // A plan-limit block (402) comes back with a real, show-it-directly message — see
+        // canCreateRoom in src/lib/entitlements/gate.ts. Anything else falls back to generic.
+        const body = await res.json().catch(() => null)
+        throw new Error(typeof body?.error === 'string' ? body.error : 'Failed to create room')
+      }
       const { roomId, controllerToken } = await res.json()
       setControllerToken(roomId, controllerToken)
       router.push(`/r/${roomId}/control?t=${controllerToken}`)
-    } catch {
-      setError('Something went wrong creating the room. Please try again.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong creating the room. Please try again.')
       setCreating(false)
     }
   }

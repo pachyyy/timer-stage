@@ -86,7 +86,13 @@ export function useParticipant(roomId: string) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
       })
-      if (!res.ok) throw new Error('Failed to join')
+      if (!res.ok) {
+        // A plan-limit block (402, e.g. the room is at its participant cap — see
+        // canJoinParticipant in src/lib/entitlements/gate.ts) comes back with a real,
+        // show-it-directly message. Anything else falls back to generic.
+        const body = await res.json().catch(() => null)
+        throw new Error(typeof body?.error === 'string' ? body.error : 'Failed to join')
+      }
       const data = (await res.json()) as { participantId: string; sessionToken: string; name: string }
       const newSession: ParticipantSession = {
         participantId: data.participantId,

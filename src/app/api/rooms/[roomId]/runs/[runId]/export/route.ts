@@ -7,6 +7,7 @@ import { loadRun } from '@/lib/db/run-log'
 import { buildRunReport } from '@/lib/history/report'
 import { coalesceAdjustments, extractAdjustmentEntries } from '@/lib/history/adjustments'
 import { buildRunWorkbook } from '@/lib/export/run-workbook'
+import { canExportRun } from '@/lib/entitlements/gate'
 
 export const dynamic = 'force-dynamic'
 // exceljs uses Node Buffers/zlib internally — this route must run on the Node runtime, not Edge.
@@ -29,10 +30,19 @@ export async function GET(
   const access = await resolveRoomAccess(roomId, token)
   if (access !== 'controller') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
+  const [room] = await db
+    .select({ name: rooms.name, ownerUserId: rooms.ownerUserId })
+    .from(rooms)
+    .where(eq(rooms.id, roomId))
+
+  const gate = await canExportRun(room?.ownerUserId ?? null)
+  if (!gate.allowed) {
+    return NextResponse.json({ error: gate.reason ?? 'Export not included on this plan' }, { status: 402 })
+  }
+
   const loaded = await loadRun(roomId, runId)
   if (!loaded) return NextResponse.json({ error: 'run not found' }, { status: 404 })
 
-  const [room] = await db.select({ name: rooms.name }).from(rooms).where(eq(rooms.id, roomId))
   const report = buildRunReport(loaded)
   const adjustments = coalesceAdjustments(extractAdjustmentEntries(loaded.events))
 

@@ -19,8 +19,19 @@ export const rooms = sqliteTable(
     /** Null for anonymous rooms. `set null` on account deletion so removing an account never
      * destroys a live room mid-show — it just reverts to anonymous/token-only access. */
     ownerUserId: text('owner_user_id').references(() => users.id, { onDelete: 'set null' }),
+    /** Null = active. Set by the owner from /my-rooms (POST /api/rooms/[roomId]/archive) — this
+     * is what "active room" means for the entitlements plan-limit gate (see
+     * src/lib/entitlements/gate.ts): an owner's active-room count is
+     * `ownerUserId = me AND archivedAt IS NULL`. Purely a bookkeeping flag, not a lock — an
+     * archived room's agenda, history, and viewer link keep working exactly as before;
+     * archiving only removes it from that count. Anonymous rooms (no owner) are never counted
+     * against any cap in the first place, so this is meaningless for them either way. */
+    archivedAt: integer('archived_at'),
   },
-  (table) => [index('rooms_owner_idx').on(table.ownerUserId)],
+  (table) => [
+    index('rooms_owner_idx').on(table.ownerUserId),
+    index('rooms_owner_active_idx').on(table.ownerUserId, table.archivedAt),
+  ],
 )
 
 /**

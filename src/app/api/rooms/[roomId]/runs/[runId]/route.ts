@@ -1,8 +1,12 @@
+import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveRoomAccess } from '@/lib/auth/session-guard'
+import { db } from '@/lib/db/client'
+import { rooms } from '@/lib/db/schema'
 import { loadRun } from '@/lib/db/run-log'
 import { buildRunReport } from '@/lib/history/report'
 import { coalesceAdjustments, extractAdjustmentEntries } from '@/lib/history/adjustments'
+import { canViewHistory } from '@/lib/entitlements/gate'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +22,12 @@ export async function GET(
 
   const access = await resolveRoomAccess(roomId, token)
   if (access !== 'controller') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+
+  const [room] = await db.select({ ownerUserId: rooms.ownerUserId }).from(rooms).where(eq(rooms.id, roomId)).limit(1)
+  const gate = await canViewHistory(room?.ownerUserId ?? null)
+  if (!gate.allowed) {
+    return NextResponse.json({ error: gate.reason ?? 'History not included on this plan' }, { status: 402 })
+  }
 
   const loaded = await loadRun(roomId, runId)
   if (!loaded) return NextResponse.json({ error: 'run not found' }, { status: 404 })
