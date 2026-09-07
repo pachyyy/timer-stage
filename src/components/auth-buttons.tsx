@@ -1,7 +1,8 @@
 'use client'
 
 import { signIn, signOut, useSession } from 'next-auth/react'
-import { Settings, History, LogOut } from 'lucide-react'
+import Link from 'next/link'
+import { Settings, History, Home, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -49,10 +50,16 @@ export function AuthButtons({ size = 'sm' as const }: { size?: 'sm' | 'default' 
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <a href="/my-rooms">
+          <Link href="/">
+            <Home />
+            Home
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/my-rooms">
             <History />
             History
-          </a>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => signOut()}>
           <LogOut />

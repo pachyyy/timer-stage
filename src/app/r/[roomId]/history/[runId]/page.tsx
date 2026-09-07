@@ -4,6 +4,7 @@ import { use, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { ArrowLeft, Download } from 'lucide-react'
 import { getControllerToken, setControllerToken } from '@/lib/auth/local-tokens'
 import { MissingToken } from '@/components/missing-token'
@@ -97,7 +98,9 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 px-4 py-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+          <Link href="/">
+            <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+          </Link>
           <h1 className="text-xl font-semibold">Run {detail?.run.seq ?? ''}</h1>
         </div>
         <div className="flex items-center gap-2">

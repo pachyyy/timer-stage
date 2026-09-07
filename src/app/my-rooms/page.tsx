@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { AuthButtons } from '@/components/auth-buttons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -59,7 +60,9 @@ export default function MyRoomsPage() {
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+          <Link href="/">
+            <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+          </Link>
           <h1 className="text-xl font-semibold">My Rooms</h1>
         </div>
         <AuthButtons />

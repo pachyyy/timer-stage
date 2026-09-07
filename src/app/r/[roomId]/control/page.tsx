@@ -4,6 +4,7 @@ import { use, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRoom } from '@/hooks/use-room'
 import { useOwnRole } from '@/hooks/use-own-role'
 import { useMessageAlert } from '@/hooks/use-message-alert'
@@ -201,7 +202,9 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-4 py-8">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md shrink-0" />
+          <Link href="/" className="shrink-0">
+            <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+          </Link>
           <h1 className="shrink-0 text-xl font-semibold">Controller</h1>
           {state && <span className="truncate text-sm text-muted-foreground">— {state.name}</span>}
         </div>
