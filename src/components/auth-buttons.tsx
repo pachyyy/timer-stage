@@ -1,14 +1,27 @@
 'use client'
 
-import Image from 'next/image'
 import { signIn, signOut, useSession } from 'next-auth/react'
+import { Settings, History, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 /**
  * Optional, everywhere it appears. Nothing downstream requires a session — this is purely the
  * entry point for the additive account features (cross-room My Rooms, claiming a room, control
  * from a second device). Rendered on the homepage and the controller header; never on the viewer
  * screen or the join flow, which stay account-free by design.
+ *
+ * Signed in, this is deliberately just a gear icon — no avatar/name inline. Those were previously
+ * wrapped in the /my-rooms link, but with no picture and on a narrow viewport (name text hidden
+ * below `sm`) that link could render as nothing visible at all, leaving no way to reach History.
+ * The gear is always visible and always the same tap target.
  */
 export function AuthButtons({ size = 'sm' as const }: { size?: 'sm' | 'default' }) {
   const { data: session, status } = useSession()
@@ -24,23 +37,28 @@ export function AuthButtons({ size = 'sm' as const }: { size?: 'sm' | 'default' 
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <a href="/my-rooms" className="flex items-center gap-2 text-sm hover:underline">
-        {session.user.image && (
-          <Image
-            src={session.user.image}
-            alt=""
-            width={24}
-            height={24}
-            unoptimized
-            className="rounded-full"
-          />
-        )}
-        <span className="hidden sm:inline">{session.user.name ?? session.user.email}</span>
-      </a>
-      <Button variant="ghost" size={size} onClick={() => signOut()}>
-        Sign out
-      </Button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label="Settings">
+          <Settings className="size-5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel className="font-normal text-muted-foreground">
+          {session.user.name ?? session.user.email}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <a href="/my-rooms">
+            <History />
+            History
+          </a>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => signOut()}>
+          <LogOut />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

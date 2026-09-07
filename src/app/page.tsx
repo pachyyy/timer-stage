@@ -2,17 +2,20 @@
 
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2 } from 'lucide-react'
-import { setControllerToken } from '@/lib/auth/local-tokens'
+import { setControllerToken, listControllerTokens } from '@/lib/auth/local-tokens'
 import { parseMinutesInput } from '@/lib/timer/minutes'
 import { AuthButtons } from '@/components/auth-buttons'
+import type { LiveRoomSummary } from '@/lib/db/my-rooms'
 
 interface DraftTimer {
   name: string
@@ -23,6 +26,18 @@ interface DraftTimer {
   minutes: string
 }
 
+interface LiveRoomEntry extends LiveRoomSummary {
+  /** Only set for the anonymous (localStorage token) path — appended to the link so /control
+   * doesn't need a session to resolve access. Owned rooms resolve access via the session instead. */
+  token?: string
+}
+
+function statusLabel(status: LiveRoomSummary['status']) {
+  if (status === 'running') return 'Running'
+  if (status === 'paused') return 'Paused'
+  return 'Between segments'
+}
+
 export default function Home() {
   const router = useRouter()
   const [eventName, setEventName] = useState('')
@@ -30,6 +45,40 @@ export default function Home() {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [joinCode, setJoinCode] = useState('')
+  const { data: session } = useSession()
+  const [liveRooms, setLiveRooms] = useState<LiveRoomEntry[] | null>(null)
+  const [liveLoading, setLiveLoading] = useState(false)
+
+  const checkLiveRooms = useCallback(async () => {
+    setLiveLoading(true)
+    try {
+      if (session?.user) {
+        const res = await fetch('/api/me/live-rooms')
+        setLiveRooms(res.ok ? await res.json() : [])
+        return
+      }
+
+      // Signed out: there's no server-side account to ask, so check whichever rooms this
+      // browser holds a controller token for — the same source /my-rooms uses for "import".
+      const tokens = listControllerTokens()
+      const results = await Promise.all(
+        tokens.map(async ({ roomId, token }): Promise<LiveRoomEntry | null> => {
+          try {
+            const res = await fetch(`/api/rooms/${roomId}`)
+            if (!res.ok) return null
+            const payload = await res.json()
+            if (!payload.currentRunId) return null
+            return { roomId, name: payload.name, status: payload.status, token }
+          } catch {
+            return null
+          }
+        }),
+      )
+      setLiveRooms(results.filter((r): r is LiveRoomEntry => r !== null))
+    } finally {
+      setLiveLoading(false)
+    }
+  }, [session])
 
   const addTimer = () => setDraftTimers((prev) => [...prev, { name: '', minutes: '5' }])
   const removeTimer = (i: number) => setDraftTimers((prev) => prev.filter((_, idx) => idx !== i))
@@ -86,10 +135,16 @@ export default function Home() {
         </p>
       </div>
 
-      <Tabs defaultValue="create">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs
+        defaultValue="create"
+        onValueChange={(value) => {
+          if (value === 'running' && liveRooms === null) checkLiveRooms()
+        }}
+      >
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="create">Create a room</TabsTrigger>
           <TabsTrigger value="join">Join with code</TabsTrigger>
+          <TabsTrigger value="running">Running Event</TabsTrigger>
         </TabsList>
 
         <TabsContent value="create">
@@ -179,6 +234,44 @@ export default function Home() {
               <p className="text-xs text-muted-foreground">
                 You will be asked for your name so the room&apos;s host knows who&apos;s watching.
               </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="running">
+          <Card>
+            <CardHeader>
+              <CardTitle>Running Event</CardTitle>
+              <CardDescription>Jump back into a show that&apos;s currently in progress.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {liveLoading && <p className="text-sm text-muted-foreground">Checking…</p>}
+              {!liveLoading && liveRooms?.length === 0 && (
+                <p className="text-sm text-muted-foreground">No event currently running.</p>
+              )}
+              {!liveLoading && liveRooms && liveRooms.length > 0 && (
+                <ul className="flex flex-col gap-2">
+                  {liveRooms.map((room) => (
+                    <li key={room.roomId}>
+                      <Card>
+                        <CardContent className="flex items-center justify-between gap-3 py-3">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-medium">{room.name}</span>
+                            <Badge variant="secondary" className="w-fit">
+                              {statusLabel(room.status)}
+                            </Badge>
+                          </div>
+                          <Button asChild size="sm">
+                            <a href={room.token ? `/r/${room.roomId}/control?t=${room.token}` : `/r/${room.roomId}/control`}>
+                              Go to event
+                            </a>
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
