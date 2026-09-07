@@ -9,3 +9,24 @@ export function parseMinutesInput(raw: string, fallback = 5): number {
   if (!Number.isFinite(parsed) || parsed < 1) return fallback
   return parsed
 }
+
+/**
+ * Parses separate minutes/seconds text fields (as used by the segment edit dialog) into a total
+ * duration in ms. Same free-form-string-until-submit pattern as parseMinutesInput above — each
+ * field is clamped to >= 0 individually, and the pair is rejected (falls back) only if the total
+ * comes out to zero, since a 0:00 segment can't be timed.
+ */
+export function parseDurationInput(rawMinutes: string, rawSeconds: string, fallbackMs = 5 * 60_000): number {
+  const minutes = parseInt(rawMinutes, 10)
+  const seconds = parseInt(rawSeconds, 10)
+  const safeMinutes = Number.isFinite(minutes) && minutes >= 0 ? minutes : 0
+  const safeSeconds = Number.isFinite(seconds) && seconds >= 0 ? seconds : 0
+  const totalMs = (safeMinutes * 60 + safeSeconds) * 1000
+  return totalMs > 0 ? totalMs : fallbackMs
+}
+
+/** Splits a duration in ms back into whole minutes/seconds for populating those two fields. */
+export function toMinSec(durationMs: number): { minutes: number; seconds: number } {
+  const totalSeconds = Math.max(0, Math.round(durationMs / 1000))
+  return { minutes: Math.floor(totalSeconds / 60), seconds: totalSeconds % 60 }
+}

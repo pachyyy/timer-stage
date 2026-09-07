@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core'
 
 /**
  * Rooms are the top-level share unit: one controller token (read/write) and one viewer token
@@ -17,19 +17,27 @@ export const rooms = sqliteTable('rooms', {
  * One row per timer in a room's agenda. `type` is a column (not a separate table) so adding
  * count-up / time-of-day modes later is additive.
  */
-export const timers = sqliteTable('timers', {
-  id: text('id').primaryKey(),
-  roomId: text('room_id')
-    .notNull()
-    .references(() => rooms.id, { onDelete: 'cascade' }),
-  position: integer('position').notNull(),
-  name: text('name').notNull(),
-  speaker: text('speaker'),
-  notes: text('notes'),
-  type: text('type', { enum: ['countdown'] }).notNull().default('countdown'),
-  durationMs: integer('duration_ms').notNull(),
-  wrapUpMs: integer('wrap_up_ms').notNull().default(60_000),
-})
+export const timers = sqliteTable(
+  'timers',
+  {
+    id: text('id').primaryKey(),
+    roomId: text('room_id')
+      .notNull()
+      .references(() => rooms.id, { onDelete: 'cascade' }),
+    position: integer('position').notNull(),
+    name: text('name').notNull(),
+    speaker: text('speaker'),
+    notes: text('notes'),
+    type: text('type', { enum: ['countdown'] }).notNull().default('countdown'),
+    durationMs: integer('duration_ms').notNull(),
+    wrapUpMs: integer('wrap_up_ms').notNull().default(60_000),
+    /** Optional absolute wall-clock start this segment is scheduled for. Informational only — it
+     * drives the ahead/behind-schedule readout, never an automatic start. */
+    scheduledStartMs: integer('scheduled_start_ms'),
+  },
+  // Every room-state load orders this exact (roomId, position) pair — see loadRoomStatePayload.
+  (table) => [index('timers_room_position_idx').on(table.roomId, table.position)],
+)
 
 /**
  * Exactly one row per room: the live run-state anchor (see src/lib/timer/model.ts) plus the

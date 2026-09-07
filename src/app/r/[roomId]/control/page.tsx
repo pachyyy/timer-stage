@@ -10,6 +10,7 @@ import { getControllerToken, setControllerToken } from '@/lib/auth/local-tokens'
 import { roomActions } from '@/lib/api/room-actions'
 import { ControllerPanel } from '@/components/controller-panel'
 import { AgendaList } from '@/components/agenda-list'
+import { SegmentDialog } from '@/components/segment-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { ParticipantsPanel } from '@/components/participants-panel'
 import { ConnectionBadge } from '@/components/connection-badge'
@@ -18,6 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus } from 'lucide-react'
 import { parseMinutesInput } from '@/lib/timer/minutes'
+import type { TimerRow } from '@/lib/sync/transport'
 
 const MESSAGE_DURATIONS: { label: string; ms: number | null }[] = [
   { label: 'Until cleared', ms: null },
@@ -63,6 +65,11 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   // other in that list, so both go through a confirm dialog instead of firing immediately.
   const [pendingSwitch, setPendingSwitch] = useState<{ timerId: string; name: string } | null>(null)
   const [pendingDelete, setPendingDelete] = useState<{ timerId: string; name: string } | null>(null)
+  const [editingTimer, setEditingTimer] = useState<TimerRow | null>(null)
+  // Optimistic drag order: overrides the display order between a drop and the reorder request
+  // settling, so a poll tick landing mid-drag can't visually snap the list back. Kept independent
+  // of `state.timers`'s own reference identity — see the comment on reorderTimers below.
+  const [pendingOrder, setPendingOrder] = useState<string[] | null>(null)
 
   const copy = (which: 'code' | 'link', text: string) => {
     navigator.clipboard.writeText(text)
@@ -87,6 +94,30 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
     if (!state) return
     const name = state.timers.find((t) => t.id === timerId)?.name ?? 'this segment'
     setPendingDelete({ timerId, name })
+  }
+
+  const handleEdit = (timerId: string) => {
+    const timer = state?.timers.find((t) => t.id === timerId)
+    if (timer) setEditingTimer(timer)
+  }
+
+  // Reflects `pendingOrder` immediately after a drop, independent of whatever `state.timers`
+  // reference the transport hands back in the meantime — see the pendingOrder comment above.
+  const displayedTimers = useMemo(() => {
+    if (!state || !pendingOrder) return state?.timers ?? []
+    const byId = new Map(state.timers.map((t) => [t.id, t]))
+    return pendingOrder.map((id) => byId.get(id)).filter((t): t is TimerRow => Boolean(t))
+  }, [state, pendingOrder])
+
+  const handleReorder = (order: string[]) => {
+    setPendingOrder(order)
+    roomActions
+      .reorderTimers(roomId, token, order)
+      .then((payload) => {
+        applyPayload(payload)
+        setPendingOrder(null)
+      })
+      .catch(() => setPendingOrder(null))
   }
 
   useEffect(() => {
@@ -189,10 +220,12 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <AgendaList
-                timers={state.timers}
+                timers={displayedTimers}
                 activeTimerId={state.activeTimerId}
                 onSelect={handleSelect}
+                onEdit={handleEdit}
                 onDelete={handleDelete}
+                onReorder={handleReorder}
               />
 
               <div className="flex items-center gap-2 pt-2">
@@ -343,6 +376,19 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
               <ParticipantsPanel roomId={roomId} token={token} />
             </CardContent>
           </Card>
+
+          <SegmentDialog
+            key={editingTimer?.id ?? 'none'}
+            open={editingTimer !== null}
+            timer={editingTimer}
+            onSave={(patch) => {
+              if (editingTimer) {
+                roomActions.updateTimer(roomId, token, editingTimer.id, patch).then(applyPayload)
+              }
+              setEditingTimer(null)
+            }}
+            onCancel={() => setEditingTimer(null)}
+          />
 
           <ConfirmDialog
             open={pendingSwitch !== null}

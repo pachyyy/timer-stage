@@ -1,0 +1,1 @@
+ALTER TABLE `timers` ADD `scheduled_start_ms` integer;

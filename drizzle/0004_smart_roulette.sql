@@ -1,0 +1,1 @@
+CREATE INDEX `timers_room_position_idx` ON `timers` (`room_id`,`position`);

@@ -26,6 +26,22 @@ const del = (url: string, body: unknown) =>
     body: JSON.stringify(body),
   })
 
+const patch = (url: string, body: unknown) =>
+  request(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+export interface TimerPatch {
+  name?: string
+  speaker?: string | null
+  notes?: string | null
+  durationMs?: number
+  wrapUpMs?: number
+  scheduledStartMs?: number | null
+}
+
 export const roomActions = {
   start: (roomId: string, token: string) => post(`/api/rooms/${roomId}/actions`, { action: 'start', token }),
   pause: (roomId: string, token: string) => post(`/api/rooms/${roomId}/actions`, { action: 'pause', token }),
@@ -45,4 +61,9 @@ export const roomActions = {
     post(`/api/rooms/${roomId}/timers`, { token, ...input }),
   deleteTimer: (roomId: string, token: string, timerId: string) =>
     del(`/api/rooms/${roomId}/timers/${timerId}`, { token }),
+  updateTimer: (roomId: string, token: string, timerId: string, input: TimerPatch) =>
+    patch(`/api/rooms/${roomId}/timers/${timerId}`, { token, ...input }),
+  /** `order` is the room's timer ids in their new top-to-bottom order. */
+  reorderTimers: (roomId: string, token: string, order: string[]) =>
+    patch(`/api/rooms/${roomId}/timers`, { token, order }),
 }

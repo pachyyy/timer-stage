@@ -19,6 +19,9 @@ export interface TimerRow {
   type: TimerType
   durationMs: number
   wrapUpMs: number
+  /** Optional absolute wall-clock start this segment is scheduled for. Informational only — it
+   * drives the ahead/behind-schedule readout, never an automatic start. */
+  scheduledStartMs: number | null
 }
 
 export interface RoomStatePayload {

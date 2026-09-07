@@ -25,6 +25,7 @@ export async function loadRoomStatePayload(roomId: string): Promise<RoomStatePay
     type: t.type,
     durationMs: t.durationMs,
     wrapUpMs: t.wrapUpMs,
+    scheduledStartMs: t.scheduledStartMs,
   }))
 
   return {

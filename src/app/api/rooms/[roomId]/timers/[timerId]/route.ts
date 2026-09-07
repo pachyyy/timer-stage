@@ -41,6 +41,9 @@ export async function PATCH(
   if (Number.isFinite(body.durationMs)) patch.durationMs = body.durationMs
   if (Number.isFinite(body.wrapUpMs)) patch.wrapUpMs = body.wrapUpMs
   if (Number.isFinite(body.position)) patch.position = body.position
+  if (Number.isFinite(body.scheduledStartMs) || body.scheduledStartMs === null) {
+    patch.scheduledStartMs = body.scheduledStartMs
+  }
 
   await db
     .update(timers)

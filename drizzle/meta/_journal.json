@@ -22,6 +22,20 @@
       "when": 1788691440375,
       "tag": "0002_worried_toxin",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788700581361,
+      "tag": "0003_windy_hitman",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788700887046,
+      "tag": "0004_smart_roulette",
+      "breakpoints": true
     }
   ]
 }
