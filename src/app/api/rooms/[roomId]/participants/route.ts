@@ -1,6 +1,6 @@
 import { eq, asc } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRoomAccess } from '@/lib/auth/guard'
+import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { generateId, generateToken } from '@/lib/auth/tokens'
 import { db } from '@/lib/db/client'
 import { participants, rooms } from '@/lib/db/schema'
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ roo
 export async function GET(req: NextRequest, { params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = await params
   const token = req.nextUrl.searchParams.get('token')
-  if ((await checkRoomAccess(roomId, token)) !== 'controller') {
+  if ((await resolveRoomAccess(roomId, token)) !== 'controller') {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 

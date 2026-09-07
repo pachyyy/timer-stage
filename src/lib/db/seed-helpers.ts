@@ -5,6 +5,9 @@ import { rooms, roomState, timers } from './schema'
 export interface CreateRoomInput {
   name: string
   timers: Array<{ name: string; durationMs: number; speaker?: string; wrapUpMs?: number }>
+  /** Signed-in creator, or undefined/null for an anonymous room — the room-creation route resolves
+   * this from the session and passes it straight through; nothing else changes either way. */
+  ownerUserId?: string | null
 }
 
 /** Creates a room, its agenda, and its initial (stopped) run-state row in one place. */
@@ -21,6 +24,7 @@ export async function createRoom(input: CreateRoomInput) {
     viewerToken,
     createdAt: nowMs,
     updatedAt: nowMs,
+    ownerUserId: input.ownerUserId ?? null,
   })
 
   const timerRows = input.timers.map((t, i) => ({

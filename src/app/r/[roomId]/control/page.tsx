@@ -2,6 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { useRoom } from '@/hooks/use-room'
 import { useOwnRole } from '@/hooks/use-own-role'
@@ -14,6 +15,8 @@ import { SegmentDialog } from '@/components/segment-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { ParticipantsPanel } from '@/components/participants-panel'
 import { ConnectionBadge } from '@/components/connection-badge'
+import { AuthButtons } from '@/components/auth-buttons'
+import { MissingToken } from '@/components/missing-token'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -41,12 +44,21 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
     return getControllerToken(roomId) ?? ''
   }, [roomId, searchParams])
 
+  const { data: session, status: sessionStatus } = useSession()
   const { state, status, activeTimer, syncedNow, applyPayload } = useRoom(roomId, token)
   // Only meaningful if `token` is a promoted participant's sessionToken — stays null forever for
   // the room's own (permanent, non-revocable) controllerToken. Lets a demoted co-controller's
   // page react immediately instead of leaving live controls on screen.
   const ownRole = useOwnRole(roomId, token)
   const wasDemoted = ownRole === 'viewer'
+  // A signed-in account that owns this room controls it from ANY device, no token needed at all
+  // (the server already enforces this — see resolveRoomAccess) — this just decides what the UI
+  // shows before a token exists. Can't be known until BOTH the session and the room's own
+  // ownerUserId have loaded, so `resolvingAccess` holds the "missing token" screen back rather
+  // than flashing it at a legitimate owner while state is still loading.
+  const isOwner = Boolean(session?.user?.id) && state?.ownerUserId === session?.user?.id
+  const resolvingAccess = !token && (sessionStatus === 'loading' || (sessionStatus === 'authenticated' && !state))
+  const [claimState, setClaimState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   // Same hook the viewer screen uses, so "Showing now" can't claim a timed message is still up
   // after it has already dropped off everyone's screen, and so the operator sees the exact same
   // banner + flash treatment their audience does, without needing a second window open.
@@ -121,6 +133,20 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
       .catch(() => setPendingOrder(null))
   }
 
+  const handleClaim = async () => {
+    setClaimState('saving')
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/claim`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      })
+      setClaimState(res.ok ? 'saved' : 'error')
+    } catch {
+      setClaimState('error')
+    }
+  }
+
   useEffect(() => {
     if (!token) return
     fetch(`/api/rooms/${roomId}/share-links?token=${encodeURIComponent(token)}`)
@@ -144,16 +170,15 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
     return () => window.removeEventListener('keydown', handler)
   }, [roomId, token, state, applyPayload])
 
-  if (!token) {
+  if (resolvingAccess) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 px-4 text-center">
-        <h1 className="text-xl font-semibold">Missing controller token</h1>
-        <p className="text-sm text-muted-foreground">
-          Open this room using the controller link you received when you created it.
-        </p>
+      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 text-center">
+        <p className="text-muted-foreground">Loading…</p>
       </main>
     )
   }
+
+  if (!token && !isOwner) return <MissingToken />
 
   if (wasDemoted) {
     return (
@@ -174,18 +199,20 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-4 py-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
-          <h1 className="text-xl font-semibold">Controller</h1>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md shrink-0" />
+          <h1 className="shrink-0 text-xl font-semibold">Controller</h1>
+          {state && <span className="truncate text-sm text-muted-foreground">— {state.name}</span>}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Button asChild variant="outline" size="sm">
             <a href={`/r/${roomId}/history`}>
               <History className="size-3.5" /> History
             </a>
           </Button>
           <ConnectionBadge status={status} />
+          <AuthButtons />
         </div>
       </div>
 
@@ -193,6 +220,19 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
         <p className="text-muted-foreground">Loading room…</p>
       ) : (
         <>
+          {session?.user?.id && state.ownerUserId === null && claimState !== 'saved' && (
+            <div className="flex items-center justify-between gap-3 rounded-lg border bg-accent/40 px-4 py-2.5 text-sm">
+              <span>
+                {claimState === 'error'
+                  ? "Couldn't save this room — you need the room's original controller link, not a granted-access one."
+                  : 'Save this room to your account for cross-device control and history.'}
+              </span>
+              <Button size="sm" variant="outline" onClick={handleClaim} disabled={claimState === 'saving'}>
+                {claimState === 'saving' ? 'Saving…' : 'Save'}
+              </Button>
+            </div>
+          )}
+
           {liveMessage && (
             <div
               className={`rounded-lg px-4 py-3 text-center text-lg font-semibold text-black transition-colors duration-200 ${

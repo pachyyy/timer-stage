@@ -1,6 +1,6 @@
 import { eq, asc } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRoomAccess } from '@/lib/auth/guard'
+import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
 import { timers } from '@/lib/db/schema'
 import { generateId } from '@/lib/auth/tokens'
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ roo
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: 'invalid body' }, { status: 400 })
 
-  const access = await checkRoomAccess(roomId, body.token)
+  const access = await resolveRoomAccess(roomId, body.token)
   if (access !== 'controller') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
   const existing = await db.select().from(timers).where(eq(timers.roomId, roomId))
@@ -64,7 +64,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ro
     return NextResponse.json({ error: 'invalid body' }, { status: 400 })
   }
 
-  const access = await checkRoomAccess(roomId, body.token)
+  const access = await resolveRoomAccess(roomId, body.token)
   if (access !== 'controller') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
   const order: unknown[] = body.order

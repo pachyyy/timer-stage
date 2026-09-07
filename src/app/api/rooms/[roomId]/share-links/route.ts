@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRoomAccess } from '@/lib/auth/guard'
+import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
 import { rooms } from '@/lib/db/schema'
 
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ room
   const { roomId } = await params
   const token = req.nextUrl.searchParams.get('token')
 
-  const access = await checkRoomAccess(roomId, token)
+  const access = await resolveRoomAccess(roomId, token)
   if (access !== 'controller') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
   const [room] = await db.select().from(rooms).where(eq(rooms.id, roomId))

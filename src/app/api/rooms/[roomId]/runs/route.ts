@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRoomAccess } from '@/lib/auth/guard'
+import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { listRuns } from '@/lib/db/run-log'
 
 export const dynamic = 'force-dynamic'
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ room
   const { roomId } = await params
   const token = req.nextUrl.searchParams.get('token')
 
-  const access = await checkRoomAccess(roomId, token)
+  const access = await resolveRoomAccess(roomId, token)
   if (access !== 'controller') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
   const runs = await listRuns(roomId)

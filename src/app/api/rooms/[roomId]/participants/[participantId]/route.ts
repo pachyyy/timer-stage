@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRoomAccess } from '@/lib/auth/guard'
+import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
 import { participants } from '@/lib/db/schema'
 
@@ -21,7 +21,7 @@ export async function DELETE(
   const { roomId, participantId } = await params
   const body = await req.json().catch(() => null)
 
-  if ((await checkRoomAccess(roomId, body?.token)) !== 'controller') {
+  if ((await resolveRoomAccess(roomId, body?.token)) !== 'controller') {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 

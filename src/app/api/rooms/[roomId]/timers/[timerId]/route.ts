@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRoomAccess } from '@/lib/auth/guard'
+import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
 import { timers, roomState } from '@/lib/db/schema'
 import { bumpVersion, loadRoomStatePayload } from '@/lib/db/room-state'
@@ -10,7 +10,7 @@ import type { RoomStatePayload } from '@/lib/sync/transport'
 export const dynamic = 'force-dynamic'
 
 async function requireController(roomId: string, token: unknown) {
-  return checkRoomAccess(roomId, typeof token === 'string' ? token : null)
+  return resolveRoomAccess(roomId, typeof token === 'string' ? token : null)
 }
 
 /** Bumps version (so every connected client is guaranteed to notice — see bumpVersion's doc

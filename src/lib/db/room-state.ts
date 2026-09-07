@@ -1,6 +1,6 @@
 import { eq, asc, sql } from 'drizzle-orm'
 import { db } from './client'
-import { roomState, timers } from './schema'
+import { roomState, rooms, timers } from './schema'
 import type { RoomStatePayload, TimerRow } from '@/lib/sync/transport'
 import * as TimerModel from '@/lib/timer/model'
 import type { RunState } from '@/lib/timer/model'
@@ -10,6 +10,11 @@ import { closeRun, ensureOpenRun, logEvent, type RunEventDraft } from './run-log
 export async function loadRoomStatePayload(roomId: string): Promise<RoomStatePayload | null> {
   const [state] = await db.select().from(roomState).where(eq(roomState.roomId, roomId))
   if (!state) return null
+
+  const [room] = await db
+    .select({ name: rooms.name, ownerUserId: rooms.ownerUserId })
+    .from(rooms)
+    .where(eq(rooms.id, roomId))
 
   const timerRows = await db
     .select()
@@ -31,6 +36,8 @@ export async function loadRoomStatePayload(roomId: string): Promise<RoomStatePay
 
   return {
     version: state.version,
+    name: room?.name ?? 'Untitled event',
+    ownerUserId: room?.ownerUserId ?? null,
     activeTimerId: state.activeTimerId,
     status: state.status,
     startedAtMs: state.startedAtMs,

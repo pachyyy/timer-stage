@@ -29,6 +29,13 @@ export interface RoomStatePayload {
    * this is what prevents a delayed/out-of-order message from resurrecting stale state and
    * un-starting a live timer on stage. */
   version: number
+  /** The event/room name, set at creation. There's no rename feature yet, so this is static for
+   * the room's lifetime — included so the controller can show it next to "Controller" in the
+   * header without a separate fetch. */
+  name: string
+  /** The signed-in account that owns this room, or null for an anonymous room. Drives the
+   * "Save this room to your account" claim prompt — see src/app/api/rooms/[roomId]/claim. */
+  ownerUserId: string | null
   activeTimerId: string | null
   status: 'stopped' | 'running' | 'paused'
   startedAtMs: number | null

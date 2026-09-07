@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, Trash2 } from 'lucide-react'
 import { setControllerToken } from '@/lib/auth/local-tokens'
 import { parseMinutesInput } from '@/lib/timer/minutes'
+import { AuthButtons } from '@/components/auth-buttons'
 
 interface DraftTimer {
   name: string
@@ -69,6 +70,10 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center gap-6 px-4 py-12">
+      <div className="flex justify-end">
+        <AuthButtons />
+      </div>
+
       <div className="text-center">
         <div className="flex items-center justify-center gap-2">
           <Image src="/cue.svg" alt="" width={36} height={36} unoptimized className="rounded-md" />

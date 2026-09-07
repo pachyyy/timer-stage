@@ -2,16 +2,26 @@ import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlit
 
 /**
  * Rooms are the top-level share unit: one controller token (read/write) and one viewer token
- * (read-only) per room. No user accounts in v1 — see src/lib/auth/tokens.ts.
+ * (read-only) per room — the original, permanent, anonymous-friendly credentials, unchanged by
+ * accounts. `ownerUserId` is purely additive: creating or claiming a room as a signed-in user
+ * links it to that account for cross-device control and a cross-room "My Rooms" history view,
+ * but the token paths above keep working exactly as before whether or not a room has an owner.
  */
-export const rooms = sqliteTable('rooms', {
-  id: text('id').primaryKey(), // short share code, e.g. "K3F9QZ"
-  name: text('name').notNull(),
-  controllerToken: text('controller_token').notNull(),
-  viewerToken: text('viewer_token').notNull(),
-  createdAt: integer('created_at').notNull(),
-  updatedAt: integer('updated_at').notNull(),
-})
+export const rooms = sqliteTable(
+  'rooms',
+  {
+    id: text('id').primaryKey(), // short share code, e.g. "K3F9QZ"
+    name: text('name').notNull(),
+    controllerToken: text('controller_token').notNull(),
+    viewerToken: text('viewer_token').notNull(),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+    /** Null for anonymous rooms. `set null` on account deletion so removing an account never
+     * destroys a live room mid-show — it just reverts to anonymous/token-only access. */
+    ownerUserId: text('owner_user_id').references(() => users.id, { onDelete: 'set null' }),
+  },
+  (table) => [index('rooms_owner_idx').on(table.ownerUserId)],
+)
 
 /**
  * One row per timer in a room's agenda. `type` is a column (not a separate table) so adding
@@ -178,6 +188,61 @@ export const participants = sqliteTable('participants', {
   joinedAt: integer('joined_at').notNull(),
 })
 
+/**
+ * The four tables below are Auth.js's own expected shape for `@auth/drizzle-adapter`'s SQLite
+ * adapter (table/column names and types hand-matched against its `DefaultSQLiteSchema` type, not
+ * imported from the adapter itself — this keeps drizzle-kit's schema introspection free of any
+ * adapter runtime code). Naming intentionally follows Auth.js's own camelCase/singular convention
+ * rather than this file's snake_case-table plural style — matching the adapter's expectations
+ * exactly here is worth more than internal consistency, since a self-invented column map is one
+ * more thing to keep in sync and debug. See src/auth.ts for how these wire into NextAuth().
+ */
+export const users = sqliteTable('user', {
+  id: text('id').primaryKey(),
+  name: text('name'),
+  email: text('email').unique(),
+  emailVerified: integer('emailVerified', { mode: 'timestamp_ms' }),
+  image: text('image'),
+})
+
+export const accounts = sqliteTable(
+  'account',
+  {
+    userId: text('userId')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(),
+    provider: text('provider').notNull(),
+    providerAccountId: text('providerAccountId').notNull(),
+    refresh_token: text('refresh_token'),
+    access_token: text('access_token'),
+    expires_at: integer('expires_at'),
+    token_type: text('token_type'),
+    scope: text('scope'),
+    id_token: text('id_token'),
+    session_state: text('session_state'),
+  },
+  (table) => [primaryKey({ columns: [table.provider, table.providerAccountId] })],
+)
+
+export const sessions = sqliteTable('session', {
+  sessionToken: text('sessionToken').primaryKey(),
+  userId: text('userId')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  expires: integer('expires', { mode: 'timestamp_ms' }).notNull(),
+})
+
+export const verificationTokens = sqliteTable(
+  'verificationToken',
+  {
+    identifier: text('identifier').notNull(),
+    token: text('token').notNull(),
+    expires: integer('expires', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.identifier, table.token] })],
+)
+
 export type Room = typeof rooms.$inferSelect
 export type NewRoom = typeof rooms.$inferInsert
 export type Timer = typeof timers.$inferSelect
@@ -190,3 +255,4 @@ export type Run = typeof runs.$inferSelect
 export type NewRun = typeof runs.$inferInsert
 export type RunEvent = typeof runEvents.$inferSelect
 export type NewRunEvent = typeof runEvents.$inferInsert
+export type User = typeof users.$inferSelect

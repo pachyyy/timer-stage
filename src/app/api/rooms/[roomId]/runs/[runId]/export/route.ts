@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRoomAccess } from '@/lib/auth/guard'
+import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
 import { rooms } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
@@ -26,7 +26,7 @@ export async function GET(
   const token = req.nextUrl.searchParams.get('token')
   const tzOffsetMinutes = Number(req.nextUrl.searchParams.get('tz') ?? '0') || 0
 
-  const access = await checkRoomAccess(roomId, token)
+  const access = await resolveRoomAccess(roomId, token)
   if (access !== 'controller') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
   const loaded = await loadRun(roomId, runId)

@@ -20,3 +20,21 @@ export function getControllerToken(roomId: string): string | null {
     return null
   }
 }
+
+/** Every room this browser holds a controller token for — the raw material for the "import your
+ * rooms" prompt on /my-rooms after signing in. Rooms already linked to an account (or belonging
+ * to someone else) simply fail their claim attempt server-side; this list is just what to try. */
+export function listControllerTokens(): { roomId: string; token: string }[] {
+  try {
+    const out: { roomId: string; token: string }[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (!key?.startsWith(PREFIX)) continue
+      const token = localStorage.getItem(key)
+      if (token) out.push({ roomId: key.slice(PREFIX.length), token })
+    }
+    return out
+  } catch {
+    return []
+  }
+}

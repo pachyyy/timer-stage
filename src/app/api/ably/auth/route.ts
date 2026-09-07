@@ -1,6 +1,6 @@
 import * as Ably from 'ably'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRoomAccess } from '@/lib/auth/guard'
+import { resolveRoomAccess } from '@/lib/auth/session-guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   if (!roomId) return NextResponse.json({ error: 'roomId required' }, { status: 400 })
   if (!clientId) return NextResponse.json({ error: 'clientId required' }, { status: 400 })
 
-  const access = await checkRoomAccess(roomId, token)
+  const access = await resolveRoomAccess(roomId, token)
   if (access === 'none') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
   const apiKey = process.env.ABLY_API_KEY
