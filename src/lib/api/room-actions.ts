@@ -57,6 +57,9 @@ export const roomActions = {
     post(`/api/rooms/${roomId}/actions`, { action: 'message', token, text, durationMs }),
   clearMessage: (roomId: string, token: string) =>
     post(`/api/rooms/${roomId}/actions`, { action: 'message', token, text: null, durationMs: null }),
+  /** Archives the current run and stops the timer. The agenda stays — the next 'start' opens a
+   * fresh run, so the same show can be run again. */
+  endShow: (roomId: string, token: string) => post(`/api/rooms/${roomId}/actions`, { action: 'end', token }),
   addTimer: (roomId: string, token: string, input: { name: string; durationMs: number }) =>
     post(`/api/rooms/${roomId}/timers`, { token, ...input }),
   deleteTimer: (roomId: string, token: string, timerId: string) =>

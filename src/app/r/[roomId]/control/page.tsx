@@ -17,7 +17,7 @@ import { ConnectionBadge } from '@/components/connection-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus } from 'lucide-react'
+import { Plus, History } from 'lucide-react'
 import { parseMinutesInput } from '@/lib/timer/minutes'
 import type { TimerRow } from '@/lib/sync/transport'
 
@@ -70,6 +70,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   // settling, so a poll tick landing mid-drag can't visually snap the list back. Kept independent
   // of `state.timers`'s own reference identity — see the comment on reorderTimers below.
   const [pendingOrder, setPendingOrder] = useState<string[] | null>(null)
+  const [pendingEndShow, setPendingEndShow] = useState(false)
 
   const copy = (which: 'code' | 'link', text: string) => {
     navigator.clipboard.writeText(text)
@@ -178,7 +179,14 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
           <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           <h1 className="text-xl font-semibold">Controller</h1>
         </div>
-        <ConnectionBadge status={status} />
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <a href={`/r/${roomId}/history`}>
+              <History className="size-3.5" /> History
+            </a>
+          </Button>
+          <ConnectionBadge status={status} />
+        </div>
       </div>
 
       {!state ? (
@@ -207,11 +215,13 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
             syncedNow={syncedNow}
             isRunning={state.status === 'running'}
             blackout={state.blackout}
+            hasOpenRun={state.currentRunId !== null}
             onStart={() => roomActions.start(roomId, token).then(applyPayload)}
             onPause={() => roomActions.pause(roomId, token).then(applyPayload)}
             onReset={() => roomActions.reset(roomId, token).then(applyPayload)}
             onAdjust={(delta) => roomActions.adjust(roomId, token, delta).then(applyPayload)}
             onBlackoutChange={(v) => roomActions.blackout(roomId, token, v).then(applyPayload)}
+            onEndShow={() => setPendingEndShow(true)}
           />
 
           <Card>
@@ -388,6 +398,18 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
               setEditingTimer(null)
             }}
             onCancel={() => setEditingTimer(null)}
+          />
+
+          <ConfirmDialog
+            open={pendingEndShow}
+            title="End the show?"
+            description="This archives the current run to History and stops the timer. Your agenda stays exactly as it is — you can run it again, and it'll be recorded as a new run."
+            confirmLabel="End show"
+            onConfirm={() => {
+              roomActions.endShow(roomId, token).then(applyPayload)
+              setPendingEndShow(false)
+            }}
+            onCancel={() => setPendingEndShow(false)}
           />
 
           <ConfirmDialog

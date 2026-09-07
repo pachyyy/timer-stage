@@ -66,9 +66,92 @@ export const roomState = sqliteTable(
     /** Absolute expiry; null means "until the controller clears it". Clients derive the hide
      * themselves by comparing against their synced clock — no server-side timer involved. */
     messageExpiresAtMs: integer('message_expires_at_ms'),
+    /** The open run, or null when no show is in progress — see src/lib/db/run-log.ts. Deliberately
+     * NOT a foreign key: it's written in the same statement as the version bump, and an FK would
+     * force an insert-then-update ordering dance in openRun for no real benefit. */
+    currentRunId: text('current_run_id'),
     updatedAt: integer('updated_at').notNull(),
   },
   (table) => [primaryKey({ columns: [table.roomId] })],
+)
+
+/**
+ * One row per show session ("run"). A run opens lazily on the first 'start' after the room has no
+ * open run, and closes on an explicit "End show" (or, if the operator forgets, the next 'start'
+ * more than STALE_RUN_MS later rolls it over — see src/lib/history/rollover.ts). The agenda
+ * deliberately survives a run closing: the same show can be run again, producing a new run.
+ */
+export const runs = sqliteTable(
+  'runs',
+  {
+    id: text('id').primaryKey(),
+    roomId: text('room_id')
+      .notNull()
+      .references(() => rooms.id, { onDelete: 'cascade' }),
+    /** 1-based, per room — what the History list labels "Run 3". */
+    seq: integer('seq').notNull(),
+    /** Snapshot of rooms.name when the run began, so a later rename doesn't relabel old runs. */
+    label: text('label').notNull(),
+    startedAtMs: integer('started_at_ms').notNull(),
+    /** Null while the run is open. Set by "End show", or by the stale-run rollover. */
+    endedAtMs: integer('ended_at_ms'),
+    /** True when closed by rollover rather than an explicit End show — the report renders this as
+     * "abandoned", since its final segment has no real end timestamp. */
+    abandoned: integer('abandoned', { mode: 'boolean' }).notNull().default(false),
+  },
+  (table) => [index('runs_room_started_idx').on(table.roomId, table.startedAtMs)],
+)
+
+/**
+ * Append-only log of every run-state transition, stamped with the SAME server nowMs that produced
+ * the transition (see mutateRunState) — so the log and the live anchor state can never disagree.
+ * `seq` is an autoincrement rowid: both the primary key and the causal tiebreaker for two events
+ * landing in the same millisecond, at zero extra query cost.
+ */
+export const runEvents = sqliteTable(
+  'run_events',
+  {
+    seq: integer('seq').primaryKey({ autoIncrement: true }),
+    runId: text('run_id')
+      .notNull()
+      .references(() => runs.id, { onDelete: 'cascade' }),
+    atMs: integer('at_ms').notNull(),
+    type: text('type', {
+      enum: [
+        'start',
+        'resume',
+        'pause',
+        'reset',
+        'select',
+        'adjust',
+        'blackout_on',
+        'blackout_off',
+        'message',
+        'run_end',
+      ],
+    }).notNull(),
+    /**
+     * The segment that was ACTIVE at the instant of this event — i.e. the one `elapsedMs` and
+     * `plannedDurationMs` below describe. For 'select' that's the OUTGOING segment; the incoming
+     * one is `toTimerId`. Getting this backwards is the easiest subtle bug this log could have.
+     */
+    timerId: text('timer_id'),
+    toTimerId: text('to_timer_id'),
+    /** Snapshot of the active segment's name, so a later rename/delete can't rewrite history. */
+    timerName: text('timer_name'),
+    /** The active segment's configured durationMs at this instant. The report reads this off the
+     * FIRST 'start'/'resume' for that segment in the run — that is what "planned" means when the
+     * duration is edited mid-show. */
+    plannedDurationMs: integer('planned_duration_ms'),
+    scheduledStartMs: integer('scheduled_start_ms'),
+    /** Total elapsed on `timerId` at the instant of the event, from the PRE-transition RunState. */
+    elapsedMs: integer('elapsed_ms'),
+    /** Signed delta for 'adjust'; null otherwise. */
+    deltaMs: integer('delta_ms'),
+    /** Free text: the message body for 'message'; null otherwise. */
+    note: text('note'),
+  },
+  (table) => [index('run_events_run_seq_idx').on(table.runId, table.seq)],
 )
 
 /**
@@ -103,3 +186,7 @@ export type RoomState = typeof roomState.$inferSelect
 export type NewRoomState = typeof roomState.$inferInsert
 export type Participant = typeof participants.$inferSelect
 export type NewParticipant = typeof participants.$inferInsert
+export type Run = typeof runs.$inferSelect
+export type NewRun = typeof runs.$inferInsert
+export type RunEvent = typeof runEvents.$inferSelect
+export type NewRunEvent = typeof runEvents.$inferInsert

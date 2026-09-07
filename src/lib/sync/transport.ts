@@ -42,6 +42,9 @@ export interface RoomStatePayload {
   /** Absolute expiry, or null for "until cleared". Viewers derive the hide from their own synced
    * clock rather than waiting for a server-sent expiry event. */
   messageExpiresAtMs: number | null
+  /** The open run's id, or null when no show is in progress. Drives whether "End show" is enabled
+   * and whether run-state transitions get logged at all — see src/lib/db/run-log.ts. */
+  currentRunId: string | null
   timers: TimerRow[]
   updatedAtMs: number
 }

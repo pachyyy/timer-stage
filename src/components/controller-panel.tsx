@@ -7,7 +7,7 @@ import { phaseFor, type TimerPhase } from '@/lib/timer/phase'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Pause, Play, RotateCcw, Minus, Plus } from 'lucide-react'
+import { Pause, Play, RotateCcw, Minus, Plus, Square } from 'lucide-react'
 
 const PHASE_CLASS: Record<TimerPhase, string> = {
   normal: 'text-foreground',
@@ -25,11 +25,13 @@ export function ControllerPanel({
   syncedNow,
   isRunning,
   blackout,
+  hasOpenRun,
   onStart,
   onPause,
   onReset,
   onAdjust,
   onBlackoutChange,
+  onEndShow,
 }: {
   timerName: string | null
   runState: RunState
@@ -38,11 +40,15 @@ export function ControllerPanel({
   syncedNow: () => number
   isRunning: boolean
   blackout: boolean
+  /** Whether a run is currently open — see RoomStatePayload.currentRunId. Gates "End show" so
+   * there's nothing to archive before the first Start of a fresh agenda. */
+  hasOpenRun: boolean
   onStart: () => void
   onPause: () => void
   onReset: () => void
   onAdjust: (deltaMs: number) => void
   onBlackoutChange: (v: boolean) => void
+  onEndShow: () => void
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const lastPhaseRef = useRef<TimerPhase | null>(null)
@@ -119,9 +125,20 @@ export function ControllerPanel({
         </Button>
       </div>
 
-      <div className="flex items-center gap-2 pt-2">
-        <Switch id="blackout" checked={blackout} onCheckedChange={onBlackoutChange} />
-        <Label htmlFor="blackout">Blackout viewer screen</Label>
+      <div className="flex items-center justify-between gap-2 pt-2">
+        <div className="flex items-center gap-2">
+          <Switch id="blackout" checked={blackout} onCheckedChange={onBlackoutChange} />
+          <Label htmlFor="blackout">Blackout viewer screen</Label>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onEndShow}
+          disabled={!hasOpenRun}
+          className="text-destructive hover:text-destructive"
+        >
+          <Square className="size-3.5" /> End show
+        </Button>
       </div>
 
       <p className="text-xs text-muted-foreground">
