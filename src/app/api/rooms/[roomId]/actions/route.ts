@@ -1,7 +1,11 @@
+import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveRoomAccess } from '@/lib/auth/session-guard'
+import { db } from '@/lib/db/client'
+import { rooms } from '@/lib/db/schema'
 import { mutateRunState, TimerModel } from '@/lib/db/room-state'
 import { publishRoomState } from '@/lib/sync/publish'
+import { canStartRun } from '@/lib/entitlements/gate'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +40,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ roo
   const access = await resolveRoomAccess(roomId, body.token)
   if (access !== 'controller') {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+  }
+
+  // Checked here, before mutateRunState, rather than inside its closure — that closure is a pure
+  // function of (current state, now), with no room for an async quota/lock lookup. See
+  // canStartRun's doc comment for why this has to cover the automatic stale-rollover path too,
+  // not just an explicit "End show".
+  if (body.action === 'start') {
+    const [room] = await db.select({ ownerUserId: rooms.ownerUserId }).from(rooms).where(eq(rooms.id, roomId)).limit(1)
+    const gate = await canStartRun(room?.ownerUserId ?? null, roomId)
+    if (!gate.allowed) {
+      return NextResponse.json({ error: gate.reason ?? 'This room cannot be started again' }, { status: 402 })
+    }
   }
 
   const payload = await mutateRunState(roomId, (current, nowMs) => {

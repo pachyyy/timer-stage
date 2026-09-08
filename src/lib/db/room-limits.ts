@@ -1,25 +1,32 @@
-import { and, count, eq, isNull } from 'drizzle-orm'
+import { count, eq } from 'drizzle-orm'
 import { db } from './client'
-import { participants, rooms, users } from './schema'
+import { participants, roomState, runs, users } from './schema'
 
 /**
- * The three raw queries the entitlements gate (src/lib/entitlements/gate.ts) needs, kept here
- * rather than inline in the gate — this file is what touches the DB, the gate is what turns a
- * count into an allow/deny decision. Nothing here knows what a "plan" is.
+ * The raw queries the entitlements gate (src/lib/entitlements/gate.ts) needs, kept here rather
+ * than inline in the gate — this file is what touches the DB, the gate is what turns a count (or
+ * a quota balance, see quota.ts) into an allow/deny decision. Nothing here knows what a "plan" or
+ * a "credit" is.
  */
-
-/** "Active" is defined here: not archived. See rooms.archivedAt's doc comment in schema.ts. */
-export async function countActiveOwnedRooms(ownerUserId: string): Promise<number> {
-  const [row] = await db
-    .select({ n: count() })
-    .from(rooms)
-    .where(and(eq(rooms.ownerUserId, ownerUserId), isNull(rooms.archivedAt)))
-  return row?.n ?? 0
-}
 
 export async function countParticipants(roomId: string): Promise<number> {
   const [row] = await db.select({ n: count() }).from(participants).where(eq(participants.roomId, roomId))
   return row?.n ?? 0
+}
+
+/** True while a run is currently open — resuming/restarting within it is always fine, whatever
+ * the room's single-use status (see canStartRun in gate.ts). */
+export async function hasOpenRun(roomId: string): Promise<boolean> {
+  const [row] = await db.select({ currentRunId: roomState.currentRunId }).from(roomState).where(eq(roomState.roomId, roomId)).limit(1)
+  return !!row?.currentRunId
+}
+
+/** True if this room has EVER had a run (open or closed) — the signal canStartRun uses to tell
+ * "this room's first run" (always allowed) from "this room already had its one event" (blocked
+ * for a quota-governed room once that run has closed). */
+export async function hasAnyRun(roomId: string): Promise<boolean> {
+  const [row] = await db.select({ n: count() }).from(runs).where(eq(runs.roomId, roomId))
+  return (row?.n ?? 0) > 0
 }
 
 /**

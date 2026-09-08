@@ -19,13 +19,10 @@ export const rooms = sqliteTable(
     /** Null for anonymous rooms. `set null` on account deletion so removing an account never
      * destroys a live room mid-show — it just reverts to anonymous/token-only access. */
     ownerUserId: text('owner_user_id').references(() => users.id, { onDelete: 'set null' }),
-    /** Null = active. Set by the owner from /my-rooms (POST /api/rooms/[roomId]/archive) — this
-     * is what "active room" means for the entitlements plan-limit gate (see
-     * src/lib/entitlements/gate.ts): an owner's active-room count is
-     * `ownerUserId = me AND archivedAt IS NULL`. Purely a bookkeeping flag, not a lock — an
-     * archived room's agenda, history, and viewer link keep working exactly as before;
-     * archiving only removes it from that count. Anonymous rooms (no owner) are never counted
-     * against any cap in the first place, so this is meaningless for them either way. */
+    /** Null = active. Set by the owner from /my-rooms (POST /api/rooms/[roomId]/archive). Purely
+     * a declutter flag now — a room's credit is spent once, at creation (see accountQuota below),
+     * so archiving doesn't free anything up or affect any limit. It predates the quota model,
+     * back when it fed an active-room plan cap; kept for the /my-rooms "hide old rooms" UI. */
     archivedAt: integer('archived_at'),
   },
   (table) => [
@@ -254,6 +251,48 @@ export const verificationTokens = sqliteTable(
   (table) => [primaryKey({ columns: [table.identifier, table.token] })],
 )
 
+/**
+ * The quota/wallet model (see src/lib/db/quota.ts and src/lib/entitlements/gate.ts): one row per
+ * signed-in account, the live spendable balance. Created lazily on first touch with a starter
+ * balance — there's no separate "sign up" step to hook. Lives HERE (stagetimer's own DB), not in
+ * the shared pachy-core control-plane DB, deliberately: consuming a unit has to happen atomically
+ * with the room/participant row it's paying for, which only works if the counter and that row
+ * share a database and a single conditional UPDATE. The panel tops this up by calling stagetimer's
+ * own admin API (see src/app/api/admin/v1/quota/route.ts), not by writing here directly.
+ */
+export const accountQuota = sqliteTable('account_quota', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  roomQuota: integer('room_quota').notNull().default(0),
+  userQuota: integer('user_quota').notNull().default(0),
+  updatedAt: integer('updated_at').notNull(),
+})
+
+/**
+ * Append-only. Every grant (an admin topping up a balance) and every consumption (a room created,
+ * a participant joined beyond the free 3) writes one row here — same "why is the number what it
+ * is" rationale as the panel's own audit_log. `roomId` is set for a consumption tied to a specific
+ * room; null for a grant (which isn't about any one room) or for the room-creation consumption
+ * itself (the room doesn't exist yet at the instant its own credit is spent — see canCreateRoom).
+ */
+export const quotaLedger = sqliteTable(
+  'quota_ledger',
+  {
+    seq: integer('seq').primaryKey({ autoIncrement: true }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    atMs: integer('at_ms').notNull(),
+    kind: text('kind', { enum: ['room_grant', 'user_grant', 'room_consume', 'user_consume'] }).notNull(),
+    /** Positive for a grant, negative for a consumption. */
+    delta: integer('delta').notNull(),
+    roomId: text('room_id').references(() => rooms.id, { onDelete: 'set null' }),
+    note: text('note'),
+  },
+  (table) => [index('quota_ledger_user_idx').on(table.userId)],
+)
+
 export type Room = typeof rooms.$inferSelect
 export type NewRoom = typeof rooms.$inferInsert
 export type Timer = typeof timers.$inferSelect
@@ -267,3 +306,5 @@ export type NewRun = typeof runs.$inferInsert
 export type RunEvent = typeof runEvents.$inferSelect
 export type NewRunEvent = typeof runEvents.$inferInsert
 export type User = typeof users.$inferSelect
+export type AccountQuota = typeof accountQuota.$inferSelect
+export type QuotaLedgerEntry = typeof quotaLedger.$inferSelect

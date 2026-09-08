@@ -10,12 +10,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { listControllerTokens } from '@/lib/auth/local-tokens'
 import type { OwnedRoomSummary } from '@/lib/db/my-rooms'
-import type { CueLimits } from '@/lib/entitlements/types'
 
-interface MyEntitlement {
-  planKey: string
-  planName: string
-  limits: CueLimits
+interface MyQuota {
+  isPermanent: boolean
+  roomQuota: number | null
+  userQuota: number | null
 }
 
 /**
@@ -24,14 +23,14 @@ interface MyEntitlement {
  * yet. Import is deliberately a reviewable button press, not silent on sign-in — a controller
  * link is routinely forwarded, so the person holding it in localStorage is often not the owner.
  *
- * Also where a room gets archived — the only thing that removes it from this account's
- * active-room count against its plan (see rooms.archivedAt in schema.ts). Archiving never touches
- * the room itself: its agenda, history, and viewer link keep working.
+ * Also where a room gets archived — purely a declutter flag now (see rooms.archivedAt's doc
+ * comment in schema.ts); it doesn't free up any quota. Archiving never touches the room itself:
+ * its agenda, history, and viewer link keep working.
  */
 export default function MyRoomsPage() {
   const { status } = useSession()
   const [rooms, setRooms] = useState<OwnedRoomSummary[] | null>(null)
-  const [entitlement, setEntitlement] = useState<MyEntitlement | null>(null)
+  const [quota, setQuota] = useState<MyQuota | null>(null)
   const [importing, setImporting] = useState(false)
   const [archivingId, setArchivingId] = useState<string | null>(null)
 
@@ -42,8 +41,8 @@ export default function MyRoomsPage() {
       .catch(() => setRooms([]))
     fetch('/api/me/entitlement')
       .then((res) => (res.ok ? res.json() : null))
-      .then(setEntitlement)
-      .catch(() => setEntitlement(null))
+      .then(setQuota)
+      .catch(() => setQuota(null))
   }, [])
 
   useEffect(() => {
@@ -91,8 +90,6 @@ export default function MyRoomsPage() {
     }
   }
 
-  const cap = entitlement?.limits.activeRooms ?? null
-
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8">
       <div className="flex items-center justify-between">
@@ -101,9 +98,9 @@ export default function MyRoomsPage() {
             <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
           <h1 className="text-xl font-semibold">My Rooms</h1>
-          {entitlement && (
+          {quota?.isPermanent && (
             <Badge variant="secondary" className="ml-1">
-              {entitlement.planName}
+              Permanent
             </Badge>
           )}
         </div>
@@ -118,12 +115,13 @@ export default function MyRoomsPage() {
 
       {status === 'authenticated' && (
         <>
-          {cap !== null && (
+          {quota && !quota.isPermanent && (
             <p className="text-xs text-muted-foreground">
-              {activeRooms.length} of {cap} active room{cap === 1 ? '' : 's'} used.{' '}
-              {activeRooms.length >= cap && (
+              {quota.roomQuota} room credit{quota.roomQuota === 1 ? '' : 's'} · {quota.userQuota} extra
+              participant credit{quota.userQuota === 1 ? '' : 's'} left.{' '}
+              {(quota.roomQuota ?? 0) <= 0 && (
                 <Link href="/pricing" className="text-primary underline-offset-4 hover:underline">
-                  See plans →
+                  Buy more →
                 </Link>
               )}
             </p>

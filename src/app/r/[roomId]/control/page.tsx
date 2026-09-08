@@ -68,6 +68,15 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   // Free-form text while editing, parsed via parseMinutesInput only when "Add" is clicked — see
   // the comment on DraftTimer.minutes in src/app/page.tsx for why this can't be a clamped number.
   const [newTimerMinutes, setNewTimerMinutes] = useState('5')
+  // Surfaces a plan-limit block (e.g. "Your Free plan allows up to 5 segments per room") — the
+  // one addTimer failure mode that's actually expected in normal use, unlike the other controller
+  // actions here which don't have a comparable everyday failure to show.
+  const [addTimerError, setAddTimerError] = useState<string | null>(null)
+  // Same idea for Start specifically: under the quota model a room can be locked after its one
+  // event (see canStartRun in src/lib/entitlements/gate.ts) — the other actions here (pause,
+  // reset, adjust, blackout) have no comparable everyday failure, so they're left as plain
+  // fire-and-forget.
+  const [startError, setStartError] = useState<string | null>(null)
   const [viewerToken, setViewerToken] = useState<string | null>(null)
   const [copied, setCopied] = useState<'code' | 'link' | null>(null)
   const [messageDraft, setMessageDraft] = useState('')
@@ -246,6 +255,12 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
             </div>
           )}
 
+          {startError && (
+            <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {startError}
+            </p>
+          )}
+
           <ControllerPanel
             timerName={activeTimer?.name ?? null}
             runState={{
@@ -259,7 +274,13 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
             isRunning={state.status === 'running'}
             blackout={state.blackout}
             hasOpenRun={state.currentRunId !== null}
-            onStart={() => roomActions.start(roomId, token).then(applyPayload)}
+            onStart={() => {
+              setStartError(null)
+              roomActions
+                .start(roomId, token)
+                .then(applyPayload)
+                .catch((err) => setStartError(err instanceof Error ? err.message : 'Failed to start.'))
+            }}
             onPause={() => roomActions.pause(roomId, token).then(applyPayload)}
             onReset={() => roomActions.reset(roomId, token).then(applyPayload)}
             onAdjust={(delta) => roomActions.adjust(roomId, token, delta).then(applyPayload)}
@@ -301,17 +322,23 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
                   variant="outline"
                   onClick={async () => {
                     if (!newTimerName.trim()) return
-                    const payload = await roomActions.addTimer(roomId, token, {
-                      name: newTimerName.trim(),
-                      durationMs: parseMinutesInput(newTimerMinutes) * 60_000,
-                    })
-                    applyPayload(payload)
-                    setNewTimerName('')
+                    setAddTimerError(null)
+                    try {
+                      const payload = await roomActions.addTimer(roomId, token, {
+                        name: newTimerName.trim(),
+                        durationMs: parseMinutesInput(newTimerMinutes) * 60_000,
+                      })
+                      applyPayload(payload)
+                      setNewTimerName('')
+                    } catch (err) {
+                      setAddTimerError(err instanceof Error ? err.message : 'Failed to add segment.')
+                    }
                   }}
                 >
                   <Plus className="size-4" /> Add
                 </Button>
               </div>
+              {addTimerError && <p className="text-sm text-destructive">{addTimerError}</p>}
             </CardContent>
           </Card>
 

@@ -8,7 +8,12 @@ import type { RoomStatePayload } from '@/lib/sync/transport'
 
 async function request(url: string, init: RequestInit): Promise<RoomStatePayload> {
   const res = await fetch(url, init)
-  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+  if (!res.ok) {
+    // A plan-limit block (402 — see src/lib/entitlements/gate.ts) comes back with a real,
+    // show-it-directly message in `error`. Anything else falls back to the status code.
+    const body = await res.json().catch(() => null)
+    throw new Error(typeof body?.error === 'string' ? body.error : `Request failed: ${res.status}`)
+  }
   return res.json()
 }
 

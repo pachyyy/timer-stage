@@ -57,6 +57,13 @@
       "when": 1788773696542,
       "tag": "0007_condemned_fantastic_four",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1788838797956,
+      "tag": "0008_lovely_mach_iv",
+      "breakpoints": true
     }
   ]
 }

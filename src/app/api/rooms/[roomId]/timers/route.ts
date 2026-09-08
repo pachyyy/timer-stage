@@ -2,11 +2,12 @@ import { eq, asc } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
-import { timers } from '@/lib/db/schema'
+import { rooms, timers } from '@/lib/db/schema'
 import { generateId } from '@/lib/auth/tokens'
 import { bumpVersion, loadRoomStatePayload } from '@/lib/db/room-state'
 import { publishRoomState } from '@/lib/sync/publish'
 import { isPermutation } from '@/lib/timer/reorder'
+import { canAddSegments } from '@/lib/entitlements/gate'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +31,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ roo
   if (access !== 'controller') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
   const existing = await db.select().from(timers).where(eq(timers.roomId, roomId))
+
+  const [room] = await db.select({ ownerUserId: rooms.ownerUserId }).from(rooms).where(eq(rooms.id, roomId)).limit(1)
+  const gate = await canAddSegments(room?.ownerUserId ?? null, existing.length, 1)
+  if (!gate.allowed) {
+    return NextResponse.json({ error: gate.reason ?? 'Plan limit reached' }, { status: 402 })
+  }
+
   const id = generateId()
 
   await db.insert(timers).values({

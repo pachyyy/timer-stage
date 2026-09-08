@@ -209,41 +209,63 @@ never reaches the browser), `/api/auth/[...nextauth]` (Auth.js), and `/api/me/ro
 `/api/me/live-rooms` (account-scoped, no roomId param at all — every owned room, and every owned
 room with a currently open run, respectively).
 
-### Plan limits (`src/lib/entitlements/`)
+### Pricing: prepaid quota, not subscription tiers (`src/lib/entitlements/`, `src/lib/db/quota.ts`)
 
-Cue's pricing tiers (free/mid/top/permanent) live in `03_pachy_panel`, a separate app that is the
-control plane for every Pachy product — see that repo's `docs/ARCHITECTURE.md` for the full
-design. This app only ever *reads* that database, read-only, never writes to it.
+Cue's monetization is a prepaid-credits model: a signed-in account has a `roomQuota` (room
+credits) and `userQuota` (extra-participant credits), tracked in **this app's own database**
+(`accountQuota`/`quotaLedger` in `schema.ts`), not in the shared `03_pachy_panel` control-plane DB
+(`pachy-core`). That's deliberate — see `accountQuota`'s doc comment: spending a credit has to
+happen atomically with the room/participant row it's paying for, which only works if the counter
+and that row share a database and a single conditional `UPDATE`. `pachy-core` still matters for
+exactly one thing: detecting the `permanent` plan, a hand-picked, fully-uncapped grant that
+bypasses quota entirely (see the panel's seed script). Nothing else about pricing lives there
+anymore — a signed-in account with no `permanent` grant is "on quota," full stop; there's no
+separate free/mid/top plan concept for them beyond their starter balance.
 
-- `client.ts`'s `getEntitlement(email)` resolves what plan an email is on: an active,
-  non-expired grant in the shared `pachy-core` DB, else the app's default plan (`free`). `email
-  === null` (an anonymous room has no owner) short-circuits locally to the fallback limits — no
-  network call, not an error case. Every result is cached in-process for 60s; on a DB error or
-  with `PACHY_CORE_URL` unset entirely, it serves the last cached value or `defaults.ts`'s
-  `FALLBACK_LIMITS` — **this never throws**, and deliberately never blocks a mutation on the core
-  DB's reachability, since every limit is checked at creation/join time only, never mid-show.
-- `gate.ts` turns a resolved entitlement into an allow/deny decision: `canCreateRoom`,
-  `canJoinParticipant`, `canViewHistory`, `canExportRun`. All four are a no-op (`{ allowed: true
-  }`) unless `ENTITLEMENTS_ENFORCED=true` — the kill switch **defaults to off**, so the checks can
-  ship dark and get watched against real traffic before being turned on for real.
-- **Anonymous room creation is never capped**, enforced or not — plans are resolved by email, an
-  anonymous room has none, and capping it would mean either inventing a fingerprint/IP identity or
-  requiring sign-in to create any room at all (the "free = 0 rooms" outcome the tier design
-  rejected). A free-tier room cap only ever binds once someone signs in.
-- History/export/participant limits are gated on the **room owner's** plan, not the viewer's or
-  joiner's — resolved via `src/lib/db/room-limits.ts`'s `getOwnerEmail(ownerUserId)`, which is also
-  where `countActiveOwnedRooms` and `countParticipants` live (the gate itself contains no raw
-  queries).
-- "Active room" means **not archived** — `rooms.archivedAt`, set by `POST
-  /api/rooms/[roomId]/archive` (account-owner-gated, not just any controller-token holder) and
-  surfaced on `/my-rooms`. Archiving never touches the room itself, only whether it counts against
-  the cap.
+- **The economics**: every room includes `FREE_PARTICIPANTS_PER_ROOM` (3) participants and
+  `SEGMENTS_PER_QUOTA_ROOM` (30) segments, history, and export, for free — those aren't metered.
+  What's metered is room count and participants beyond 3. A brand-new account's starter balance
+  (`quota.ts`'s `STARTER_ROOM_QUOTA` = 1, `userQuota` = 0) *is* the free tier now — this is what
+  keeps a first-time visitor able to try the product without buying anything, playing the same
+  role the old "free plan" did.
+- **`quota.ts`** is the only code that touches `accountQuota`/`quotaLedger`. `tryConsumeRoomQuota`
+  and `tryConsumeUserQuota` are a conditional atomic `UPDATE ... WHERE quota > 0`, not
+  read-then-write — that's the actual race-safety; a gate's own balance check beforehand is just a
+  friendly early message. Every successful consume or grant appends one `quotaLedger` row (mirrors
+  the panel's own `audit_log` philosophy: it's the only answer to "why is my balance what it is").
+- **`gate.ts`**: `canCreateRoom` spends 1 `roomQuota` the moment it says yes (not a pure check like
+  its siblings — see its doc comment); `canJoinParticipant` lets the first 3 through free, then
+  spends 1 `userQuota` per joiner; `canViewHistory`/`canExportRun` are just "is there a signed-in
+  owner at all"; `canAddSegments` is a flat cap (5 anonymous / 30 signed-in); `canStartRun` is the
+  single-use lock (below). All six are a no-op (`{ allowed: true }`) unless
+  `ENTITLEMENTS_ENFORCED=true` — the kill switch **defaults to off**.
+- **Anonymous room creation is never capped, quota or otherwise** — quota is an account-scoped
+  concept, an anonymous room has no account to bill, and capping it would mean requiring sign-in
+  to create any room at all (the "free = 0 rooms" outcome the pricing design has always rejected).
+  Anonymous rooms keep the old flat fallback (`defaults.ts`'s `FALLBACK_LIMITS`) for
+  segments/history/export/participants, completely unrelated to quota.
+- **"One room credit = one event"** (`canStartRun`): a signed-in, non-`permanent` room can
+  complete exactly one run. Checked in the actions route BEFORE calling `mutateRunState` (that
+  function's closure is synchronous, no room for an async quota lookup) — resuming/restarting
+  *within* a still-open run is always fine (`hasOpenRun`); this only blocks opening a genuinely NEW
+  run on a room that already closed one. It has to cover the automatic 12h-stale rollover
+  (`src/lib/history/rollover.ts`) too, not just an explicit "End show" — otherwise never clicking
+  "End show" would be a free way to dodge the lock forever.
+- "Active room" / `rooms.archivedAt` predates quota and is now just a `/my-rooms` declutter
+  flag — archiving doesn't free up or affect any credit.
 - A blocked mutation returns `402` with `{ error: "<message safe to show directly>" }` — see the
-  homepage's `createRoom`, `useParticipant`'s `join`, and `JoinGate`, which all thread that message
-  through rather than showing a generic failure.
-- `/pricing` reads live plan data via `listPublicPlans()` (excludes `permanent`, which is a manual
-  VIP/lifetime tier, not something to advertise) and links to a `mailto:` — there is no self-serve
-  checkout by design; upgrades are granted by hand in the panel's `/grants`.
+  homepage's `createRoom`, `useParticipant`'s `join`, `JoinGate`, `room-actions.ts`'s shared
+  `request()` helper, and the control page's "Add" segment / Start buttons, which all thread that
+  message through rather than showing a generic failure.
+- **`/pricing`** is flat display copy (`ROOM_PRICE`, `EXTRA_PARTICIPANT_PRICE` — edit directly when
+  a price changes) plus a WhatsApp CTA (`NEXT_PUBLIC_UPGRADE_WHATSAPP`) — there is no self-serve
+  checkout by design.
+- **Granting quota**: the panel's `/apps/cue/quota` calls this app's own
+  `POST/GET /api/admin/v1/quota` (guarded by `ADMIN_API_TOKEN`, see `src/lib/admin-api/auth.ts`) —
+  the first implemented piece of the admin-API contract from `docs/ARCHITECTURE.md` §7, built here
+  specifically because quota balances live in this app's DB, not the panel's. A grant requires the
+  email to have signed into Cue at least once (`accountQuota` is keyed on our own `userId`, not
+  email) — the route returns a clear 404 if not.
 
 ## Deploying
 
@@ -253,7 +275,12 @@ Google OAuth setup). The short version: `vercel-build` (not `build`) is what Ver
 when present, so a schema change only needs `db:generate` locally — the migration applies itself on
 deploy.
 
-Additionally for entitlements: set `PACHY_CORE_URL` / `PACHY_CORE_READONLY_TOKEN` (a read-only
-token for the panel's `pachy-core` Turso DB) and `PACHY_APP_ID=cue`. Leave `ENTITLEMENTS_ENFORCED`
-unset/`false` after deploying, watch real traffic resolve correctly, then flip it to `true` once
-confident — see `src/lib/entitlements/gate.ts`.
+Additionally for entitlements/quota:
+
+- `PACHY_CORE_URL` / `PACHY_CORE_READONLY_TOKEN` (a read-only token for the panel's `pachy-core`
+  Turso DB) and `PACHY_APP_ID=cue` — used only to detect the `permanent` bypass now.
+- `ADMIN_API_TOKEN` — a random secret (`openssl rand -base64 32`), shared with the panel's
+  `APP_TOKEN_CUE` for the same value. This is what guards `/api/admin/v1/*`; without it every
+  admin-API request 404s, and the panel's `/apps/cue/quota` can't top anyone up.
+- Leave `ENTITLEMENTS_ENFORCED` unset/`false` after deploying, watch real traffic resolve
+  correctly, then flip it to `true` once confident — see `src/lib/entitlements/gate.ts`.

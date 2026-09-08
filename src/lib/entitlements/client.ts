@@ -72,47 +72,6 @@ export function _clearEntitlementCacheForTests() {
   cache.clear()
 }
 
-export interface PublicPlan {
-  key: string
-  name: string
-  limits: CueLimits
-}
-
-// Mirrors the free/mid/top/lifetime rows in 03_pachy_panel/scripts/seed.ts, minus "permanent" —
-// that tier is for hand-picked, fully-uncapped VIP grants (see the seed script's own comment), not
-// something to advertise on a public pricing page. Served only if the core DB is unreachable, so
-// /pricing always renders something rather than an empty page.
-const FALLBACK_PUBLIC_PLANS: PublicPlan[] = [
-  { key: 'free', name: 'Free', limits: { activeRooms: 1, history: false, export: false, participantsPerRoom: 5 } },
-  { key: 'mid', name: 'Mid', limits: { activeRooms: 2, history: true, export: false, participantsPerRoom: 10 } },
-  { key: 'top', name: 'Top', limits: { activeRooms: 5, history: true, export: true, participantsPerRoom: 20 } },
-  { key: 'lifetime', name: 'Lifetime', limits: { activeRooms: 5, history: true, export: true, participantsPerRoom: 20 } },
-]
-
-/** Every publicly-listed plan for Cue, cheapest first — the data source for /pricing. Not
- * per-email, so it isn't cached the same way getEntitlement is (this is called once per page
- * render, not per-request-in-a-hot-path); a fresh query each time is fine. */
-export async function listPublicPlans(): Promise<PublicPlan[]> {
-  const client = getCoreClient()
-  if (!client) return FALLBACK_PUBLIC_PLANS
-
-  try {
-    const result = await client.execute({
-      sql: `select key, name, limits from plans where app_id = ? and key != 'permanent' order by rank asc`,
-      args: [APP_ID],
-    })
-    if (result.rows.length === 0) return FALLBACK_PUBLIC_PLANS
-    return result.rows.map((row) => ({
-      key: String(row.key),
-      name: String(row.name),
-      limits: parseLimits(row.limits),
-    }))
-  } catch (err) {
-    console.error('[entitlements] listPublicPlans failed, serving fallback:', err)
-    return FALLBACK_PUBLIC_PLANS
-  }
-}
-
 async function resolveFromCore(client: Client, email: string): Promise<Entitlement> {
   const now = Date.now()
 
@@ -161,6 +120,7 @@ function parseLimits(raw: unknown): CueLimits {
       history: !!obj?.history,
       export: !!obj?.export,
       participantsPerRoom: obj?.participantsPerRoom ?? null,
+      segmentsPerRoom: obj?.segmentsPerRoom ?? null,
     }
   } catch {
     return FALLBACK_LIMITS
