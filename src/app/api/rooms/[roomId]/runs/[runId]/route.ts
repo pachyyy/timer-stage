@@ -23,7 +23,7 @@ export async function GET(
   const access = await resolveRoomAccess(roomId, token)
   if (access !== 'controller') return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
-  const [room] = await db.select({ ownerUserId: rooms.ownerUserId }).from(rooms).where(eq(rooms.id, roomId)).limit(1)
+  const [room] = await db.select({ ownerUserId: rooms.ownerUserId, name: rooms.name }).from(rooms).where(eq(rooms.id, roomId)).limit(1)
   const gate = await canViewHistory(room?.ownerUserId ?? null)
   if (!gate.allowed) {
     return NextResponse.json({ error: gate.reason ?? 'History not included on this plan' }, { status: 402 })
@@ -35,5 +35,5 @@ export async function GET(
   const report = buildRunReport(loaded)
   const adjustments = coalesceAdjustments(extractAdjustmentEntries(loaded.events))
 
-  return NextResponse.json({ run: loaded.run, report, events: loaded.events, adjustments })
+  return NextResponse.json({ roomName: room?.name ?? null, run: loaded.run, report, events: loaded.events, adjustments })
 }

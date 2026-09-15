@@ -32,6 +32,7 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
   }, [roomId, searchParams])
 
   const [runs, setRuns] = useState<RunSummary[] | null>(null)
+  const [roomName, setRoomName] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [forbidden, setForbidden] = useState(false)
   // Same idea as /control's `resolvingAccess`: with no token, an owner still needs the session to
@@ -49,7 +50,10 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
         }
         return res.ok ? res.json() : Promise.reject(res.status)
       })
-      .then(setRuns)
+      .then((data: { roomName: string | null; runs: RunSummary[] }) => {
+        setRoomName(data.roomName)
+        setRuns(data.runs)
+      })
       .catch(() => setError((prev) => prev ?? 'Could not load history for this room.'))
   }, [roomId, token, resolvingAccess])
 
@@ -70,6 +74,7 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
             <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
           <h1 className="text-xl font-semibold">History</h1>
+          {roomName && <span className="truncate text-sm text-muted-foreground">— {roomName}</span>}
         </div>
         <Button asChild variant="outline" size="sm">
           <a href={`/r/${roomId}/control${token ? `?t=${token}` : ''}`}>

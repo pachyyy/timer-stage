@@ -102,7 +102,8 @@ ultimately checks (reject anything but `'controller'`). Three things can resolve
 **Viewing is intentionally open by room code alone** — no token or account required, like a
 meeting ID. `'none'` only ever means the room doesn't exist.
 
-Every viewer (direct link or the homepage's "join with code" tab — same code path either way) is
+Every viewer (direct link, the landing page's join box, or the dashboard's "join with code" tab —
+same code path either way) is
 prompted for a name once, creating a `participants` row; that identity is what the admin's
 Participants panel lists and can promote/demote. Session identity for both the classic controller
 token and a joined participant is cached client-side in `localStorage` (`src/lib/auth/local-tokens.ts`,
@@ -189,15 +190,51 @@ N times mid-drag.
 
 ### Route structure
 
-`/` — create a room, join one by code, or (signed in) jump back into a currently-live event via
-the "Running Event" tab. All land on the same `/r/[roomId]` flow.
+Three route groups split public marketing pages from the signed-in app; none change any URL (Next
+route groups are just organizational).
+
+**`(marketing)`** — public, always shows `SiteNavbar` (Home/Pricing/Docs + Log in/Sign up, or
+Dashboard once signed in — see `src/components/site-navbar.tsx`). Both pages here redirect a
+signed-in visitor away, so neither ever needs to show the sidebar instead:
+- `/` — landing page (placeholder pending design) with a join-by-code box; signed-in visitors are
+  redirected straight to `/dashboard`.
+- `/login` — placeholder sign-in page; both "Log in" and "Sign up" land here (`?mode=signup` only
+  changes the heading) since Google is the only credential path today. Also `auth.ts`'s own
+  `pages.signIn`. Honors `?callbackUrl`, validated by `safeCallbackUrl`
+  (`src/lib/auth/redirect.ts`) against open-redirect abuse. Redirects a signed-in visitor to
+  `callbackUrl` (default `/dashboard`).
+
+**`(app)`** — signed-in only (redirects to `/login` otherwise — see that group's `layout.tsx`),
+with a left `AppSidebar` instead of a top navbar:
+- `/dashboard` — create a room, join one by code, or jump back into a currently-live event via the
+  "Running Event" tab. All land on the same `/r/[roomId]` flow. **Creating a room now requires a
+  signed-in session** — enforced in `POST /api/rooms`, not just this page's redirect (see Pricing
+  below and `src/lib/auth/config.ts`'s `isAuthConfigured`).
+- `/my-rooms` — cross-room view for a signed-in account: every room it owns, plus an explicit
+  (button-press, not automatic-on-sign-in) prompt to import rooms this browser holds a controller
+  token for.
+- `/history`, `/account` — cross-room run history, and the one account-level setting (display
+  name).
+
+**`(public)`** — public AND reachable while signed in (unlike `(marketing)`'s two pages, neither
+redirects), so which chrome to show can't be decided by route group alone: `AdaptiveShell`
+(`src/components/adaptive-shell.tsx`) picks `SiteNavbar` or `AppSidebar` client-side off
+`useSession()`, so clicking "Pricing" or "Docs" from the sidebar keeps the sidebar instead of
+dropping back to the navbar.
+- `/pricing` — flat pricing copy (see Pricing below).
+- `/docs` — placeholder.
+
+`(app)`'s redirect is explicitly skipped when `isAuthConfigured()` is false (no `AUTH_*` env vars
+set), so local dev keeps working with zero env vars. `(public)`'s `AdaptiveShell` needs no such
+check: with sign-in unconfigured there's simply never a session for `useSession()` to find, so it
+always falls back to `SiteNavbar` on its own.
+
+Outside both groups, unaffected by any of this:
 `/r/[roomId]` — fullscreen viewer; name-gates via `useParticipant`, then renders `TimerDisplay`.
-`/r/[roomId]/control` — the operator's dashboard; owns all the mutating action calls.
+`/r/[roomId]/control` — the operator's dashboard; owns all the mutating action calls, and keeps its
+own header + `AuthButtons` gear (it's usable signed-out via `?t=`, so it isn't in `(app)`).
 `/r/[roomId]/history` and `/r/[roomId]/history/[runId]` — read-only, deliberately don't mount
 `useRoom`/a transport connection, since there's no live timer to keep synced.
-`/my-rooms` — cross-room view for a signed-in account: every room it owns, plus an explicit
-(button-press, not automatic-on-sign-in) prompt to import rooms this browser holds a controller
-token for.
 
 API routes mirror this under `/api/rooms/[roomId]/...` — `actions` (start/pause/reset/adjust/
 select/blackout/end), `timers` (agenda CRUD + bulk reorder), `runs`/`runs/[runId]`/`runs/[runId]/export`
@@ -239,11 +276,13 @@ separate free/mid/top plan concept for them beyond their starter balance.
   owner at all"; `canAddSegments` is a flat cap (5 anonymous / 30 signed-in); `canStartRun` is the
   single-use lock (below). All six are a no-op (`{ allowed: true }`) unless
   `ENTITLEMENTS_ENFORCED=true` — the kill switch **defaults to off**.
-- **Anonymous room creation is never capped, quota or otherwise** — quota is an account-scoped
-  concept, an anonymous room has no account to bill, and capping it would mean requiring sign-in
-  to create any room at all (the "free = 0 rooms" outcome the pricing design has always rejected).
-  Anonymous rooms keep the old flat fallback (`defaults.ts`'s `FALLBACK_LIMITS`) for
-  segments/history/export/participants, completely unrelated to quota.
+- **Room creation requires a signed-in session** (`POST /api/rooms`, gated on `isAuthConfigured()`
+  the same way the `(app)` route group's redirect is — see Route structure) — quota is an
+  account-scoped concept, so there's no point admitting a room with nobody to bill. The one
+  exception is auth not being configured at all (no `AUTH_*` env vars), which keeps local dev
+  working with zero env vars; in that case `canCreateRoom` still never caps an ownerless room, and
+  it keeps the old flat fallback (`defaults.ts`'s `FALLBACK_LIMITS`) for
+  segments/history/export/participants, unrelated to quota.
 - **"One room credit = one event"** (`canStartRun`): a signed-in, non-`permanent` room can
   complete exactly one run. Checked in the actions route BEFORE calling `mutateRunState` (that
   function's closure is synchronous, no room for an async quota lookup) — resuming/restarting
@@ -254,9 +293,10 @@ separate free/mid/top plan concept for them beyond their starter balance.
 - "Active room" / `rooms.archivedAt` predates quota and is now just a `/my-rooms` declutter
   flag — archiving doesn't free up or affect any credit.
 - A blocked mutation returns `402` with `{ error: "<message safe to show directly>" }` — see the
-  homepage's `createRoom`, `useParticipant`'s `join`, `JoinGate`, `room-actions.ts`'s shared
+  dashboard's `createRoom`, `useParticipant`'s `join`, `JoinGate`, `room-actions.ts`'s shared
   `request()` helper, and the control page's "Add" segment / Start buttons, which all thread that
-  message through rather than showing a generic failure.
+  message through rather than showing a generic failure. Room creation's `401` (no session, see
+  Route structure) is separate from this 402/quota path.
 - **`/pricing`** is flat display copy (`ROOM_PRICE`, `EXTRA_PARTICIPANT_PRICE` — edit directly when
   a price changes) plus a WhatsApp CTA (`NEXT_PUBLIC_UPGRADE_WHATSAPP`) — there is no self-serve
   checkout by design.

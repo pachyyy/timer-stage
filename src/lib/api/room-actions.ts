@@ -74,4 +74,6 @@ export const roomActions = {
   /** `order` is the room's timer ids in their new top-to-bottom order. */
   reorderTimers: (roomId: string, token: string, order: string[]) =>
     patch(`/api/rooms/${roomId}/timers`, { token, order }),
+  renameRoom: (roomId: string, token: string, name: string) =>
+    patch(`/api/rooms/${roomId}`, { token, name }),
 }

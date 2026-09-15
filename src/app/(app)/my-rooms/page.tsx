@@ -2,9 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import Image from 'next/image'
 import Link from 'next/link'
-import { AuthButtons } from '@/components/auth-buttons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -92,19 +90,13 @@ export default function MyRoomsPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link href="/">
-            <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
-          </Link>
-          <h1 className="text-xl font-semibold">My Rooms</h1>
-          {quota?.isPermanent && (
-            <Badge variant="secondary" className="ml-1">
-              Permanent
-            </Badge>
-          )}
-        </div>
-        <AuthButtons />
+      <div className="flex items-center gap-2">
+        <h1 className="text-xl font-semibold">My Rooms</h1>
+        {quota?.isPermanent && (
+          <Badge variant="secondary" className="ml-1">
+            Permanent
+          </Badge>
+        )}
       </div>
 
       {status === 'loading' && <p className="text-muted-foreground">Loading…</p>}
@@ -149,7 +141,7 @@ export default function MyRoomsPage() {
             <p className="text-muted-foreground">Loading rooms…</p>
           ) : rooms.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No rooms linked to your account yet — create one on the homepage while signed in.
+              No rooms linked to your account yet — create one from the Dashboard.
             </p>
           ) : (
             <>

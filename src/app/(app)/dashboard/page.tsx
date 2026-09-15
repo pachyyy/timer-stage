@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
+import Link from 'next/link'
 import { useCallback, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
@@ -13,8 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2 } from 'lucide-react'
 import { setControllerToken, listControllerTokens } from '@/lib/auth/local-tokens'
+import { JoinRoomForm } from '@/components/join-room-form'
 import { parseMinutesInput } from '@/lib/timer/minutes'
-import { AuthButtons } from '@/components/auth-buttons'
 import type { LiveRoomSummary } from '@/lib/db/my-rooms'
 
 interface DraftTimer {
@@ -44,7 +44,6 @@ export default function Home() {
   const [draftTimers, setDraftTimers] = useState<DraftTimer[]>([{ name: 'Opening remarks', minutes: '5' }])
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [joinCode, setJoinCode] = useState('')
   const { data: session } = useSession()
   const [liveRooms, setLiveRooms] = useState<LiveRoomEntry[] | null>(null)
   const [liveLoading, setLiveLoading] = useState(false)
@@ -114,28 +113,11 @@ export default function Home() {
     }
   }
 
-  const joinRoom = () => {
-    const code = joinCode.trim()
-    if (!code) return
-    // No existence check here — the viewer page itself shows a clear "Room not found" state for
-    // a bad code, so there's no need for a second round trip before navigating.
-    router.push(`/r/${code}`)
-  }
-
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center gap-6 px-4 py-12">
-      <div className="flex justify-end">
-        <AuthButtons />
-      </div>
-
-      <div className="text-center">
-        <div className="flex items-center justify-center gap-2">
-          <Image src="/cue.svg" alt="" width={36} height={36} unoptimized className="rounded-md" />
-          <h1 className="bg-[linear-gradient(135deg,var(--primary-gradient-from),var(--primary-gradient-to))] bg-clip-text text-3xl font-semibold tracking-tight text-transparent">
-            Cue
-          </h1>
-        </div>
-        <p className="mt-2 text-muted-foreground">
+      <div>
+        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Create a room and share the code, or join one someone shared with you.
         </p>
       </div>
@@ -206,7 +188,19 @@ export default function Home() {
                 </Button>
               </div>
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && (
+                <p className="text-sm text-destructive">
+                  {error}
+                  {error.toLowerCase().includes('credit') && (
+                    <>
+                      {' '}
+                      <Link href="/pricing" className="font-medium underline underline-offset-2">
+                        Buy more →
+                      </Link>
+                    </>
+                  )}
+                </p>
+              )}
 
               <Button onClick={createRoom} disabled={creating} size="lg">
                 {creating ? 'Creating…' : 'Create room'}
@@ -222,20 +216,7 @@ export default function Home() {
               <CardDescription>Enter the room code the organizer shared with you.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="join-code">Room code</Label>
-                <Input
-                  id="join-code"
-                  placeholder="e.g. 8QZDV2"
-                  value={joinCode}
-                  onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                  onKeyDown={(e) => e.key === 'Enter' && joinRoom()}
-                  className="font-mono text-lg tracking-widest uppercase"
-                />
-              </div>
-              <Button onClick={joinRoom} disabled={!joinCode.trim()} size="lg">
-                Join room
-              </Button>
+              <JoinRoomForm />
               <p className="text-xs text-muted-foreground">
                 You will be asked for your name so the room&apos;s host knows who&apos;s watching.
               </p>

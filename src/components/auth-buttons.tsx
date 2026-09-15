@@ -1,8 +1,9 @@
 'use client'
 
-import { signIn, signOut, useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { Settings, History, Home, LogOut } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Settings, History, LayoutDashboard, LogOut, DoorOpen, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -26,13 +27,14 @@ import {
  */
 export function AuthButtons({ size = 'sm' as const }: { size?: 'sm' | 'default' }) {
   const { data: session, status } = useSession()
+  const pathname = usePathname()
 
   if (status === 'loading') return null
 
   if (!session?.user) {
     return (
-      <Button variant="outline" size={size} onClick={() => signIn('google')}>
-        Sign in with Google
+      <Button asChild variant="outline" size={size}>
+        <Link href={`/login?callbackUrl=${encodeURIComponent(pathname || '/')}`}>Log in</Link>
       </Button>
     )
   }
@@ -50,18 +52,31 @@ export function AuthButtons({ size = 'sm' as const }: { size?: 'sm' | 'default' 
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/">
-            <Home />
-            Home
+          <Link href="/dashboard">
+            <LayoutDashboard />
+            Dashboard
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/my-rooms">
+            <DoorOpen />
+            My Rooms
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/history">
             <History />
             History
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem asChild>
+          <Link href="/account">
+            <User />
+            Account
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => signOut({ redirectTo: '/' })}>
           <LogOut />
           Sign out
         </DropdownMenuItem>

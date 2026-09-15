@@ -1,6 +1,7 @@
-import { count, eq } from 'drizzle-orm'
+import { count, desc, eq } from 'drizzle-orm'
 import { db } from './client'
-import { participants, roomState, runs, users } from './schema'
+import { participants, roomState, runEvents, runs, users } from './schema'
+import { shouldRolloverRun } from '@/lib/history/rollover'
 
 /**
  * The raw queries the entitlements gate (src/lib/entitlements/gate.ts) needs, kept here rather
@@ -14,11 +15,28 @@ export async function countParticipants(roomId: string): Promise<number> {
   return row?.n ?? 0
 }
 
-/** True while a run is currently open — resuming/restarting within it is always fine, whatever
- * the room's single-use status (see canStartRun in gate.ts). */
+/**
+ * True while a run is currently open AND not stale — resuming/restarting within it is always
+ * fine, whatever the room's single-use status (see canStartRun in gate.ts). Staleness (same
+ * STALE_RUN_MS threshold as ensureOpenRun's own rollover) has to be checked here too, not just at
+ * the moment a NEW run is opened: ensureOpenRun only ever runs when `currentRunId` is null, so a
+ * room whose operator simply never clicks "End show" would otherwise keep `currentRunId` set
+ * forever, and this function would keep saying "still open" no matter how much real time passed —
+ * letting a single paid room credit be reused indefinitely for unrelated future events just by
+ * never formally ending the show. Treating a stale-but-technically-open run as closed here is
+ * what actually enforces the one-event-per-room quota model.
+ */
 export async function hasOpenRun(roomId: string): Promise<boolean> {
   const [row] = await db.select({ currentRunId: roomState.currentRunId }).from(roomState).where(eq(roomState.roomId, roomId)).limit(1)
-  return !!row?.currentRunId
+  if (!row?.currentRunId) return false
+
+  const [lastEvent] = await db
+    .select({ atMs: runEvents.atMs })
+    .from(runEvents)
+    .where(eq(runEvents.runId, row.currentRunId))
+    .orderBy(desc(runEvents.seq))
+    .limit(1)
+  return !shouldRolloverRun(lastEvent?.atMs ?? null, Date.now())
 }
 
 /** True if this room has EVER had a run (open or closed) — the signal canStartRun uses to tell

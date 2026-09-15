@@ -105,9 +105,13 @@ export async function mutateRunState(
   // needs to land in one atomic statement, not a separate one that could get lost.
   let runIdForLog: string | null = current.currentRunId
   let nextCurrentRunId: string | null | undefined
-  if (patch.event?.type === 'start' && !current.currentRunId) {
+  // Every 'start' goes through ensureOpenRun, not just one from a null currentRunId — it already
+  // rolls over a stale run (see its doc comment and STALE_RUN_MS) before reusing or opening one,
+  // so an operator who never clicks "End show" doesn't silently merge next week's unrelated event
+  // into this one's run/history just because currentRunId was still technically set.
+  if (patch.event?.type === 'start') {
     runIdForLog = await ensureOpenRun(roomId, nowMs)
-    nextCurrentRunId = runIdForLog
+    if (runIdForLog !== current.currentRunId) nextCurrentRunId = runIdForLog
   } else if (patch.event?.type === 'run_end' && current.currentRunId) {
     await closeRun(current.currentRunId, nowMs, false)
     nextCurrentRunId = null

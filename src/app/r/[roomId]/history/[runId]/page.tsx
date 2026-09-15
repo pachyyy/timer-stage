@@ -37,6 +37,7 @@ function fmtSigned(ms: number): string {
 }
 
 interface RunDetail {
+  roomName: string | null
   run: RunRecord
   report: RunReport
   events: RunEventRecord[]
@@ -102,6 +103,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
             <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
           <h1 className="text-xl font-semibold">Run {detail?.run.seq ?? ''}</h1>
+          {detail?.roomName && <span className="truncate text-sm text-muted-foreground">— {detail.roomName}</span>}
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">

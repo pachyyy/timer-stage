@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRoom } from '@/lib/db/seed-helpers'
 import { auth } from '@/auth'
+import { isAuthConfigured } from '@/lib/auth/config'
 import { canAddSegments, canCreateRoom } from '@/lib/entitlements/gate'
 
 export async function POST(req: NextRequest) {
@@ -8,10 +9,14 @@ export async function POST(req: NextRequest) {
   const name = typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'Untitled event'
   const timerInputs = Array.isArray(body.timers) ? body.timers : []
 
-  // Anonymous creation is untouched: signed out, `session` is null, `ownerUserId` is null, and
-  // the room behaves exactly as it always has. Signed in, the room is additionally linked to the
-  // account for cross-device control and the "My Rooms" history view.
+  // Room creation now requires a signed-in account (the /dashboard route is gated the same way,
+  // see (app)/layout.tsx) — this is the actual enforcement, the layout redirect is only a
+  // convenience. Skipped when auth isn't configured at all (no AUTH_* env vars — local dev keeps
+  // working with zero env vars, per CLAUDE.md), same as the (app) layout's own check.
   const session = await auth()
+  if (isAuthConfigured() && !session?.user) {
+    return NextResponse.json({ error: 'Sign in to create a room.' }, { status: 401 })
+  }
   const owner =
     session?.user?.id && session.user.email ? { userId: session.user.id, email: session.user.email } : null
 

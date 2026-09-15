@@ -19,12 +19,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ room
 
   // Gated on the room OWNER's plan (see canViewHistory) — same room, same plan, regardless of
   // which controller credential is asking.
-  const [room] = await db.select({ ownerUserId: rooms.ownerUserId }).from(rooms).where(eq(rooms.id, roomId)).limit(1)
+  const [room] = await db.select({ ownerUserId: rooms.ownerUserId, name: rooms.name }).from(rooms).where(eq(rooms.id, roomId)).limit(1)
   const gate = await canViewHistory(room?.ownerUserId ?? null)
   if (!gate.allowed) {
     return NextResponse.json({ error: gate.reason ?? 'History not included on this plan' }, { status: 402 })
   }
 
   const runs = await listRuns(roomId)
-  return NextResponse.json(runs)
+  return NextResponse.json({ roomName: room?.name ?? null, runs })
 }

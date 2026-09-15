@@ -5,11 +5,14 @@ import { db } from '@/lib/db/client'
 import { accounts, sessions, users, verificationTokens } from '@/lib/db/schema'
 
 /**
- * Optional and additive: nothing here is required for the app to work. Anonymous room creation
- * and the controller/viewer token model (src/lib/auth/tokens.ts, guard.ts) are unaffected whether
- * or not anyone ever signs in — this only gives a signed-in user a `rooms.ownerUserId` link for
- * cross-device control and a cross-room history view. Viewers and joined participants never see
- * a sign-in prompt anywhere; this is exclusively for the controller side.
+ * Optional and additive when configured at all (see isAuthConfigured, src/lib/auth/config.ts):
+ * with no AUTH_* env vars set, local dev is unaffected — every anonymous flow, including room
+ * creation, still works with no account. Once configured, creating a room (POST /api/rooms) does
+ * require a signed-in session, but the controller/viewer token model
+ * (src/lib/auth/tokens.ts, guard.ts) is otherwise untouched — this only gives a signed-in user a
+ * `rooms.ownerUserId` link for cross-device control and a cross-room history view. Viewers and
+ * joined participants never see a sign-in prompt anywhere; this is exclusively for the controller
+ * side.
  *
  * Database sessions (not JWT) — every request already touches the DB via checkRoomAccess, and a
  * DB-backed session means `signOut()` (or deleting the row) actually revokes access immediately,
@@ -38,8 +41,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   pages: {
-    // Skip Auth.js's default sign-in page — every entry point here starts the Google flow
-    // directly from a button (see src/components/auth-buttons.tsx), there's no form to render.
-    signIn: '/',
+    // Our own placeholder page (src/app/(marketing)/login/page.tsx) rather than Auth.js's default
+    // sign-in form — it starts the Google flow from a button and honors ?callbackUrl.
+    signIn: '/login',
   },
 })

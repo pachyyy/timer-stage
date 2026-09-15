@@ -46,12 +46,12 @@ async function isPermanent(ownerUserId: string | null): Promise<boolean> {
 }
 
 /**
- * Room creation. Anonymous creation (no signed-in owner) is deliberately NEVER capped here —
- * quota is an account-scoped economic concept, an anonymous room has no account to bill, and
- * capping it would mean requiring sign-in to create any room at all (the "free = 0 rooms" outcome
- * the tier design originally rejected, and still holds under the quota model). A signed-in
- * account's very first room is free (see quota.ts's STARTER_ROOM_QUOTA) — every one after that
- * spends a purchased credit.
+ * Room creation. `POST /api/rooms` now requires a signed-in session before it ever calls this
+ * (see that route), so `owner` is null here only when auth isn't configured at all (no AUTH_*
+ * env vars — local dev keeps working with zero env vars). In that case creation is deliberately
+ * NEVER capped — quota is an account-scoped economic concept, and there's no account to bill. A
+ * signed-in account's very first room is free (see quota.ts's STARTER_ROOM_QUOTA) — every one
+ * after that spends a purchased credit.
  */
 export async function canCreateRoom(owner: { userId: string; email: string } | null): Promise<GateResult> {
   if (!entitlementsEnforced()) return ALLOWED

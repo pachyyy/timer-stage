@@ -1,5 +1,3 @@
-import Image from 'next/image'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FREE_PARTICIPANTS_PER_ROOM, SEGMENTS_PER_QUOTA_ROOM } from '@/lib/entitlements/gate'
@@ -16,18 +14,14 @@ const UPGRADE_WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_UPGRADE_WHATSAPP || '628
 // Cue's own marketing concern. Edit directly when a price changes; FREE_PARTICIPANTS_PER_ROOM and
 // SEGMENTS_PER_QUOTA_ROOM above are imported (not retyped) so this page can never say a number
 // that disagrees with what src/lib/entitlements/gate.ts actually enforces.
-const ROOM_PRICE = 'Rp25.000'
+const ROOM_PRICE = 'Rp35.000'
 const EXTRA_PARTICIPANT_PRICE = 'Rp5.000'
 
 export default function PricingPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-12">
       <div className="text-center">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <Image src="/cue.svg" alt="" width={28} height={28} unoptimized className="rounded-md" />
-          <span className="text-lg font-semibold">Cue</span>
-        </Link>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Pricing</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Pricing</h1>
         <p className="mt-2 text-muted-foreground">
           Every room is free to view and join by code — no account needed. What follows only
           applies to creating and owning rooms.

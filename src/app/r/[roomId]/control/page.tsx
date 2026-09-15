@@ -21,7 +21,7 @@ import { MissingToken } from '@/components/missing-token'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, History } from 'lucide-react'
+import { Plus, History, Pencil, Check, X } from 'lucide-react'
 import { parseMinutesInput } from '@/lib/timer/minutes'
 import type { TimerRow } from '@/lib/sync/transport'
 
@@ -93,6 +93,10 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   // of `state.timers`'s own reference identity — see the comment on reorderTimers below.
   const [pendingOrder, setPendingOrder] = useState<string[] | null>(null)
   const [pendingEndShow, setPendingEndShow] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState('')
+  const [renameError, setRenameError] = useState<string | null>(null)
+  const [renaming, setRenaming] = useState(false)
 
   const copy = (which: 'code' | 'link', text: string) => {
     navigator.clipboard.writeText(text)
@@ -157,6 +161,22 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
     }
   }
 
+  const handleRename = async () => {
+    const trimmed = nameDraft.trim()
+    if (!trimmed) return
+    setRenaming(true)
+    setRenameError(null)
+    try {
+      const payload = await roomActions.renameRoom(roomId, token, trimmed)
+      applyPayload(payload)
+      setEditingName(false)
+    } catch (err) {
+      setRenameError(err instanceof Error ? err.message : 'Failed to rename.')
+    } finally {
+      setRenaming(false)
+    }
+  }
+
   useEffect(() => {
     if (!token) return
     fetch(`/api/rooms/${roomId}/share-links?token=${encodeURIComponent(token)}`)
@@ -215,7 +235,44 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
             <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
           <h1 className="shrink-0 text-xl font-semibold">Controller</h1>
-          {state && <span className="truncate text-sm text-muted-foreground">— {state.name}</span>}
+          {state && !editingName && (
+            <span className="flex min-w-0 items-center gap-1">
+              <span className="truncate text-sm text-muted-foreground">— {state.name}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setNameDraft(state.name)
+                  setRenameError(null)
+                  setEditingName(true)
+                }}
+                aria-label="Rename room"
+                className="shrink-0 text-muted-foreground hover:text-foreground"
+              >
+                <Pencil className="size-3.5" />
+              </button>
+            </span>
+          )}
+          {state && editingName && (
+            <span className="flex min-w-0 items-center gap-1">
+              <Input
+                autoFocus
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleRename()
+                  if (e.key === 'Escape') setEditingName(false)
+                }}
+                maxLength={200}
+                className="h-7 w-40 text-sm"
+              />
+              <Button variant="ghost" size="icon" className="size-7" onClick={handleRename} disabled={renaming} aria-label="Save name">
+                <Check className="size-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditingName(false)} aria-label="Cancel rename">
+                <X className="size-3.5" />
+              </Button>
+            </span>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button asChild variant="outline" size="sm">
@@ -227,6 +284,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
           <AuthButtons />
         </div>
       </div>
+      {renameError && <p className="text-sm text-destructive">{renameError}</p>}
 
       {!state ? (
         <p className="text-muted-foreground">Loading room…</p>
@@ -258,6 +316,14 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
           {startError && (
             <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {startError}
+              {startError.toLowerCase().includes('credit') && (
+                <>
+                  {' '}
+                  <Link href="/pricing" className="font-medium underline underline-offset-2">
+                    Buy more →
+                  </Link>
+                </>
+              )}
             </p>
           )}
 
