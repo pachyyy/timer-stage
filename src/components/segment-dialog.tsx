@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -53,11 +54,13 @@ export function SegmentDialog({
   const [wrapUpMinutes, setWrapUpMinutes] = useState(
     timer ? String(Math.round(timer.wrapUpMs / 60_000)) : '1',
   )
+  const t = useTranslations('segmentDialog')
+  const tCommon = useTranslations('common')
 
   const handleSave = () => {
     const scheduledStartMs = scheduledStart ? new Date(scheduledStart).getTime() : null
     onSave({
-      name: name.trim() || 'Untitled',
+      name: name.trim() || t('untitledName'),
       durationMs: parseDurationInput(minutes, seconds),
       scheduledStartMs: scheduledStartMs && Number.isFinite(scheduledStartMs) ? scheduledStartMs : null,
       speaker: speaker.trim() || null,
@@ -70,18 +73,18 @@ export function SegmentDialog({
     <Dialog open={open} onOpenChange={(next) => !next && onCancel()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit segment</DialogTitle>
-          <DialogDescription>Changes apply the moment you save — everyone watching sees them.</DialogDescription>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>{t('desc')}</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="segment-name">Name</Label>
+            <Label htmlFor="segment-name">{t('nameLabel')}</Label>
             <Input id="segment-name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label>Duration</Label>
+            <Label>{t('durationLabel')}</Label>
             <div className="flex items-center gap-2">
               <Input
                 type="number"
@@ -92,7 +95,7 @@ export function SegmentDialog({
                 className="w-20"
                 aria-label="Minutes"
               />
-              <span className="text-sm text-muted-foreground">min</span>
+              <span className="text-sm text-muted-foreground">{tCommon('minUnit')}</span>
               <Input
                 type="number"
                 min={0}
@@ -103,12 +106,12 @@ export function SegmentDialog({
                 className="w-20"
                 aria-label="Seconds"
               />
-              <span className="text-sm text-muted-foreground">sec</span>
+              <span className="text-sm text-muted-foreground">{tCommon('secUnit')}</span>
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="segment-scheduled">Scheduled start (optional)</Label>
+            <Label htmlFor="segment-scheduled">{t('scheduledLabel')}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="segment-scheduled"
@@ -119,38 +122,35 @@ export function SegmentDialog({
               />
               {scheduledStart && (
                 <Button type="button" variant="outline" size="sm" onClick={() => setScheduledStart('')}>
-                  Clear
+                  {tCommon('clear')}
                 </Button>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Informational only — used to show how far ahead or behind schedule the show is running.
-              Nothing starts automatically.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('scheduledHint')}</p>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="segment-speaker">Speaker</Label>
+            <Label htmlFor="segment-speaker">{t('speakerLabel')}</Label>
             <Input
               id="segment-speaker"
               value={speaker}
               onChange={(e) => setSpeaker(e.target.value)}
-              placeholder="Optional"
+              placeholder={tCommon('optional')}
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="segment-notes">Notes</Label>
+            <Label htmlFor="segment-notes">{t('notesLabel')}</Label>
             <Input
               id="segment-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional — visible to the operator only"
+              placeholder={t('notesPlaceholder')}
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="segment-wrapup">Wrap-up warning</Label>
+            <Label htmlFor="segment-wrapup">{t('wrapUpLabel')}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="segment-wrapup"
@@ -161,16 +161,16 @@ export function SegmentDialog({
                 onFocus={(e) => e.currentTarget.select()}
                 className="w-20"
               />
-              <span className="text-sm text-muted-foreground">min before the end</span>
+              <span className="text-sm text-muted-foreground">{t('wrapUpSuffix')}</span>
             </div>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
-          <Button onClick={handleSave}>Save</Button>
+          <Button onClick={handleSave}>{tCommon('save')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

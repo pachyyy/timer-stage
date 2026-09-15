@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { countParticipants, getOwnerEmail, hasAnyRun, hasOpenRun } from '@/lib/db/room-limits'
 import { tryConsumeRoomQuota, tryConsumeUserQuota } from '@/lib/db/quota'
 import { getEntitlement } from './client'
@@ -63,11 +64,8 @@ export async function canCreateRoom(owner: { userId: string; email: string } | n
   const ok = await tryConsumeRoomQuota(owner.userId)
   if (ok) return ALLOWED
 
-  return {
-    allowed: false,
-    entitlement,
-    reason: `You're out of room credits. Buy more on /pricing to create another room.`,
-  }
+  const t = await getTranslations('gate')
+  return { allowed: false, entitlement, reason: t('outOfRoomCredits') }
 }
 
 /**
@@ -86,11 +84,8 @@ export async function canJoinParticipant(roomId: string, ownerUserId: string | n
     if (cap === null) return ALLOWED
     const current = await countParticipants(roomId)
     if (current < cap) return ALLOWED
-    return {
-      allowed: false,
-      entitlement,
-      reason: `This room is full — its plan allows ${cap} participant${cap === 1 ? '' : 's'}.`,
-    }
+    const t = await getTranslations('gate')
+    return { allowed: false, entitlement, reason: t('roomFull', { cap }) }
   }
 
   const email = await getOwnerEmail(ownerUserId)
@@ -103,10 +98,11 @@ export async function canJoinParticipant(roomId: string, ownerUserId: string | n
   const ok = await tryConsumeUserQuota(ownerUserId, roomId, 1)
   if (ok) return ALLOWED
 
+  const t = await getTranslations('gate')
   return {
     allowed: false,
     entitlement,
-    reason: `This room already has its ${FREE_PARTICIPANTS_PER_ROOM} free participants, and the owner is out of participant credits. Buy more on /pricing.`,
+    reason: t('participantCreditsOut', { free: FREE_PARTICIPANTS_PER_ROOM }),
   }
 }
 
@@ -117,11 +113,8 @@ export async function canViewHistory(ownerUserId: string | null): Promise<GateRe
   if (ownerUserId) return ALLOWED
 
   const entitlement = await getEntitlement(null)
-  return {
-    allowed: false,
-    entitlement,
-    reason: `Run history isn't available for anonymous rooms — sign in before creating a room to get history.`,
-  }
+  const t = await getTranslations('gate')
+  return { allowed: false, entitlement, reason: t('historyAnonBlocked') }
 }
 
 /** .xlsx export. Same shape as canViewHistory, separate message. */
@@ -130,11 +123,8 @@ export async function canExportRun(ownerUserId: string | null): Promise<GateResu
   if (ownerUserId) return ALLOWED
 
   const entitlement = await getEntitlement(null)
-  return {
-    allowed: false,
-    entitlement,
-    reason: `Exporting isn't available for anonymous rooms — sign in before creating a room to export.`,
-  }
+  const t = await getTranslations('gate')
+  return { allowed: false, entitlement, reason: t('exportAnonBlocked') }
 }
 
 /**
@@ -153,19 +143,17 @@ export async function canAddSegments(
     const entitlement = await getEntitlement(null)
     const cap = entitlement.limits.segmentsPerRoom
     if (cap === null || existingCount + additionalCount <= cap) return ALLOWED
-    return {
-      allowed: false,
-      entitlement,
-      reason: `Anonymous rooms allow up to ${cap} segments — sign in before creating a room for more.`,
-    }
+    const t = await getTranslations('gate')
+    return { allowed: false, entitlement, reason: t('segmentsAnonCap', { cap }) }
   }
 
   if (existingCount + additionalCount <= SEGMENTS_PER_QUOTA_ROOM) return ALLOWED
 
-  const trimHint = existingCount > 0 ? 'Remove one before adding another' : 'Trim your agenda and try again'
+  const t = await getTranslations('gate')
+  const trimHint = existingCount > 0 ? t('trimHintRemove') : t('trimHintTrim')
   return {
     allowed: false,
-    reason: `Rooms allow up to ${SEGMENTS_PER_QUOTA_ROOM} segments. ${trimHint}.`,
+    reason: t('segmentsCap', { cap: SEGMENTS_PER_QUOTA_ROOM, trimHint }),
   }
 }
 
@@ -186,8 +174,6 @@ export async function canStartRun(ownerUserId: string | null, roomId: string): P
   if (await hasOpenRun(roomId)) return ALLOWED
   if (!(await hasAnyRun(roomId))) return ALLOWED
 
-  return {
-    allowed: false,
-    reason: `This room already ran its one event. Create a new room (spends a room credit) for your next one.`,
-  }
+  const t = await getTranslations('gate')
+  return { allowed: false, reason: t('oneRunPerRoom') }
 }

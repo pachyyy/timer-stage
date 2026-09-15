@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { getControllerToken, setControllerToken } from '@/lib/auth/local-tokens'
 import { MissingToken } from '@/components/missing-token'
 import { Button } from '@/components/ui/button'
@@ -38,6 +39,9 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
   // Same idea as /control's `resolvingAccess`: with no token, an owner still needs the session to
   // finish loading before this page can tell "no access" apart from "haven't checked yet".
   const resolvingAccess = !token && sessionStatus === 'loading'
+  const t = useTranslations('historyRoom')
+  const tCommon = useTranslations('common')
+  const tNav = useTranslations('nav')
 
   useEffect(() => {
     if (resolvingAccess) return
@@ -54,13 +58,13 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
         setRoomName(data.roomName)
         setRuns(data.runs)
       })
-      .catch(() => setError((prev) => prev ?? 'Could not load history for this room.'))
-  }, [roomId, token, resolvingAccess])
+      .catch(() => setError((prev) => prev ?? t('loadError')))
+  }, [roomId, token, resolvingAccess, t])
 
   if (resolvingAccess) {
     return (
       <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-4">
-        <p className="text-muted-foreground">Loading…</p>
+        <p className="text-muted-foreground">{tCommon('loading')}</p>
       </main>
     )
   }
@@ -73,12 +77,12 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
           <Link href="/">
             <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
-          <h1 className="text-xl font-semibold">History</h1>
+          <h1 className="text-xl font-semibold">{tNav('history')}</h1>
           {roomName && <span className="truncate text-sm text-muted-foreground">— {roomName}</span>}
         </div>
         <Button asChild variant="outline" size="sm">
           <a href={`/r/${roomId}/control${token ? `?t=${token}` : ''}`}>
-            <ArrowLeft className="size-3.5" /> Back to live
+            <ArrowLeft className="size-3.5" /> {t('backToLive')}
           </a>
         </Button>
       </div>
@@ -86,11 +90,9 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {!runs && !error ? (
-        <p className="text-muted-foreground">Loading…</p>
+        <p className="text-muted-foreground">{tCommon('loading')}</p>
       ) : runs && runs.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No runs yet — history is recorded once you Start a segment and later End the show.
-        </p>
+        <p className="text-sm text-muted-foreground">{t('noRuns')}</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {runs?.map((summary) => (
@@ -103,12 +105,16 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
                   <CardContent className="flex items-center justify-between gap-3 py-3">
                     <div className="flex flex-col gap-0.5">
                       <span className="font-medium">
-                        Run {summary.run.seq}
+                        {t('runLabel', { seq: summary.run.seq })}
                         {summary.run.endedAtMs === null && (
-                          <span className="ml-2 text-xs font-normal text-amber-600 dark:text-amber-400">live</span>
+                          <span className="ml-2 text-xs font-normal text-amber-600 dark:text-amber-400">
+                            {t('live')}
+                          </span>
                         )}
                         {summary.run.abandoned && (
-                          <span className="ml-2 text-xs font-normal text-muted-foreground">abandoned</span>
+                          <span className="ml-2 text-xs font-normal text-muted-foreground">
+                            {tCommon('abandoned')}
+                          </span>
                         )}
                       </span>
                       <span className="text-xs text-muted-foreground">
@@ -117,7 +123,7 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
                           timeStyle: 'short',
                         })}
                         {' · '}
-                        {summary.segmentCount} segment{summary.segmentCount === 1 ? '' : 's'}
+                        {t('segmentCount', { count: summary.segmentCount })}
                       </span>
                     </div>
                     <span className="tabular-nums text-sm text-muted-foreground">

@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
+import { getTranslations } from 'next-intl/server'
 import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
 import { rooms } from '@/lib/db/schema'
@@ -22,7 +23,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ room
   const [room] = await db.select({ ownerUserId: rooms.ownerUserId, name: rooms.name }).from(rooms).where(eq(rooms.id, roomId)).limit(1)
   const gate = await canViewHistory(room?.ownerUserId ?? null)
   if (!gate.allowed) {
-    return NextResponse.json({ error: gate.reason ?? 'History not included on this plan' }, { status: 402 })
+    const t = await getTranslations('gate')
+    return NextResponse.json({ error: gate.reason ?? t('planLimitReached') }, { status: 402 })
   }
 
   const runs = await listRuns(roomId)

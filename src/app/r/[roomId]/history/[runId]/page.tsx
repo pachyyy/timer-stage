@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, Download } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { getControllerToken, setControllerToken } from '@/lib/auth/local-tokens'
 import { MissingToken } from '@/components/missing-token'
 import { Button } from '@/components/ui/button'
@@ -15,17 +16,17 @@ import { formatAdjustmentLabel, formatSignedMinutes } from '@/lib/history/adjust
 import type { CoalescedAdjustment, RunEventRecord, RunEventType, RunRecord, RunReport } from '@/lib/history/types'
 import { cn } from '@/lib/utils'
 
-const EVENT_LABELS: Record<RunEventType, string> = {
-  start: 'Start',
-  resume: 'Resume',
-  pause: 'Pause',
-  reset: 'Reset',
-  select: 'Select',
-  adjust: 'Adjust',
-  blackout_on: 'Blackout on',
-  blackout_off: 'Blackout off',
-  message: 'Message',
-  run_end: 'End show',
+const EVENT_LABEL_KEYS: Record<RunEventType, string> = {
+  start: 'eventStart',
+  resume: 'eventResume',
+  pause: 'eventPause',
+  reset: 'eventReset',
+  select: 'eventSelect',
+  adjust: 'eventAdjust',
+  blackout_on: 'eventBlackoutOn',
+  blackout_off: 'eventBlackoutOff',
+  message: 'eventMessage',
+  run_end: 'eventRunEnd',
 }
 
 function fmtTime(ms: number): string {
@@ -65,6 +66,8 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
   // Same idea as /control's `resolvingAccess`: with no token, an owner still needs the session to
   // finish loading before this page can tell "no access" apart from "haven't checked yet".
   const resolvingAccess = !token && sessionStatus === 'loading'
+  const t = useTranslations('runDetail')
+  const tCommon = useTranslations('common')
 
   useEffect(() => {
     if (resolvingAccess) return
@@ -78,13 +81,13 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
         return res.ok ? res.json() : Promise.reject(res.status)
       })
       .then(setDetail)
-      .catch(() => setError((prev) => prev ?? 'Could not load this run.'))
-  }, [roomId, runId, token, resolvingAccess])
+      .catch(() => setError((prev) => prev ?? t('loadError')))
+  }, [roomId, runId, token, resolvingAccess, t])
 
   if (resolvingAccess) {
     return (
       <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-4">
-        <p className="text-muted-foreground">Loading…</p>
+        <p className="text-muted-foreground">{tCommon('loading')}</p>
       </main>
     )
   }
@@ -102,51 +105,53 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
           <Link href="/">
             <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
-          <h1 className="text-xl font-semibold">Run {detail?.run.seq ?? ''}</h1>
+          <h1 className="text-xl font-semibold">{t('title', { seq: detail?.run.seq ?? '' })}</h1>
           {detail?.roomName && <span className="truncate text-sm text-muted-foreground">— {detail.roomName}</span>}
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
             <a href={`/r/${roomId}/history${token ? `?t=${token}` : ''}`}>
-              <ArrowLeft className="size-3.5" /> All runs
+              <ArrowLeft className="size-3.5" /> {t('allRuns')}
             </a>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <a href={`/r/${roomId}/control${token ? `?t=${token}` : ''}`}>Back to live</a>
+            <a href={`/r/${roomId}/control${token ? `?t=${token}` : ''}`}>{t('backToLive')}</a>
           </Button>
         </div>
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
-      {!detail && !error && <p className="text-muted-foreground">Loading…</p>}
+      {!detail && !error && <p className="text-muted-foreground">{tCommon('loading')}</p>}
 
       {detail && (
         <>
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <span>{fmtTime(detail.run.startedAtMs)}</span>
-            {detail.run.abandoned && <span className="text-amber-600 dark:text-amber-400">Abandoned run</span>}
-            {detail.report.incomplete && <span className="text-amber-600 dark:text-amber-400">In progress</span>}
+            {detail.run.abandoned && <span className="text-amber-600 dark:text-amber-400">{t('abandonedRun')}</span>}
+            {detail.report.incomplete && (
+              <span className="text-amber-600 dark:text-amber-400">{t('inProgress')}</span>
+            )}
             <a href={exportUrl} className="ml-auto">
               <Button size="sm">
-                <Download className="size-3.5" /> Download .xlsx
+                <Download className="size-3.5" /> {t('download')}
               </Button>
             </a>
           </div>
 
           <Card className="min-w-0">
             <CardHeader>
-              <CardTitle>Summary</CardTitle>
+              <CardTitle>{t('summaryTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
                 <thead>
                   <tr className="border-b text-left text-xs text-muted-foreground">
-                    <th className="py-1.5 pr-2">#</th>
-                    <th className="py-1.5 pr-2">Segment</th>
-                    <th className="py-1.5 pr-2 text-right">Planned</th>
-                    <th className="py-1.5 pr-2 text-right">Adjustments</th>
-                    <th className="py-1.5 pr-2 text-right">Actual</th>
-                    <th className="py-1.5 pr-2 text-right">Diff</th>
+                    <th className="py-1.5 pr-2">{t('colIndex')}</th>
+                    <th className="py-1.5 pr-2">{t('colSegment')}</th>
+                    <th className="py-1.5 pr-2 text-right">{t('colPlanned')}</th>
+                    <th className="py-1.5 pr-2 text-right">{t('colAdjustments')}</th>
+                    <th className="py-1.5 pr-2 text-right">{t('colActual')}</th>
+                    <th className="py-1.5 pr-2 text-right">{t('colDiff')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -175,7 +180,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
                 <tfoot>
                   <tr className="font-medium">
                     <td className="pt-2" colSpan={2}>
-                      Total
+                      {t('total')}
                     </td>
                     <td className="pt-2 text-right tabular-nums">{formatDuration(detail.report.totals.plannedMs)}</td>
                     <td className="pt-2 text-right tabular-nums">
@@ -198,11 +203,11 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
 
           <Card>
             <CardHeader>
-              <CardTitle>Adjustments</CardTitle>
+              <CardTitle>{t('adjustmentsTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
               {detail.adjustments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No mid-show time adjustments in this run.</p>
+                <p className="text-sm text-muted-foreground">{t('noAdjustments')}</p>
               ) : (
                 <ul className="flex flex-col gap-1.5 text-sm">
                   {detail.adjustments.map((a, i) => (
@@ -215,16 +220,16 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
 
           <Card className="min-w-0">
             <CardHeader>
-              <CardTitle>Timeline</CardTitle>
+              <CardTitle>{t('timelineTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
                 <thead>
                   <tr className="border-b text-left text-xs text-muted-foreground">
-                    <th className="py-1.5 pr-2">Time</th>
-                    <th className="py-1.5 pr-2">Event</th>
-                    <th className="py-1.5 pr-2">Segment</th>
-                    <th className="py-1.5 pr-2">Detail</th>
+                    <th className="py-1.5 pr-2">{t('colTime')}</th>
+                    <th className="py-1.5 pr-2">{t('colEvent')}</th>
+                    <th className="py-1.5 pr-2">{t('colSegment')}</th>
+                    <th className="py-1.5 pr-2">{t('colDetail')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -233,7 +238,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
                       <td className="py-1.5 pr-2 whitespace-nowrap tabular-nums text-muted-foreground">
                         {fmtTime(e.atMs)}
                       </td>
-                      <td className="py-1.5 pr-2">{EVENT_LABELS[e.type]}</td>
+                      <td className="py-1.5 pr-2">{t(EVENT_LABEL_KEYS[e.type])}</td>
                       <td className="py-1.5 pr-2">{e.timerName ?? ''}</td>
                       <td className="py-1.5 pr-2 text-muted-foreground">
                         {e.type === 'adjust' && e.deltaMs !== null ? fmtSigned(e.deltaMs) : e.note ?? ''}

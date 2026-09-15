@@ -307,6 +307,49 @@ separate free/mid/top plan concept for them beyond their starter balance.
   email to have signed into Cue at least once (`accountQuota` is keyed on our own `userId`, not
   email) — the route returns a clear 404 if not.
 
+### Internationalization (`src/i18n/`, `messages/`)
+
+English and Indonesian (`src/i18n/locale.ts`'s `LOCALES`), via `next-intl`, cookie-based rather
+than URL-prefixed (`/en/...`, `/id/...`) — every existing route, including a room's own `?t=`
+controller link, keeps working unchanged. `src/i18n/request.ts`'s `getRequestConfig` is the one
+place that resolves the active locale, from the `NEXT_LOCALE` cookie (default English) — every
+Server Component's `getTranslations()` and every Client Component's `useTranslations()` (via the
+root layout's `NextIntlClientProvider`) go through it, and so does every server-side
+`getTranslations()` call in a Route Handler or in `src/lib/entitlements/gate.ts` (a plain async
+function, not a component — `getTranslations()` works there too since it's still inside the same
+request's scope). `LocaleSwitcher` (in `SiteNavbar`, `AppSidebar`, and the control page's header)
+calls `setLocale()`, a Server Action that sets the cookie and `revalidatePath('/', 'layout')`s the
+whole tree so already-rendered Server Components pick up the new locale immediately.
+
+Every visitor sees the app in their own last-picked (or default English) language, including on a
+room's viewer/controller screens — a room has no language setting of its own; this was a
+deliberate choice over making the room's language a controller-set, per-room property.
+
+Message dictionaries are `messages/en.json`/`messages/id.json`, one flat file per locale, key
+namespaces roughly matching each page/component (`dashboard`, `control`, `gate`, etc.) plus a
+shared `common` namespace for words reused across several (`save`, `cancel`, `minUnit`...). Plurals
+and interpolation use ICU MessageFormat (e.g. `gate.json`'s `{cap, plural, one {...} other
+{...}}`) — Indonesian only defines the `other` case since CLDR gives `id` no singular/plural
+distinction. Embedded markup (the `<kbd>` in `controllerPanel.spaceTip`, the bold span in
+`control.showingNow`) uses `t.rich()` with a tag-to-JSX mapping, not raw HTML.
+
+**A translated message must never be string-matched.** `startQuotaBlocked`/`quotaBlocked` state in
+the control page and the dashboard (instead of the old `error.toLowerCase().includes('credit')`)
+check the HTTP status (402) via `ActionError.status` (`src/lib/api/room-actions.ts`) or the raw
+`fetch` response instead — the message text itself is no longer guaranteed to be in English. Any
+new "is this error a quota block" check must do the same.
+
+Adding a UI string: add it to both JSON files under the right namespace, then `useTranslations`/
+`getTranslations` + `t('key')`. Adding a language: add its code to `LOCALES`, add
+`messages/<code>.json` with every key the others have (nothing currently checks the two files stay
+in sync — a missing key throws at render time for that string, not at build time).
+
+**Cost**: reading the locale cookie in `getRequestConfig` makes every page dynamic — `/docs` and
+even `/_not-found` went from statically prerendered to server-rendered per request. Revisit
+together with the "keep marketing pages static" scaling note above if that ever matters (a
+client-rendered locale + a lighter, cookie-presence-only check server-side, same idea as that
+note's auth-state approach).
+
 ## Deploying
 
 See README.md's "Deploying" section for the current checklist (Turso provisioning, the

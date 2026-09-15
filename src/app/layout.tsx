@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -19,14 +21,22 @@ export const metadata: Metadata = {
   description: "A shared countdown timer for live events, synced across every screen.",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Resolved from the NEXT_LOCALE cookie (see src/i18n/request.ts) — same source every server
+  // component and getTranslations() call reads, so this and the actual page content never
+  // disagree on which language is active.
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>{children}</Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

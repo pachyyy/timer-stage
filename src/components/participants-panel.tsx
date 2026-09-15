@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 
@@ -20,6 +21,7 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
   const [rows, setRows] = useState<ParticipantRow[] | null>(null)
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [pendingRemove, setPendingRemove] = useState<{ id: string; name: string } | null>(null)
+  const t = useTranslations('participantsPanel')
 
   useEffect(() => {
     let cancelled = false
@@ -74,8 +76,8 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
     }
   }
 
-  if (!rows) return <p className="text-sm text-muted-foreground">Loading participants…</p>
-  if (rows.length === 0) return <p className="text-sm text-muted-foreground">No one has joined yet.</p>
+  if (!rows) return <p className="text-sm text-muted-foreground">{t('loading')}</p>
+  if (rows.length === 0) return <p className="text-sm text-muted-foreground">{t('empty')}</p>
 
   return (
     <>
@@ -87,7 +89,7 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
               {p.role === 'controller' ? (
                 <>
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                    Controller
+                    {t('controllerBadge')}
                   </span>
                   <Button
                     variant="ghost"
@@ -95,7 +97,7 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
                     disabled={pendingId === p.id}
                     onClick={() => setRole(p.id, 'viewer')}
                   >
-                    Demote
+                    {t('demote')}
                   </Button>
                 </>
               ) : (
@@ -105,7 +107,7 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
                   disabled={pendingId === p.id}
                   onClick={() => setRole(p.id, 'controller')}
                 >
-                  Make controller
+                  {t('makeController')}
                 </Button>
               )}
               <Button
@@ -114,7 +116,7 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
                 disabled={pendingId === p.id}
                 onClick={() => setPendingRemove({ id: p.id, name: p.name })}
               >
-                Remove
+                {t('remove')}
               </Button>
             </span>
           </li>
@@ -123,17 +125,18 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
 
       <ConfirmDialog
         open={pendingRemove !== null}
-        title="Remove participant?"
+        title={t('removeTitle')}
         description={
           pendingRemove
-            ? `Remove "${pendingRemove.name}" from this room? They'll be sent back to the join screen${
+            ? t(
                 rows.find((p) => p.id === pendingRemove.id)?.role === 'controller'
-                  ? ' and lose controller access immediately'
-                  : ''
-              }. They can rejoin with a name at any time — this doesn't block them.`
+                  ? 'removeDescController'
+                  : 'removeDescViewer',
+                { name: pendingRemove.name },
+              )
             : ''
         }
-        confirmLabel="Remove"
+        confirmLabel={t('remove')}
         onConfirm={() => pendingRemove && removeParticipant(pendingRemove.id)}
         onCancel={() => setPendingRemove(null)}
       />

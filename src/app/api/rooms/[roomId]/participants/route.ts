@@ -1,5 +1,6 @@
 import { eq, asc } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
+import { getTranslations } from 'next-intl/server'
 import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { generateId, generateToken } from '@/lib/auth/tokens'
 import { db } from '@/lib/db/client'
@@ -27,7 +28,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ roo
   // of their own here.
   const gate = await canJoinParticipant(roomId, room.ownerUserId)
   if (!gate.allowed) {
-    return NextResponse.json({ error: gate.reason ?? 'This room is full' }, { status: 402 })
+    const t = await getTranslations('gate')
+    return NextResponse.json({ error: gate.reason ?? t('planLimitReached') }, { status: 402 })
   }
 
   const participantId = generateId()

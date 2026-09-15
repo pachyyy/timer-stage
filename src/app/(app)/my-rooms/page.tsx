@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -31,6 +32,9 @@ export default function MyRoomsPage() {
   const [quota, setQuota] = useState<MyQuota | null>(null)
   const [importing, setImporting] = useState(false)
   const [archivingId, setArchivingId] = useState<string | null>(null)
+  const t = useTranslations('myRooms')
+  const tCommon = useTranslations('common')
+  const tNav = useTranslations('nav')
 
   const refresh = useCallback(() => {
     fetch('/api/me/rooms')
@@ -91,29 +95,26 @@ export default function MyRoomsPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8">
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold">My Rooms</h1>
+        <h1 className="text-xl font-semibold">{tNav('myRooms')}</h1>
         {quota?.isPermanent && (
           <Badge variant="secondary" className="ml-1">
-            Permanent
+            {t('permanentBadge')}
           </Badge>
         )}
       </div>
 
-      {status === 'loading' && <p className="text-muted-foreground">Loading…</p>}
+      {status === 'loading' && <p className="text-muted-foreground">{tCommon('loading')}</p>}
 
-      {status === 'unauthenticated' && (
-        <p className="text-sm text-muted-foreground">Sign in to see every room linked to your account.</p>
-      )}
+      {status === 'unauthenticated' && <p className="text-sm text-muted-foreground">{t('signInHint')}</p>}
 
       {status === 'authenticated' && (
         <>
           {quota && !quota.isPermanent && (
             <p className="text-xs text-muted-foreground">
-              {quota.roomQuota} room credit{quota.roomQuota === 1 ? '' : 's'} · {quota.userQuota} extra
-              participant credit{quota.userQuota === 1 ? '' : 's'} left.{' '}
+              {t('creditsLine', { rooms: quota.roomQuota ?? 0, users: quota.userQuota ?? 0 })}{' '}
               {(quota.roomQuota ?? 0) <= 0 && (
                 <Link href="/pricing" className="text-primary underline-offset-4 hover:underline">
-                  Buy more →
+                  {tCommon('buyMore')}
                 </Link>
               )}
             </p>
@@ -122,27 +123,21 @@ export default function MyRoomsPage() {
           {importable.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Rooms on this browser aren&apos;t saved to your account</CardTitle>
+                <CardTitle>{t('importTitle')}</CardTitle>
               </CardHeader>
               <CardContent className="flex items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground">
-                  {importable.length} room{importable.length === 1 ? '' : 's'} you created from this browser{' '}
-                  {importable.length === 1 ? "isn't" : "aren't"} linked yet — import{' '}
-                  {importable.length === 1 ? 'it' : 'them'} to control from any device.
-                </p>
+                <p className="text-sm text-muted-foreground">{t('importDesc', { count: importable.length })}</p>
                 <Button size="sm" onClick={handleImport} disabled={importing}>
-                  {importing ? 'Importing…' : `Import ${importable.length}`}
+                  {importing ? t('importing') : t('importButton', { count: importable.length })}
                 </Button>
               </CardContent>
             </Card>
           )}
 
           {!rooms ? (
-            <p className="text-muted-foreground">Loading rooms…</p>
+            <p className="text-muted-foreground">{t('loadingRooms')}</p>
           ) : rooms.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No rooms linked to your account yet — create one from the Dashboard.
-            </p>
+            <p className="text-sm text-muted-foreground">{t('noRooms')}</p>
           ) : (
             <>
               <ul className="flex flex-col gap-2">
@@ -159,7 +154,7 @@ export default function MyRoomsPage() {
               {archivedRooms.length > 0 && (
                 <details className="mt-2">
                   <summary className="cursor-pointer text-sm text-muted-foreground">
-                    {archivedRooms.length} archived room{archivedRooms.length === 1 ? '' : 's'}
+                    {t('archivedCount', { count: archivedRooms.length })}
                   </summary>
                   <ul className="mt-2 flex flex-col gap-2">
                     {archivedRooms.map((room) => (
@@ -193,6 +188,8 @@ function RoomRow({
   archiving: boolean
   onToggleArchive: () => void
 }) {
+  const t = useTranslations('myRooms')
+
   return (
     <li>
       <Card className={archived ? 'opacity-70' : undefined}>
@@ -202,25 +199,25 @@ function RoomRow({
               {room.name}
               {archived && (
                 <Badge variant="outline" className="text-xs font-normal">
-                  Archived
+                  {t('archivedBadge')}
                 </Badge>
               )}
             </span>
             <span className="text-xs text-muted-foreground">
-              {room.runCount} run{room.runCount === 1 ? '' : 's'}
+              {t('runCount', { count: room.runCount })}
               {room.lastRunAtMs &&
-                ` · last ${new Date(room.lastRunAtMs).toLocaleDateString(undefined, { dateStyle: 'medium' })}`}
+                ` · ${t('lastRun', { date: new Date(room.lastRunAtMs).toLocaleDateString(undefined, { dateStyle: 'medium' }) })}`}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={onToggleArchive} disabled={archiving}>
-              {archiving ? '…' : archived ? 'Unarchive' : 'Archive'}
+              {archiving ? '…' : archived ? t('unarchive') : t('archive')}
             </Button>
             <Button asChild variant="outline" size="sm">
-              <a href={`/r/${room.roomId}/history`}>History</a>
+              <a href={`/r/${room.roomId}/history`}>{t('history')}</a>
             </Button>
             <Button asChild size="sm">
-              <a href={`/r/${room.roomId}/control`}>Open</a>
+              <a href={`/r/${room.roomId}/control`}>{t('open')}</a>
             </Button>
           </div>
         </CardContent>

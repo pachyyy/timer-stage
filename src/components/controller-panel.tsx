@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useTimerTick } from '@/hooks/use-timer-tick'
 import type { RunState } from '@/lib/timer/model'
 import { phaseFor, type TimerPhase } from '@/lib/timer/phase'
@@ -50,6 +51,8 @@ export function ControllerPanel({
   onBlackoutChange: (v: boolean) => void
   onEndShow: () => void
 }) {
+  const t = useTranslations('controllerPanel')
+  const tCommon = useTranslations('common')
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const lastPhaseRef = useRef<TimerPhase | null>(null)
   // Confirms a +/-1 min click actually registered — the timer's own number only updates once a
@@ -81,7 +84,7 @@ export function ControllerPanel({
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border p-5">
-      <div className="text-sm text-muted-foreground">{timerName ?? 'No timer selected'}</div>
+      <div className="text-sm text-muted-foreground">{timerName ?? tCommon('noTimerSelected')}</div>
 
       <div
         ref={(node) => {
@@ -94,11 +97,11 @@ export function ControllerPanel({
       <div className="flex flex-wrap items-center gap-2">
         <Button size="lg" onClick={isRunning ? onPause : onStart} disabled={!timerName}>
           {isRunning ? <Pause className="size-4" /> : <Play className="size-4" />}
-          {isRunning ? 'Pause' : 'Start'}
+          {isRunning ? tCommon('pause') : tCommon('start')}
         </Button>
         <Button variant="outline" size="lg" onClick={onReset} disabled={!timerName}>
           <RotateCcw className="size-4" />
-          Reset
+          {tCommon('reset')}
         </Button>
         <div className="mx-1 h-6 w-px bg-border" />
         <Button
@@ -110,7 +113,7 @@ export function ControllerPanel({
             flashDirection === 'minus' ? 'bg-destructive text-white border-destructive hover:bg-destructive' : ''
           }
         >
-          <Minus className="size-4" /> 1 min
+          <Minus className="size-4" /> {t('oneMin')}
         </Button>
         <Button
           variant="outline"
@@ -121,14 +124,14 @@ export function ControllerPanel({
             flashDirection === 'plus' ? 'bg-destructive text-white border-destructive hover:bg-destructive' : ''
           }
         >
-          <Plus className="size-4" /> 1 min
+          <Plus className="size-4" /> {t('oneMin')}
         </Button>
       </div>
 
       <div className="flex items-center justify-between gap-2 pt-2">
         <div className="flex items-center gap-2">
           <Switch id="blackout" checked={blackout} onCheckedChange={onBlackoutChange} />
-          <Label htmlFor="blackout">Blackout viewer screen</Label>
+          <Label htmlFor="blackout">{t('blackoutLabel')}</Label>
         </div>
         <Button
           variant="outline"
@@ -137,12 +140,12 @@ export function ControllerPanel({
           disabled={!hasOpenRun}
           className="text-destructive hover:text-destructive"
         >
-          <Square className="size-3.5" /> End show
+          <Square className="size-3.5" /> {t('endShow')}
         </Button>
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Tip: press <kbd className="rounded border px-1">Space</kbd> to start/pause.
+        {t.rich('spaceTip', { kbd: (chunks) => <kbd className="rounded border px-1">{chunks}</kbd> })}
       </p>
     </div>
   )

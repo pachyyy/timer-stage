@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getTranslations } from 'next-intl/server'
 import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
 import { rooms } from '@/lib/db/schema'
@@ -37,7 +38,8 @@ export async function GET(
 
   const gate = await canExportRun(room?.ownerUserId ?? null)
   if (!gate.allowed) {
-    return NextResponse.json({ error: gate.reason ?? 'Export not included on this plan' }, { status: 402 })
+    const t = await getTranslations('gate')
+    return NextResponse.json({ error: gate.reason ?? t('planLimitReached') }, { status: 402 })
   }
 
   const loaded = await loadRun(roomId, runId)

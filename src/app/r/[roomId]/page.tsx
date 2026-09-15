@@ -3,6 +3,7 @@
 import { use, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { useRoom } from '@/hooks/use-room'
 import { useParticipant } from '@/hooks/use-participant'
 import { useMessageAlert } from '@/hooks/use-message-alert'
@@ -31,6 +32,9 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   // Handed to TimerDisplay so the final-minute blink can invert the background from inside the same
   // animation-frame loop that drives the digits.
   const surfaceRef = useRef<HTMLDivElement | null>(null)
+  const t = useTranslations('viewer')
+  const tConnection = useTranslations('connectionBadge')
+  const tCommon = useTranslations('common')
 
   useEffect(() => {
     let lock: WakeLockSentinel | null = null
@@ -54,8 +58,8 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   if (status === 'not-found') {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-2 bg-black px-4 text-center">
-        <h1 className="text-xl font-semibold text-white">Room not found</h1>
-        <p className="text-sm text-white/50">Double-check the code or link and try again.</p>
+        <h1 className="text-xl font-semibold text-white">{tConnection('notFound')}</h1>
+        <p className="text-sm text-white/50">{t('notFoundDesc')}</p>
       </div>
     )
   }
@@ -71,7 +75,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   if (!state) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black text-white/60">
-        Connecting…
+        {tConnection('connecting')}
       </div>
     )
   }
@@ -109,7 +113,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
             promotionFlashing ? 'bg-white ring-4 ring-emerald-400' : 'bg-emerald-500 hover:bg-emerald-400'
           }`}
         >
-          You&apos;ve been made a controller — open panel
+          {t('promotedBanner')}
         </a>
       )}
 
@@ -130,13 +134,11 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
           />
         </>
       ) : (
-        <div className="text-2xl opacity-40">No timer selected</div>
+        <div className="text-2xl opacity-40">{tCommon('noTimerSelected')}</div>
       )}
 
       {wakeLockError && (
-        <div className="fixed bottom-4 left-4 text-xs opacity-30">
-          Screen may sleep — wake lock unavailable
-        </div>
+        <div className="fixed bottom-4 left-4 text-xs opacity-30">{t('wakeLockWarning')}</div>
       )}
     </div>
   )

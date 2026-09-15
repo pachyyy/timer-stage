@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getTranslations } from 'next-intl/server'
 import { createRoom } from '@/lib/db/seed-helpers'
 import { auth } from '@/auth'
 import { isAuthConfigured } from '@/lib/auth/config'
@@ -8,6 +9,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const name = typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'Untitled event'
   const timerInputs = Array.isArray(body.timers) ? body.timers : []
+  const t = await getTranslations('gate')
 
   // Room creation now requires a signed-in account (the /dashboard route is gated the same way,
   // see (app)/layout.tsx) — this is the actual enforcement, the layout redirect is only a
@@ -15,7 +17,7 @@ export async function POST(req: NextRequest) {
   // working with zero env vars, per CLAUDE.md), same as the (app) layout's own check.
   const session = await auth()
   if (isAuthConfigured() && !session?.user) {
-    return NextResponse.json({ error: 'Sign in to create a room.' }, { status: 401 })
+    return NextResponse.json({ error: t('signInToCreate') }, { status: 401 })
   }
   const owner =
     session?.user?.id && session.user.email ? { userId: session.user.id, email: session.user.email } : null
@@ -31,14 +33,14 @@ export async function POST(req: NextRequest) {
   // `users` lookup, not a `rooms` one, so "the room doesn't exist yet" is a non-issue.
   const segmentGate = await canAddSegments(session?.user?.id ?? null, 0, timerInputs.length)
   if (!segmentGate.allowed) {
-    return NextResponse.json({ error: segmentGate.reason ?? 'Plan limit reached' }, { status: 402 })
+    return NextResponse.json({ error: segmentGate.reason ?? t('planLimitReached') }, { status: 402 })
   }
 
   // Anonymous creation is never gated on room count — see canCreateRoom's doc comment. For a
   // signed-in, non-"permanent" account this is the point where a room credit is actually spent.
   const roomGate = await canCreateRoom(owner)
   if (!roomGate.allowed) {
-    return NextResponse.json({ error: roomGate.reason ?? 'Plan limit reached' }, { status: 402 })
+    return NextResponse.json({ error: roomGate.reason ?? t('planLimitReached') }, { status: 402 })
   }
 
   const { roomId, controllerToken, viewerToken } = await createRoom({

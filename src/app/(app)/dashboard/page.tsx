@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useCallback, useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -32,21 +33,29 @@ interface LiveRoomEntry extends LiveRoomSummary {
   token?: string
 }
 
-function statusLabel(status: LiveRoomSummary['status']) {
-  if (status === 'running') return 'Running'
-  if (status === 'paused') return 'Paused'
-  return 'Between segments'
-}
-
 export default function Home() {
   const router = useRouter()
   const [eventName, setEventName] = useState('')
   const [draftTimers, setDraftTimers] = useState<DraftTimer[]>([{ name: 'Opening remarks', minutes: '5' }])
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // 402 = a quota/plan block (see src/lib/entitlements/gate.ts) — the one failure worth offering
+  // the pricing page for. Checking the status code rather than sniffing the (now-translatable)
+  // message text for the word "credit" — that heuristic broke the moment the message could come
+  // back in Indonesian.
+  const [quotaBlocked, setQuotaBlocked] = useState(false)
   const { data: session } = useSession()
   const [liveRooms, setLiveRooms] = useState<LiveRoomEntry[] | null>(null)
   const [liveLoading, setLiveLoading] = useState(false)
+  const t = useTranslations('dashboard')
+  const tCommon = useTranslations('common')
+  const tNav = useTranslations('nav')
+
+  const statusLabel = (status: LiveRoomSummary['status']) => {
+    if (status === 'running') return t('statusRunning')
+    if (status === 'paused') return t('statusPaused')
+    return t('statusBetween')
+  }
 
   const checkLiveRooms = useCallback(async () => {
     setLiveLoading(true)
@@ -87,6 +96,7 @@ export default function Home() {
   const createRoom = async () => {
     setCreating(true)
     setError(null)
+    setQuotaBlocked(false)
     try {
       const res = await fetch('/api/rooms', {
         method: 'POST',
@@ -102,6 +112,7 @@ export default function Home() {
         // A plan-limit block (402) comes back with a real, show-it-directly message — see
         // canCreateRoom in src/lib/entitlements/gate.ts. Anything else falls back to generic.
         const body = await res.json().catch(() => null)
+        if (res.status === 402) setQuotaBlocked(true)
         throw new Error(typeof body?.error === 'string' ? body.error : 'Failed to create room')
       }
       const { roomId, controllerToken } = await res.json()
@@ -116,10 +127,8 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center gap-6 px-4 py-12">
       <div>
-        <h1 className="text-xl font-semibold">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Create a room and share the code, or join one someone shared with you.
-        </p>
+        <h1 className="text-xl font-semibold">{tNav('dashboard')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       <Tabs
@@ -129,23 +138,23 @@ export default function Home() {
         }}
       >
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="create">Create a room</TabsTrigger>
-          <TabsTrigger value="join">Join with code</TabsTrigger>
-          <TabsTrigger value="running">Running Event</TabsTrigger>
+          <TabsTrigger value="create">{t('tabCreate')}</TabsTrigger>
+          <TabsTrigger value="join">{t('tabJoin')}</TabsTrigger>
+          <TabsTrigger value="running">{t('tabRunning')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="create">
           <Card>
             <CardHeader>
-              <CardTitle>New room</CardTitle>
-              <CardDescription>Set up your agenda — you can edit it later from the controller.</CardDescription>
+              <CardTitle>{t('newRoomTitle')}</CardTitle>
+              <CardDescription>{t('newRoomDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="event-name">Event name</Label>
+                <Label htmlFor="event-name">{t('eventNameLabel')}</Label>
                 <Input
                   id="event-name"
-                  placeholder="Q3 All Hands"
+                  placeholder={t('eventNamePlaceholder')}
                   value={eventName}
                   onChange={(e) => setEventName(e.target.value)}
                 />
@@ -154,11 +163,11 @@ export default function Home() {
               <Separator />
 
               <div className="flex flex-col gap-3">
-                <Label>Agenda</Label>
+                <Label>{t('agendaLabel')}</Label>
                 {draftTimers.map((timer, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <Input
-                      placeholder="Segment name"
+                      placeholder={tCommon('segmentNamePlaceholder')}
                       value={timer.name}
                       onChange={(e) => updateTimer(i, { name: e.target.value })}
                       className="flex-1"
@@ -171,31 +180,31 @@ export default function Home() {
                       onFocus={(e) => e.currentTarget.select()}
                       className="w-20"
                     />
-                    <span className="text-sm text-muted-foreground">min</span>
+                    <span className="text-sm text-muted-foreground">{tCommon('minUnit')}</span>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => removeTimer(i)}
                       disabled={draftTimers.length <= 1}
-                      aria-label="Remove segment"
+                      aria-label={t('removeSegment')}
                     >
                       <Trash2 className="size-4" />
                     </Button>
                   </div>
                 ))}
                 <Button variant="outline" size="sm" onClick={addTimer} className="self-start">
-                  <Plus className="size-4" /> Add segment
+                  <Plus className="size-4" /> {t('addSegment')}
                 </Button>
               </div>
 
               {error && (
                 <p className="text-sm text-destructive">
                   {error}
-                  {error.toLowerCase().includes('credit') && (
+                  {quotaBlocked && (
                     <>
                       {' '}
                       <Link href="/pricing" className="font-medium underline underline-offset-2">
-                        Buy more →
+                        {tCommon('buyMore')}
                       </Link>
                     </>
                   )}
@@ -203,7 +212,7 @@ export default function Home() {
               )}
 
               <Button onClick={createRoom} disabled={creating} size="lg">
-                {creating ? 'Creating…' : 'Create room'}
+                {creating ? t('creating') : t('createRoom')}
               </Button>
             </CardContent>
           </Card>
@@ -212,14 +221,12 @@ export default function Home() {
         <TabsContent value="join">
           <Card>
             <CardHeader>
-              <CardTitle>Join a room</CardTitle>
-              <CardDescription>Enter the room code the organizer shared with you.</CardDescription>
+              <CardTitle>{t('joinTitle')}</CardTitle>
+              <CardDescription>{t('joinDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <JoinRoomForm />
-              <p className="text-xs text-muted-foreground">
-                You will be asked for your name so the room&apos;s host knows who&apos;s watching.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('joinHint')}</p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -227,13 +234,13 @@ export default function Home() {
         <TabsContent value="running">
           <Card>
             <CardHeader>
-              <CardTitle>Running Event</CardTitle>
-              <CardDescription>Jump back into a show that&apos;s currently in progress.</CardDescription>
+              <CardTitle>{t('runningTitle')}</CardTitle>
+              <CardDescription>{t('runningDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              {liveLoading && <p className="text-sm text-muted-foreground">Checking…</p>}
+              {liveLoading && <p className="text-sm text-muted-foreground">{t('checking')}</p>}
               {!liveLoading && liveRooms?.length === 0 && (
-                <p className="text-sm text-muted-foreground">No event currently running.</p>
+                <p className="text-sm text-muted-foreground">{t('noRunning')}</p>
               )}
               {!liveLoading && liveRooms && liveRooms.length > 0 && (
                 <ul className="flex flex-col gap-2">
@@ -249,7 +256,7 @@ export default function Home() {
                           </div>
                           <Button asChild size="sm">
                             <a href={room.token ? `/r/${room.roomId}/control?t=${room.token}` : `/r/${room.roomId}/control`}>
-                              Go to event
+                              {t('goToEvent')}
                             </a>
                           </Button>
                         </CardContent>

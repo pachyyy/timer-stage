@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -19,6 +20,9 @@ export default function AccountPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const t = useTranslations('account')
+  const tCommon = useTranslations('common')
+  const tNav = useTranslations('nav')
 
   const handleSave = async () => {
     const trimmed = name.trim()
@@ -47,24 +51,24 @@ export default function AccountPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-4 py-8">
-      <h1 className="text-xl font-semibold">Account</h1>
+      <h1 className="text-xl font-semibold">{tNav('account')}</h1>
 
-      {status === 'loading' && <p className="text-muted-foreground">Loading…</p>}
+      {status === 'loading' && <p className="text-muted-foreground">{tCommon('loading')}</p>}
 
-      {status === 'unauthenticated' && <p className="text-sm text-muted-foreground">Sign in to manage your account.</p>}
+      {status === 'unauthenticated' && <p className="text-sm text-muted-foreground">{t('signInHint')}</p>}
 
       {status === 'authenticated' && (
         <Card>
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
+            <CardTitle>{t('profileTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('emailLabel')}</Label>
               <Input id="email" value={session?.user?.email ?? ''} disabled />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="name">Display name</Label>
+              <Label htmlFor="name">{t('nameLabel')}</Label>
               <Input
                 id="name"
                 value={name}
@@ -75,14 +79,14 @@ export default function AccountPage() {
                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                 maxLength={100}
               />
-              <p className="text-xs text-muted-foreground">Shown wherever you appear as a room&apos;s controller.</p>
+              <p className="text-xs text-muted-foreground">{t('nameHint')}</p>
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
-            {saved && !error && <p className="text-sm text-emerald-600 dark:text-emerald-400">Saved.</p>}
+            {saved && !error && <p className="text-sm text-emerald-600 dark:text-emerald-400">{t('saved')}</p>}
 
             <Button onClick={handleSave} disabled={saving || !name.trim()} className="self-start">
-              {saving ? 'Saving…' : 'Save'}
+              {saving ? tCommon('saving') : tCommon('save')}
             </Button>
           </CardContent>
         </Card>

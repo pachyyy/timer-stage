@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import {
   LayoutDashboard,
   DoorOpen,
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { LocaleSwitcher } from '@/components/locale-switcher'
 import { cn } from '@/lib/utils'
 
 /** Per-viewer convenience only (which pane width they last chose) — not app state, so plain
@@ -65,18 +67,6 @@ function useSidebarCollapsed(): [boolean, (next: boolean) => void] {
   return [collapsed, setCollapsed]
 }
 
-const MAIN_LINKS = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/my-rooms', label: 'My Rooms', icon: DoorOpen },
-  { href: '/history', label: 'History', icon: History },
-  { href: '/account', label: 'Account', icon: User },
-]
-
-const SECONDARY_LINKS = [
-  { href: '/pricing', label: 'Pricing', icon: CreditCard },
-  { href: '/docs', label: 'Docs', icon: BookOpen },
-]
-
 /**
  * Left sidebar for the (app) route group — deliberately no top navbar there (see the
  * (marketing) group's SiteNavbar for that). Hand-built rather than shadcn's `sidebar` block: that
@@ -92,6 +82,19 @@ export function AppSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useSidebarCollapsed()
   const toggleCollapsed = () => setCollapsed(!collapsed)
+  const t = useTranslations('nav')
+
+  const MAIN_LINKS = [
+    { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
+    { href: '/my-rooms', label: t('myRooms'), icon: DoorOpen },
+    { href: '/history', label: t('history'), icon: History },
+    { href: '/account', label: t('account'), icon: User },
+  ]
+
+  const SECONDARY_LINKS = [
+    { href: '/pricing', label: t('pricing'), icon: CreditCard },
+    { href: '/docs', label: t('docs'), icon: BookOpen },
+  ]
 
   const isActive = (href: string) => pathname === href
 
@@ -144,21 +147,29 @@ export function AppSidebar() {
   )
 
   const footer = (iconOnly = false) => (
-    <div className={cn('flex items-center gap-2 border-t px-3 py-3', iconOnly ? 'justify-center' : 'justify-between')}>
+    <div
+      className={cn(
+        'flex items-center gap-1 border-t px-3 py-3',
+        iconOnly ? 'flex-col' : 'justify-between',
+      )}
+    >
       {!iconOnly && (
         <span className="truncate text-xs text-muted-foreground">
           {session?.user?.name ?? session?.user?.email}
         </span>
       )}
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label="Sign out"
-        title={iconOnly ? 'Sign out' : undefined}
-        onClick={() => signOut({ redirectTo: '/' })}
-      >
-        <LogOut className="size-4" />
-      </Button>
+      <div className={cn('flex items-center gap-1', iconOnly && 'flex-col')}>
+        <LocaleSwitcher />
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t('signOut')}
+          title={iconOnly ? t('signOut') : undefined}
+          onClick={() => signOut({ redirectTo: '/' })}
+        >
+          <LogOut className="size-4" />
+        </Button>
+      </div>
     </div>
   )
 
@@ -187,8 +198,8 @@ export function AppSidebar() {
         <button
           type="button"
           onClick={toggleCollapsed}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? t('expandSidebar') : t('collapseSidebar')}
+          title={collapsed ? t('expandSidebar') : t('collapseSidebar')}
           className="absolute top-4 -right-3 flex size-6 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm hover:text-foreground"
         >
           {collapsed ? <PanelLeftOpen className="size-3.5" /> : <PanelLeftClose className="size-3.5" />}
@@ -201,7 +212,7 @@ export function AppSidebar() {
           <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           <span className="font-semibold tracking-tight">Cue</span>
         </Link>
-        <Button variant="ghost" size="icon" aria-label="Open menu" onClick={() => setMobileOpen(true)}>
+        <Button variant="ghost" size="icon" aria-label={t('openMenu')} onClick={() => setMobileOpen(true)}>
           <Menu className="size-5" />
         </Button>
       </div>
@@ -211,7 +222,7 @@ export function AppSidebar() {
           showCloseButton={false}
           className="left-0 top-0 flex h-full w-64 max-w-[80vw] translate-x-0 translate-y-0 flex-col rounded-none border-r p-0 sm:max-w-[80vw]"
         >
-          <DialogTitle className="sr-only">Menu</DialogTitle>
+          <DialogTitle className="sr-only">{t('menu')}</DialogTitle>
           <div className="flex items-center gap-2 px-4 py-4">
             <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
             <span className="font-semibold tracking-tight">Cue</span>

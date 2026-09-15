@@ -5,16 +5,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { JoinRoomForm } from '@/components/join-room-form'
 import { AuthButtons } from '@/components/auth-buttons'
-
-const LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/docs', label: 'Docs' },
-]
+import { LocaleSwitcher } from '@/components/locale-switcher'
 
 /**
  * Navbar for the (marketing) route group only — the (app) group uses AppSidebar instead (no top
@@ -27,8 +23,15 @@ export function SiteNavbar() {
   const { data: session, status } = useSession()
   const pathname = usePathname()
   const [joinOpen, setJoinOpen] = useState(false)
+  const t = useTranslations('nav')
 
   const callbackUrl = encodeURIComponent(pathname || '/')
+
+  const LINKS = [
+    { href: '/', label: t('home') },
+    { href: '/pricing', label: t('pricing') },
+    { href: '/docs', label: t('docs') },
+  ]
 
   return (
     <header className="border-b">
@@ -52,23 +55,25 @@ export function SiteNavbar() {
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => setJoinOpen(true)}>
-            Join a room
+            {t('joinRoom')}
           </Button>
+
+          <LocaleSwitcher />
 
           {status === 'loading' ? null : session?.user ? (
             <>
               <Button asChild size="sm" variant="outline">
-                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/dashboard">{t('dashboard')}</Link>
               </Button>
               <AuthButtons />
             </>
           ) : (
             <>
               <Button asChild size="sm" variant="outline">
-                <Link href={`/login?callbackUrl=${callbackUrl}`}>Log in</Link>
+                <Link href={`/login?callbackUrl=${callbackUrl}`}>{t('login')}</Link>
               </Button>
               <Button asChild size="sm">
-                <Link href={`/login?mode=signup&callbackUrl=${callbackUrl}`}>Sign up</Link>
+                <Link href={`/login?mode=signup&callbackUrl=${callbackUrl}`}>{t('signup')}</Link>
               </Button>
             </>
           )}
@@ -78,7 +83,7 @@ export function SiteNavbar() {
       <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Join a room</DialogTitle>
+            <DialogTitle>{t('joinRoom')}</DialogTitle>
           </DialogHeader>
           <JoinRoomForm />
         </DialogContent>

@@ -5,11 +5,12 @@ import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useRoom } from '@/hooks/use-room'
 import { useOwnRole } from '@/hooks/use-own-role'
 import { useMessageAlert } from '@/hooks/use-message-alert'
 import { getControllerToken, setControllerToken } from '@/lib/auth/local-tokens'
-import { roomActions } from '@/lib/api/room-actions'
+import { roomActions, ActionError } from '@/lib/api/room-actions'
 import { ControllerPanel } from '@/components/controller-panel'
 import { AgendaList } from '@/components/agenda-list'
 import { SegmentDialog } from '@/components/segment-dialog'
@@ -17,6 +18,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog'
 import { ParticipantsPanel } from '@/components/participants-panel'
 import { ConnectionBadge } from '@/components/connection-badge'
 import { AuthButtons } from '@/components/auth-buttons'
+import { LocaleSwitcher } from '@/components/locale-switcher'
 import { MissingToken } from '@/components/missing-token'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,16 +27,20 @@ import { Plus, History, Pencil, Check, X } from 'lucide-react'
 import { parseMinutesInput } from '@/lib/timer/minutes'
 import type { TimerRow } from '@/lib/sync/transport'
 
-const MESSAGE_DURATIONS: { label: string; ms: number | null }[] = [
-  { label: 'Until cleared', ms: null },
-  { label: '10s', ms: 10_000 },
-  { label: '30s', ms: 30_000 },
-  { label: '1 min', ms: 60_000 },
-]
-
 export default function ControlPage({ params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = use(params)
   const searchParams = useSearchParams()
+  const t = useTranslations('control')
+  const tCommon = useTranslations('common')
+  const tNav = useTranslations('nav')
+  const tController = useTranslations('controllerPanel')
+
+  const MESSAGE_DURATIONS: { label: string; ms: number | null }[] = [
+    { label: t('durationUntilCleared'), ms: null },
+    { label: t('duration10s'), ms: 10_000 },
+    { label: t('duration30s'), ms: 30_000 },
+    { label: t('duration1min'), ms: 60_000 },
+  ]
 
   const token = useMemo(() => {
     const fromUrl = searchParams.get('t')
@@ -77,6 +83,9 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   // reset, adjust, blackout) have no comparable everyday failure, so they're left as plain
   // fire-and-forget.
   const [startError, setStartError] = useState<string | null>(null)
+  // 402 = a quota/plan block (see src/lib/entitlements/gate.ts) — checked via ActionError's status
+  // rather than sniffing the (translatable) message text for the word "credit".
+  const [startQuotaBlocked, setStartQuotaBlocked] = useState(false)
   const [viewerToken, setViewerToken] = useState<string | null>(null)
   const [copied, setCopied] = useState<'code' | 'link' | null>(null)
   const [messageDraft, setMessageDraft] = useState('')
@@ -110,7 +119,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
     // other than a fresh/never-started active timer would silently lose progress on a bare click.
     const hasProgress = state.status === 'running' || (state.status === 'paused' && state.elapsedBeforeMs > 0)
     if (hasProgress) {
-      const name = state.timers.find((t) => t.id === timerId)?.name ?? 'this segment'
+      const name = state.timers.find((timer) => timer.id === timerId)?.name ?? t('thisSegment')
       setPendingSwitch({ timerId, name })
     } else {
       roomActions.select(roomId, token, timerId).then(applyPayload)
@@ -119,12 +128,12 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
 
   const handleDelete = (timerId: string) => {
     if (!state) return
-    const name = state.timers.find((t) => t.id === timerId)?.name ?? 'this segment'
+    const name = state.timers.find((timer) => timer.id === timerId)?.name ?? t('thisSegment')
     setPendingDelete({ timerId, name })
   }
 
   const handleEdit = (timerId: string) => {
-    const timer = state?.timers.find((t) => t.id === timerId)
+    const timer = state?.timers.find((timer) => timer.id === timerId)
     if (timer) setEditingTimer(timer)
   }
 
@@ -132,8 +141,8 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   // reference the transport hands back in the meantime — see the pendingOrder comment above.
   const displayedTimers = useMemo(() => {
     if (!state || !pendingOrder) return state?.timers ?? []
-    const byId = new Map(state.timers.map((t) => [t.id, t]))
-    return pendingOrder.map((id) => byId.get(id)).filter((t): t is TimerRow => Boolean(t))
+    const byId = new Map(state.timers.map((timer) => [timer.id, timer]))
+    return pendingOrder.map((id) => byId.get(id)).filter((timer): timer is TimerRow => Boolean(timer))
   }, [state, pendingOrder])
 
   const handleReorder = (order: string[]) => {
@@ -171,7 +180,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
       applyPayload(payload)
       setEditingName(false)
     } catch (err) {
-      setRenameError(err instanceof Error ? err.message : 'Failed to rename.')
+      setRenameError(err instanceof Error ? err.message : t('failedRename'))
     } finally {
       setRenaming(false)
     }
@@ -203,7 +212,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   if (resolvingAccess) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 text-center">
-        <p className="text-muted-foreground">Loading…</p>
+        <p className="text-muted-foreground">{tCommon('loading')}</p>
       </main>
     )
   }
@@ -213,10 +222,10 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   if (wasDemoted) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 px-4 text-center">
-        <h1 className="text-xl font-semibold">Your controller access was removed</h1>
-        <p className="text-sm text-muted-foreground">The room&apos;s admin took back control access.</p>
+        <h1 className="text-xl font-semibold">{t('demotedTitle')}</h1>
+        <p className="text-sm text-muted-foreground">{t('demotedDesc')}</p>
         <Button asChild variant="outline">
-          <a href={`/r/${roomId}`}>Go to viewer screen</a>
+          <a href={`/r/${roomId}`}>{t('goToViewer')}</a>
         </Button>
       </main>
     )
@@ -234,7 +243,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
           <Link href="/" className="shrink-0">
             <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
-          <h1 className="shrink-0 text-xl font-semibold">Controller</h1>
+          <h1 className="shrink-0 text-xl font-semibold">{t('title')}</h1>
           {state && !editingName && (
             <span className="flex min-w-0 items-center gap-1">
               <span className="truncate text-sm text-muted-foreground">— {state.name}</span>
@@ -245,7 +254,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
                   setRenameError(null)
                   setEditingName(true)
                 }}
-                aria-label="Rename room"
+                aria-label={t('renameRoom')}
                 className="shrink-0 text-muted-foreground hover:text-foreground"
               >
                 <Pencil className="size-3.5" />
@@ -265,10 +274,10 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
                 maxLength={200}
                 className="h-7 w-40 text-sm"
               />
-              <Button variant="ghost" size="icon" className="size-7" onClick={handleRename} disabled={renaming} aria-label="Save name">
+              <Button variant="ghost" size="icon" className="size-7" onClick={handleRename} disabled={renaming} aria-label={t('saveName')}>
                 <Check className="size-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditingName(false)} aria-label="Cancel rename">
+              <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditingName(false)} aria-label={t('cancelRename')}>
                 <X className="size-3.5" />
               </Button>
             </span>
@@ -277,28 +286,25 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
         <div className="flex shrink-0 items-center gap-2">
           <Button asChild variant="outline" size="sm">
             <a href={`/r/${roomId}/history`}>
-              <History className="size-3.5" /> History
+              <History className="size-3.5" /> {tNav('history')}
             </a>
           </Button>
           <ConnectionBadge status={status} />
+          <LocaleSwitcher />
           <AuthButtons />
         </div>
       </div>
       {renameError && <p className="text-sm text-destructive">{renameError}</p>}
 
       {!state ? (
-        <p className="text-muted-foreground">Loading room…</p>
+        <p className="text-muted-foreground">{t('loadingRoom')}</p>
       ) : (
         <>
           {session?.user?.id && state.ownerUserId === null && claimState !== 'saved' && (
             <div className="flex items-center justify-between gap-3 rounded-lg border bg-accent/40 px-4 py-2.5 text-sm">
-              <span>
-                {claimState === 'error'
-                  ? "Couldn't save this room — you need the room's original controller link, not a granted-access one."
-                  : 'Save this room to your account for cross-device control and history.'}
-              </span>
+              <span>{claimState === 'error' ? t('claimError') : t('claimPrompt')}</span>
               <Button size="sm" variant="outline" onClick={handleClaim} disabled={claimState === 'saving'}>
-                {claimState === 'saving' ? 'Saving…' : 'Save'}
+                {claimState === 'saving' ? tCommon('saving') : tCommon('save')}
               </Button>
             </div>
           )}
@@ -316,11 +322,11 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
           {startError && (
             <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {startError}
-              {startError.toLowerCase().includes('credit') && (
+              {startQuotaBlocked && (
                 <>
                   {' '}
                   <Link href="/pricing" className="font-medium underline underline-offset-2">
-                    Buy more →
+                    {tCommon('buyMore')}
                   </Link>
                 </>
               )}
@@ -342,10 +348,14 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
             hasOpenRun={state.currentRunId !== null}
             onStart={() => {
               setStartError(null)
+              setStartQuotaBlocked(false)
               roomActions
                 .start(roomId, token)
                 .then(applyPayload)
-                .catch((err) => setStartError(err instanceof Error ? err.message : 'Failed to start.'))
+                .catch((err) => {
+                  if (err instanceof ActionError) setStartQuotaBlocked(err.status === 402)
+                  setStartError(err instanceof Error ? err.message : t('failedStart'))
+                })
             }}
             onPause={() => roomActions.pause(roomId, token).then(applyPayload)}
             onReset={() => roomActions.reset(roomId, token).then(applyPayload)}
@@ -356,7 +366,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
 
           <Card>
             <CardHeader>
-              <CardTitle>Agenda</CardTitle>
+              <CardTitle>{t('agendaTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <AgendaList
@@ -370,7 +380,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
 
               <div className="flex items-center gap-2 pt-2">
                 <Input
-                  placeholder="Segment name"
+                  placeholder={tCommon('segmentNamePlaceholder')}
                   value={newTimerName}
                   onChange={(e) => setNewTimerName(e.target.value)}
                   className="flex-1"
@@ -383,7 +393,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
                   onFocus={(e) => e.currentTarget.select()}
                   className="w-20"
                 />
-                <span className="text-sm text-muted-foreground">min</span>
+                <span className="text-sm text-muted-foreground">{tCommon('minUnit')}</span>
                 <Button
                   variant="outline"
                   onClick={async () => {
@@ -397,11 +407,11 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
                       applyPayload(payload)
                       setNewTimerName('')
                     } catch (err) {
-                      setAddTimerError(err instanceof Error ? err.message : 'Failed to add segment.')
+                      setAddTimerError(err instanceof Error ? err.message : t('failedAddSegment'))
                     }
                   }}
                 >
-                  <Plus className="size-4" /> Add
+                  <Plus className="size-4" /> {t('addButton')}
                 </Button>
               </div>
               {addTimerError && <p className="text-sm text-destructive">{addTimerError}</p>}
@@ -410,12 +420,12 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
 
           <Card>
             <CardHeader>
-              <CardTitle>Message to viewers</CardTitle>
+              <CardTitle>{t('messageTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <Input
-                  placeholder="Wrap up in 2 minutes…"
+                  placeholder={t('messagePlaceholder')}
                   maxLength={200}
                   value={messageDraft}
                   onChange={(e) => setMessageDraft(e.target.value)}
@@ -437,12 +447,12 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
                     setMessageDraft('')
                   }}
                 >
-                  Send
+                  {t('send')}
                 </Button>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-muted-foreground">Show for</span>
+                <span className="text-sm text-muted-foreground">{t('showFor')}</span>
                 {MESSAGE_DURATIONS.map((d) => (
                   <Button
                     key={d.label}
@@ -458,34 +468,32 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
               {liveMessage ? (
                 <div className="flex items-center gap-2 rounded-md border bg-amber-50 px-3 py-2 dark:bg-amber-950">
                   <span className="flex-1 text-sm">
-                    Showing now: <span className="font-medium">{liveMessage}</span>
+                    {t.rich('showingNow', {
+                      message: liveMessage,
+                      b: (chunks) => <span className="font-medium">{chunks}</span>,
+                    })}
                   </span>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => roomActions.clearMessage(roomId, token).then(applyPayload)}
                   >
-                    Clear
+                    {tCommon('clear')}
                   </Button>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">
-                  Nothing showing. Viewers get a banner at the top of their screen, and their phone
-                  buzzes if it supports vibration (Android only — iPhones can&apos;t).
-                </p>
+                <p className="text-xs text-muted-foreground">{t('messageHint')}</p>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Share this room</CardTitle>
+              <CardTitle>{t('shareTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div>
-                <p className="mb-1.5 text-sm text-muted-foreground">
-                  Room code — read aloud or typed into &quot;Join with code&quot; on the homepage
-                </p>
+                <p className="mb-1.5 text-sm text-muted-foreground">{t('roomCodeHint')}</p>
                 <div className="flex items-center gap-2">
                   <Input
                     readOnly
@@ -494,29 +502,26 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
                     className="font-mono text-lg tracking-widest"
                   />
                   <Button variant="outline" onClick={() => copy('code', roomId)}>
-                    {copied === 'code' ? 'Copied' : 'Copy'}
+                    {copied === 'code' ? tCommon('copied') : tCommon('copy')}
                   </Button>
                 </div>
               </div>
               <div>
-                <p className="mb-1.5 text-sm text-muted-foreground">Direct viewer link</p>
+                <p className="mb-1.5 text-sm text-muted-foreground">{t('viewerLinkLabel')}</p>
                 <div className="flex items-center gap-2">
                   <Input readOnly value={viewerUrl} onFocus={(e) => e.currentTarget.select()} />
                   <Button variant="outline" onClick={() => copy('link', viewerUrl)}>
-                    {copied === 'link' ? 'Copied' : 'Copy'}
+                    {copied === 'link' ? tCommon('copied') : tCommon('copy')}
                   </Button>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Either way, whoever opens it enters their name and shows up below — you can grant
-                them controller access if you want.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('shareHint')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Participants</CardTitle>
+              <CardTitle>{t('participantsTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ParticipantsPanel roomId={roomId} token={token} />
@@ -538,9 +543,9 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
 
           <ConfirmDialog
             open={pendingEndShow}
-            title="End the show?"
-            description="This archives the current run to History and stops the timer. Your agenda stays exactly as it is — you can run it again, and it'll be recorded as a new run."
-            confirmLabel="End show"
+            title={t('endShowTitle')}
+            description={t('endShowDesc')}
+            confirmLabel={tController('endShow')}
             onConfirm={() => {
               roomActions.endShow(roomId, token).then(applyPayload)
               setPendingEndShow(false)
@@ -550,15 +555,16 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
 
           <ConfirmDialog
             open={pendingSwitch !== null}
-            title="Switch timers?"
+            title={t('switchTitle')}
             description={
               pendingSwitch
-                ? `"${activeTimer?.name ?? 'The current timer'}" is still ${
-                    state.status === 'running' ? 'running' : 'paused partway through'
-                  }. Switching to "${pendingSwitch.name}" will stop it and reset its progress to zero.`
+                ? t(state.status === 'running' ? 'switchDescRunning' : 'switchDescPaused', {
+                    current: activeTimer?.name ?? t('theCurrentTimer'),
+                    next: pendingSwitch.name,
+                  })
                 : ''
             }
-            confirmLabel="Switch"
+            confirmLabel={t('switchConfirm')}
             onConfirm={() => {
               if (pendingSwitch) roomActions.select(roomId, token, pendingSwitch.timerId).then(applyPayload)
               setPendingSwitch(null)
@@ -568,17 +574,15 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
 
           <ConfirmDialog
             open={pendingDelete !== null}
-            title="Delete this segment?"
+            title={t('deleteTitle')}
             description={
               pendingDelete
-                ? `Delete "${pendingDelete.name}"? This can't be undone.${
-                    pendingDelete.timerId === state.activeTimerId
-                      ? " It's the segment currently selected — deleting it will also stop the show."
-                      : ''
-                  }`
+                ? t(pendingDelete.timerId === state.activeTimerId ? 'deleteDescActive' : 'deleteDesc', {
+                    name: pendingDelete.name,
+                  })
                 : ''
             }
-            confirmLabel="Delete"
+            confirmLabel={tCommon('delete')}
             onConfirm={() => {
               if (pendingDelete) roomActions.deleteTimer(roomId, token, pendingDelete.timerId).then(applyPayload)
               setPendingDelete(null)

@@ -1,13 +1,14 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import type { TransportStatus } from '@/lib/sync/transport'
 
-const LABEL: Record<TransportStatus, string> = {
-  connecting: 'Connecting…',
-  live: 'Live',
-  degraded: 'Reconnecting…',
-  offline: 'Offline',
-  'not-found': 'Room not found',
+const KEY: Record<TransportStatus, string> = {
+  connecting: 'connecting',
+  live: 'live',
+  degraded: 'reconnecting',
+  offline: 'offline',
+  'not-found': 'notFound',
 }
 
 const DOT_CLASS: Record<TransportStatus, string> = {
@@ -25,10 +26,11 @@ const DOT_CLASS: Record<TransportStatus, string> = {
  * problem (e.g. a viewer stuck on stale state for a long outage).
  */
 export function ConnectionBadge({ status }: { status: TransportStatus }) {
+  const t = useTranslations('connectionBadge')
   return (
     <div className="flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-1 text-xs text-white/80">
       <span className={`h-1.5 w-1.5 rounded-full ${DOT_CLASS[status]}`} />
-      {LABEL[status]}
+      {t(KEY[status])}
     </div>
   )
 }

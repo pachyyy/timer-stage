@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { auth } from '@/auth'
 import { isAuthConfigured } from '@/lib/auth/config'
 import { safeCallbackUrl } from '@/lib/auth/redirect'
@@ -26,25 +27,20 @@ export default async function LoginPage({
   if (session?.user) redirect(redirectTo)
 
   const isSignup = mode === 'signup'
+  const t = await getTranslations('login')
 
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 py-16">
       <Card>
         <CardHeader>
-          <CardTitle>{isSignup ? 'Create your account' : 'Log in'}</CardTitle>
-          <CardDescription>
-            {isSignup
-              ? 'Sign up to create and control rooms from any device.'
-              : 'Log in to control your rooms from any device.'}
-          </CardDescription>
+          <CardTitle>{isSignup ? t('titleSignup') : t('titleLogin')}</CardTitle>
+          <CardDescription>{isSignup ? t('descSignup') : t('descLogin')}</CardDescription>
         </CardHeader>
         <CardContent>
           {isAuthConfigured() ? (
             <GoogleSignInButton redirectTo={redirectTo} />
           ) : (
-            <p className="text-sm text-muted-foreground">
-              Sign-in isn&apos;t configured in this environment yet.
-            </p>
+            <p className="text-sm text-muted-foreground">{t('notConfigured')}</p>
           )}
         </CardContent>
       </Card>

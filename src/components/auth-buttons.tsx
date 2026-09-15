@@ -3,6 +3,7 @@
 import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Settings, History, LayoutDashboard, LogOut, DoorOpen, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -28,13 +29,14 @@ import {
 export function AuthButtons({ size = 'sm' as const }: { size?: 'sm' | 'default' }) {
   const { data: session, status } = useSession()
   const pathname = usePathname()
+  const t = useTranslations('nav')
 
   if (status === 'loading') return null
 
   if (!session?.user) {
     return (
       <Button asChild variant="outline" size={size}>
-        <Link href={`/login?callbackUrl=${encodeURIComponent(pathname || '/')}`}>Log in</Link>
+        <Link href={`/login?callbackUrl=${encodeURIComponent(pathname || '/')}`}>{t('login')}</Link>
       </Button>
     )
   }
@@ -54,31 +56,31 @@ export function AuthButtons({ size = 'sm' as const }: { size?: 'sm' | 'default' 
         <DropdownMenuItem asChild>
           <Link href="/dashboard">
             <LayoutDashboard />
-            Dashboard
+            {t('dashboard')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/my-rooms">
             <DoorOpen />
-            My Rooms
+            {t('myRooms')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/history">
             <History />
-            History
+            {t('history')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/account">
             <User />
-            Account
+            {t('account')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut({ redirectTo: '/' })}>
           <LogOut />
-          Sign out
+          {t('signOut')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -18,6 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { formatDuration } from '@/lib/timer/model'
 import type { TimerRow } from '@/lib/sync/transport'
@@ -47,6 +48,7 @@ function AgendaRow({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: timer.id,
   })
+  const t = useTranslations('agendaList')
 
   return (
     <li
@@ -62,7 +64,7 @@ function AgendaRow({
         {...attributes}
         {...listeners}
         type="button"
-        aria-label="Drag to reorder"
+        aria-label={t('dragHandle')}
         className="flex h-9 w-6 shrink-0 touch-none cursor-grab items-center justify-center text-muted-foreground/50 hover:text-muted-foreground active:cursor-grabbing"
       >
         <GripVertical className="size-4" />
@@ -82,10 +84,10 @@ function AgendaRow({
         </span>
       </button>
 
-      <Button variant="ghost" size="icon" aria-label="Edit segment" onClick={onEdit}>
+      <Button variant="ghost" size="icon" aria-label={t('editSegment')} onClick={onEdit}>
         <Pencil className="size-3.5 text-muted-foreground" />
       </Button>
-      <Button variant="ghost" size="icon" aria-label="Delete segment" onClick={onDelete}>
+      <Button variant="ghost" size="icon" aria-label={t('deleteSegment')} onClick={onDelete}>
         <Trash2 className="size-3.5 text-muted-foreground hover:text-destructive" />
       </Button>
     </li>
@@ -116,9 +118,10 @@ export function AgendaList({
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
+  const t = useTranslations('agendaList')
 
   if (timers.length === 0) {
-    return <p className="text-sm text-muted-foreground">No timers yet — add one below.</p>
+    return <p className="text-sm text-muted-foreground">{t('empty')}</p>
   }
 
   const ids = timers.map((t) => t.id)

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,6 +17,7 @@ import { Label } from '@/components/ui/label'
 export function JoinRoomForm({ className }: { className?: string }) {
   const router = useRouter()
   const [code, setCode] = useState('')
+  const t = useTranslations('joinForm')
 
   const join = () => {
     const trimmed = code.trim()
@@ -26,7 +28,7 @@ export function JoinRoomForm({ className }: { className?: string }) {
   return (
     <div className={className}>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="join-code">Room code</Label>
+        <Label htmlFor="join-code">{t('label')}</Label>
         <Input
           id="join-code"
           placeholder="e.g. 8QZDV2"
@@ -37,7 +39,7 @@ export function JoinRoomForm({ className }: { className?: string }) {
         />
       </div>
       <Button onClick={join} disabled={!code.trim()} size="lg" className="mt-3 w-full">
-        Join room
+        {t('button')}
       </Button>
     </div>
   )

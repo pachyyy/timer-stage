@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
+import { getTranslations } from 'next-intl/server'
 import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
 import { rooms } from '@/lib/db/schema'
@@ -50,7 +51,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ roo
     const [room] = await db.select({ ownerUserId: rooms.ownerUserId }).from(rooms).where(eq(rooms.id, roomId)).limit(1)
     const gate = await canStartRun(room?.ownerUserId ?? null, roomId)
     if (!gate.allowed) {
-      return NextResponse.json({ error: gate.reason ?? 'This room cannot be started again' }, { status: 402 })
+      const t = await getTranslations('gate')
+      return NextResponse.json({ error: gate.reason ?? t('planLimitReached') }, { status: 402 })
     }
   }
 

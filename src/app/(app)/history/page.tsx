@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatDuration } from '@/lib/timer/model'
 import type { OwnedRunSummary } from '@/lib/db/history'
@@ -14,6 +15,10 @@ import type { OwnedRunSummary } from '@/lib/db/history'
 export default function HistoryPage() {
   const { status } = useSession()
   const [runs, setRuns] = useState<OwnedRunSummary[] | null>(null)
+  const t = useTranslations('history')
+  const tCommon = useTranslations('common')
+  const tNav = useTranslations('nav')
+  const tHistoryRoom = useTranslations('historyRoom')
 
   useEffect(() => {
     if (status !== 'authenticated') return
@@ -25,23 +30,18 @@ export default function HistoryPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8">
-      <h1 className="text-xl font-semibold">History</h1>
+      <h1 className="text-xl font-semibold">{tNav('history')}</h1>
 
-      {status === 'loading' && <p className="text-muted-foreground">Loading…</p>}
+      {status === 'loading' && <p className="text-muted-foreground">{tCommon('loading')}</p>}
 
-      {status === 'unauthenticated' && (
-        <p className="text-sm text-muted-foreground">Sign in to see every run across your rooms.</p>
-      )}
+      {status === 'unauthenticated' && <p className="text-sm text-muted-foreground">{t('signInHint')}</p>}
 
       {status === 'authenticated' && (
         <>
           {!runs ? (
-            <p className="text-muted-foreground">Loading…</p>
+            <p className="text-muted-foreground">{tCommon('loading')}</p>
           ) : runs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No runs yet — history is recorded once you Start a segment and later End the show in any of
-              your rooms.
-            </p>
+            <p className="text-sm text-muted-foreground">{t('noRuns')}</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {runs.map((run) => (
@@ -54,9 +54,11 @@ export default function HistoryPage() {
                       <CardContent className="flex items-center justify-between gap-3 py-3">
                         <div className="flex flex-col gap-0.5">
                           <span className="font-medium">
-                            {run.roomName} — Run {run.seq}
+                            {t('runLabel', { roomName: run.roomName, seq: run.seq })}
                             {run.abandoned && (
-                              <span className="ml-2 text-xs font-normal text-muted-foreground">abandoned</span>
+                              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                                {tCommon('abandoned')}
+                              </span>
                             )}
                           </span>
                           <span className="text-xs text-muted-foreground">
@@ -65,7 +67,7 @@ export default function HistoryPage() {
                               timeStyle: 'short',
                             })}
                             {' · '}
-                            {run.segmentCount} segment{run.segmentCount === 1 ? '' : 's'}
+                            {tHistoryRoom('segmentCount', { count: run.segmentCount })}
                           </span>
                         </div>
                         <span className="tabular-nums text-sm text-muted-foreground">

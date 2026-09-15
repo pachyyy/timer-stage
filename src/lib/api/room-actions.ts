@@ -6,13 +6,28 @@
  */
 import type { RoomStatePayload } from '@/lib/sync/transport'
 
+/**
+ * Carries the HTTP status alongside the message so a caller can tell a quota/plan block (402 —
+ * see src/lib/entitlements/gate.ts) apart from any other failure without sniffing the (now
+ * translatable, so no longer English-guaranteed) message text for a word like "credit".
+ */
+export class ActionError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message)
+    this.name = 'ActionError'
+  }
+}
+
 async function request(url: string, init: RequestInit): Promise<RoomStatePayload> {
   const res = await fetch(url, init)
   if (!res.ok) {
-    // A plan-limit block (402 — see src/lib/entitlements/gate.ts) comes back with a real,
-    // show-it-directly message in `error`. Anything else falls back to the status code.
+    // A plan-limit block (402) comes back with a real, show-it-directly message in `error`.
+    // Anything else falls back to the status code.
     const body = await res.json().catch(() => null)
-    throw new Error(typeof body?.error === 'string' ? body.error : `Request failed: ${res.status}`)
+    throw new ActionError(
+      typeof body?.error === 'string' ? body.error : `Request failed: ${res.status}`,
+      res.status,
+    )
   }
   return res.json()
 }
