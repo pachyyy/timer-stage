@@ -2,10 +2,10 @@ import { and, eq, gt, gte, sql } from 'drizzle-orm'
 import { db } from './client'
 import { accountQuota, quotaLedger, users } from './schema'
 
-/** A brand-new account's starting balance — this IS the product's free tier now: everyone gets
- * one room, with the standard 3-free-participants baseline (see FREE_PARTICIPANTS_PER_ROOM in
- * gate.ts), before they need to buy anything. */
-export const STARTER_ROOM_QUOTA = 1
+/** A brand-new account's starting balance. Zero on both counts — a signed-in account has to be
+ * granted room quota (via the panel's top-up, see grantQuotaByEmail) before it can create its
+ * first room; there is no longer an automatic free room on sign-up. */
+export const STARTER_ROOM_QUOTA = 0
 export const STARTER_USER_QUOTA = 0
 
 export interface QuotaBalance {

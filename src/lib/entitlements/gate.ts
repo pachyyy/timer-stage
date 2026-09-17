@@ -35,9 +35,9 @@ export const SEGMENTS_PER_QUOTA_ROOM = 30
 /**
  * "permanent" is the one remaining pachy-core-resolved concept for Cue: a hand-picked, fully
  * uncapped grant (see the panel's seed script) that bypasses quota entirely — unlimited rooms,
- * unlimited participants, never single-use. Everyone else who signs in either hasn't bought
- * anything yet (the starter balance IS the free tier now — see quota.ts's STARTER_ROOM_QUOTA) or
- * has topped up via the panel's admin-API call into stagetimer's own quota ledger.
+ * unlimited participants, never single-use. Everyone else who signs in starts at a zero balance
+ * (see quota.ts's STARTER_ROOM_QUOTA) and has to be topped up via the panel's admin-API call into
+ * stagetimer's own quota ledger before they can create a room.
  */
 async function isPermanent(ownerUserId: string | null): Promise<boolean> {
   if (!ownerUserId) return false
@@ -51,8 +51,8 @@ async function isPermanent(ownerUserId: string | null): Promise<boolean> {
  * (see that route), so `owner` is null here only when auth isn't configured at all (no AUTH_*
  * env vars — local dev keeps working with zero env vars). In that case creation is deliberately
  * NEVER capped — quota is an account-scoped economic concept, and there's no account to bill. A
- * signed-in account's very first room is free (see quota.ts's STARTER_ROOM_QUOTA) — every one
- * after that spends a purchased credit.
+ * signed-in account starts at zero room quota (see quota.ts's STARTER_ROOM_QUOTA) — every room,
+ * including the first, spends a purchased credit.
  */
 export async function canCreateRoom(owner: { userId: string; email: string } | null): Promise<GateResult> {
   if (!entitlementsEnforced()) return ALLOWED

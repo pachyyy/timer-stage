@@ -262,9 +262,9 @@ separate free/mid/top plan concept for them beyond their starter balance.
 - **The economics**: every room includes `FREE_PARTICIPANTS_PER_ROOM` (3) participants and
   `SEGMENTS_PER_QUOTA_ROOM` (30) segments, history, and export, for free — those aren't metered.
   What's metered is room count and participants beyond 3. A brand-new account's starter balance
-  (`quota.ts`'s `STARTER_ROOM_QUOTA` = 1, `userQuota` = 0) *is* the free tier now — this is what
-  keeps a first-time visitor able to try the product without buying anything, playing the same
-  role the old "free plan" did.
+  (`quota.ts`'s `STARTER_ROOM_QUOTA` = 0, `userQuota` = 0) is zero — signing in no longer grants a
+  free room; every account needs a manual top-up (the panel's admin-API call, see "Granting quota"
+  below) before it can create its first room.
 - **`quota.ts`** is the only code that touches `accountQuota`/`quotaLedger`. `tryConsumeRoomQuota`
   and `tryConsumeUserQuota` are a conditional atomic `UPDATE ... WHERE quota > 0`, not
   read-then-write — that's the actual race-safety; a gate's own balance check beforehand is just a
