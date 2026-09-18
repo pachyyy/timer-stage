@@ -1,14 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { JoinRoomForm } from '@/components/join-room-form'
 import { AuthButtons } from '@/components/auth-buttons'
 import { LocaleSwitcher } from '@/components/locale-switcher'
 
@@ -22,7 +19,6 @@ import { LocaleSwitcher } from '@/components/locale-switcher'
 export function SiteNavbar() {
   const { data: session, status } = useSession()
   const pathname = usePathname()
-  const [joinOpen, setJoinOpen] = useState(false)
   const t = useTranslations('nav')
 
   const callbackUrl = encodeURIComponent(pathname || '/')
@@ -53,11 +49,7 @@ export function SiteNavbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setJoinOpen(true)}>
-            {t('joinRoom')}
-          </Button>
-
+        <div className="flex shrink-0 items-center gap-2">
           <LocaleSwitcher />
 
           {status === 'loading' ? null : session?.user ? (
@@ -79,15 +71,6 @@ export function SiteNavbar() {
           )}
         </div>
       </div>
-
-      <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{t('joinRoom')}</DialogTitle>
-          </DialogHeader>
-          <JoinRoomForm />
-        </DialogContent>
-      </Dialog>
     </header>
   )
 }
