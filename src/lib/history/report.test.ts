@@ -77,6 +77,31 @@ describe('buildRunReport', () => {
     expect(incoming.neverRan).toBe(true)
   })
 
+  it('folds a fast auto-advance (select immediately followed by start) the same as a manual one', () => {
+    // This is exactly what `roomActions.advanceTo` produces client-side for a linked segment: a
+    // 'select' and a 'start' a few ms apart, not a dedicated event type — see the `linkToNext`
+    // agenda feature. The report must treat it identically to a slow, human-paced select+start.
+    const events = [
+      ev({ type: 'start', atMs: 0, timerId: 't1', timerName: 'Opening', plannedDurationMs: 300_000 }),
+      ev({ type: 'select', atMs: 300_000, timerId: 't1', toTimerId: 't2' }),
+      ev({ type: 'start', atMs: 300_020, timerId: 't2', timerName: 'Keynote', plannedDurationMs: 600_000 }),
+      ev({ type: 'run_end', atMs: 900_020, timerId: 't2' }),
+    ]
+    const report = buildRunReport({
+      run: run({ endedAtMs: 900_020 }),
+      events,
+      agenda: agenda([{ id: 't1' }, { id: 't2', name: 'Keynote', durationMs: 600_000 }]),
+    })
+    const outgoing = report.segments.find((s) => s.timerId === 't1')!
+    const incoming = report.segments.find((s) => s.timerId === 't2')!
+    expect(outgoing.actualMs).toBe(300_000)
+    expect(outgoing.endedAtMs).toBe(300_000)
+    expect(incoming.actualMs).toBe(600_000)
+    expect(incoming.plannedMs).toBe(600_000)
+    expect(incoming.neverRan).toBe(false)
+    expect(incoming.startedAtMs).toBe(300_020)
+  })
+
   it('does not let a mid-run duration edit change plannedMs — the first start wins', () => {
     const events = [
       ev({ type: 'start', atMs: 0, timerId: 't1', timerName: 'Opening', plannedDurationMs: 300_000 }),

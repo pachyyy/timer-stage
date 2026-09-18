@@ -140,7 +140,11 @@
     "empty": "No timers yet — add one below.",
     "dragHandle": "Drag to reorder",
     "editSegment": "Edit segment",
-    "deleteSegment": "Delete segment"
+    "deleteSegment": "Delete segment",
+    "linkLabel": "Link to next",
+    "linkedLabel": "Linked",
+    "linkToNext": "Link to next segment",
+    "unlinkFromNext": "Unlink from next segment"
   },
   "controllerPanel": {
     "oneMin": "1 min",

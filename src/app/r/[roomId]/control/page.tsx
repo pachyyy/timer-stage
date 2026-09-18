@@ -7,6 +7,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useRoom } from '@/hooks/use-room'
+import { useAutoAdvance } from '@/hooks/use-auto-advance'
+import { useAutoAdvancePing } from '@/hooks/use-auto-advance-ping'
 import { useOwnRole } from '@/hooks/use-own-role'
 import { useMessageAlert } from '@/hooks/use-message-alert'
 import { getControllerToken, setControllerToken } from '@/lib/auth/local-tokens'
@@ -209,6 +211,31 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
     return () => window.removeEventListener('keydown', handler)
   }, [roomId, token, state, applyPayload])
 
+  // Optional per-segment "auto-advance" — see the link toggle in AgendaList. This is the fast
+  // path: near-instant, but only while this tab is open and foregrounded (requestAnimationFrame
+  // throttles/pauses otherwise). useAutoAdvancePing below is the backstop that keeps working even
+  // when this tab is backgrounded or closed, as long as some other room screen (e.g. a viewer) is
+  // open — see both hooks' doc comments. Safe to run both at once; each advance is idempotent.
+  useAutoAdvance({
+    runState: { status: state?.status ?? 'stopped', startedAtMs: state?.startedAtMs ?? null, elapsedBeforeMs: state?.elapsedBeforeMs ?? 0 },
+    durationMs: activeTimer?.durationMs ?? 0,
+    syncedNow,
+    isRunning: state?.status === 'running',
+    activeTimerId: state?.activeTimerId ?? null,
+    linkToNext: Boolean(activeTimer?.linkToNext),
+    onZeroCrossing: () => {
+      if (!state) return
+      const idx = state.timers.findIndex((timer) => timer.id === state.activeTimerId)
+      const next = idx >= 0 ? state.timers[idx + 1] : undefined
+      if (!next) return
+      roomActions
+        .advanceTo(roomId, token, next.id)
+        .then(applyPayload)
+        .catch((err) => console.error('auto-advance failed (non-fatal)', err))
+    },
+  })
+  useAutoAdvancePing({ roomId, isRunning: state?.status === 'running', applyPayload })
+
   if (resolvingAccess) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 text-center">
@@ -376,6 +403,9 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onReorder={handleReorder}
+                onToggleLink={(timerId, linkToNext) =>
+                  roomActions.updateTimer(roomId, token, timerId, { linkToNext }).then(applyPayload)
+                }
               />
 
               <div className="flex items-center gap-2 pt-2">

@@ -140,7 +140,11 @@
     "empty": "Belum ada timer — tambahkan satu di bawah.",
     "dragHandle": "Seret untuk mengurutkan ulang",
     "editSegment": "Edit segmen",
-    "deleteSegment": "Hapus segmen"
+    "deleteSegment": "Hapus segmen",
+    "linkLabel": "Tautkan ke berikutnya",
+    "linkedLabel": "Tertaut",
+    "linkToNext": "Tautkan ke segmen berikutnya",
+    "unlinkFromNext": "Lepas tautan dari segmen berikutnya"
   },
   "controllerPanel": {
     "oneMin": "1 mnt",

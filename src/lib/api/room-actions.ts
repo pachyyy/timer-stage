@@ -60,6 +60,7 @@ export interface TimerPatch {
   durationMs?: number
   wrapUpMs?: number
   scheduledStartMs?: number | null
+  linkToNext?: boolean
 }
 
 export const roomActions = {
@@ -80,6 +81,15 @@ export const roomActions = {
   /** Archives the current run and stops the timer. The agenda stays — the next 'start' opens a
    * fresh run, so the same show can be run again. */
   endShow: (roomId: string, token: string) => post(`/api/rooms/${roomId}/actions`, { action: 'end', token }),
+  /** Auto-advance: select(next) then start(), sequentially — see the `linkToNext` agenda feature.
+   * If a concurrent action (another tab, a manual click) already moved activeTimerId away from
+   * `timerId` by the time select() resolves, don't blindly start whatever is active now — bail
+   * and return that fresher payload instead. */
+  advanceTo: async (roomId: string, token: string, timerId: string): Promise<RoomStatePayload> => {
+    const afterSelect = await post(`/api/rooms/${roomId}/actions`, { action: 'select', token, timerId })
+    if (afterSelect.activeTimerId !== timerId) return afterSelect
+    return post(`/api/rooms/${roomId}/actions`, { action: 'start', token })
+  },
   addTimer: (roomId: string, token: string, input: { name: string; durationMs: number }) =>
     post(`/api/rooms/${roomId}/timers`, { token, ...input }),
   deleteTimer: (roomId: string, token: string, timerId: string) =>

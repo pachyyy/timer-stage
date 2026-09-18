@@ -68,7 +68,12 @@ export class AblyTransport implements RoomTransport {
     const handler = (message: Ably.Message) => {
       onState(message.data as RoomStatePayload)
     }
-    channel.subscribe('state', handler)
+    // subscribe() implicitly attaches and returns a promise that REJECTS if the client is
+    // close()'d before the attach finishes (e.g. a fast unmount — React Strict Mode's dev-only
+    // mount→cleanup→remount reliably triggers this on a fresh page). Nothing here needs to await
+    // attachment, and real connection problems are already surfaced via the connection.on(...)
+    // status listener above, so an unhandled rejection here would only ever be noise.
+    channel.subscribe('state', handler).catch(() => {})
 
     return () => {
       channel.unsubscribe('state', handler)

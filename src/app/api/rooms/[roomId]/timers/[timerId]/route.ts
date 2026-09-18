@@ -44,6 +44,7 @@ export async function PATCH(
   if (Number.isFinite(body.scheduledStartMs) || body.scheduledStartMs === null) {
     patch.scheduledStartMs = body.scheduledStartMs
   }
+  if (typeof body.linkToNext === 'boolean') patch.linkToNext = body.linkToNext
 
   await db
     .update(timers)

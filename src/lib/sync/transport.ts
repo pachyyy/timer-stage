@@ -22,6 +22,9 @@ export interface TimerRow {
   /** Optional absolute wall-clock start this segment is scheduled for. Informational only — it
    * drives the ahead/behind-schedule readout, never an automatic start. */
   scheduledStartMs: number | null
+  /** When true, this segment auto-selects and auto-starts whatever segment is next by position
+   * the moment its own countdown reaches 0:00 while running — see schema.ts's doc comment. */
+  linkToNext: boolean
 }
 
 export interface RoomStatePayload {

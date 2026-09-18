@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useRoom } from '@/hooks/use-room'
+import { useAutoAdvancePing } from '@/hooks/use-auto-advance-ping'
 import { useParticipant } from '@/hooks/use-participant'
 import { useMessageAlert } from '@/hooks/use-message-alert'
 import { useRoleAlert } from '@/hooks/use-role-alert'
@@ -24,7 +25,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   const { roomId } = use(params)
   const searchParams = useSearchParams()
   const token = searchParams.get('t') ?? ''
-  const { state, status, activeTimer, syncedNow } = useRoom(roomId, token)
+  const { state, status, activeTimer, syncedNow, applyPayload } = useRoom(roomId, token)
   const { session, role, checkedStorage, removed, join } = useParticipant(roomId)
   const { message, flashing } = useMessageAlert(state, syncedNow)
   const promotionFlashing = useRoleAlert(role)
@@ -50,6 +51,11 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
       lock?.release().catch(() => {})
     }
   }, [])
+
+  // Backstop for the `linkToNext` agenda feature — see use-auto-advance-ping.ts's doc comment.
+  // A viewer screen (this one) is often the most reliable place for this to keep running, since
+  // it's usually the on-stage monitor left open for the whole show even when the controller isn't.
+  useAutoAdvancePing({ roomId, isRunning: state?.status === 'running', applyPayload })
 
   const requestFullscreen = () => {
     document.documentElement.requestFullscreen?.().catch(() => {})

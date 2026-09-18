@@ -1,5 +1,6 @@
 'use client'
 
+import { Fragment } from 'react'
 import {
   DndContext,
   KeyboardSensor,
@@ -23,7 +24,7 @@ import { cn } from '@/lib/utils'
 import { formatDuration } from '@/lib/timer/model'
 import type { TimerRow } from '@/lib/sync/transport'
 import { Button } from '@/components/ui/button'
-import { GripVertical, Pencil, Trash2 } from 'lucide-react'
+import { GripVertical, Pencil, Trash2, Link2 } from 'lucide-react'
 import { applyReorder } from '@/lib/timer/reorder'
 
 function formatScheduledTime(ms: number): string {
@@ -94,6 +95,32 @@ function AgendaRow({
   )
 }
 
+/** Rendered between row `i` and row `i+1` — never after the last row, since there's nothing for
+ * it to link to. Kept out of dnd-kit's SortableContext `items` array below; it isn't a draggable
+ * item. `linked` reflects the PRECEDING segment's own `linkToNext` flag (the link is that
+ * segment's attribute, not a fixed pair — see schema.ts's doc comment), and toggling calls back
+ * with that same segment's id. */
+function AgendaLinkToggle({ linked, onToggle }: { linked: boolean; onToggle: () => void }) {
+  const t = useTranslations('agendaList')
+  return (
+    <li className="flex items-center pl-7">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={linked}
+        aria-label={linked ? t('unlinkFromNext') : t('linkToNext')}
+        className={cn(
+          'flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground',
+          linked && 'text-primary',
+        )}
+      >
+        <Link2 className="size-3" />
+        {linked ? t('linkedLabel') : t('linkLabel')}
+      </button>
+    </li>
+  )
+}
+
 export function AgendaList({
   timers,
   activeTimerId,
@@ -101,6 +128,7 @@ export function AgendaList({
   onEdit,
   onDelete,
   onReorder,
+  onToggleLink,
 }: {
   timers: TimerRow[]
   activeTimerId: string | null
@@ -109,6 +137,8 @@ export function AgendaList({
   onDelete: (timerId: string) => void
   /** Fired once, on drop, with the full new top-to-bottom order of timer ids. */
   onReorder: (order: string[]) => void
+  /** `timerId` is the PRECEDING segment in the pair — see AgendaLinkToggle. */
+  onToggleLink: (timerId: string, linkToNext: boolean) => void
 }) {
   // A small movement threshold on pointer/touch keeps a plain tap-to-select on the row working —
   // only the drag handle has listeners at all, but the threshold also avoids the handle itself
@@ -145,15 +175,22 @@ export function AgendaList({
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <ol className="flex flex-col gap-1">
           {timers.map((timer, i) => (
-            <AgendaRow
-              key={timer.id}
-              timer={timer}
-              index={i}
-              isActive={timer.id === activeTimerId}
-              onSelect={() => onSelect(timer.id)}
-              onEdit={() => onEdit(timer.id)}
-              onDelete={() => onDelete(timer.id)}
-            />
+            <Fragment key={timer.id}>
+              <AgendaRow
+                timer={timer}
+                index={i}
+                isActive={timer.id === activeTimerId}
+                onSelect={() => onSelect(timer.id)}
+                onEdit={() => onEdit(timer.id)}
+                onDelete={() => onDelete(timer.id)}
+              />
+              {i < timers.length - 1 && (
+                <AgendaLinkToggle
+                  linked={timer.linkToNext}
+                  onToggle={() => onToggleLink(timer.id, !timer.linkToNext)}
+                />
+              )}
+            </Fragment>
           ))}
         </ol>
       </SortableContext>

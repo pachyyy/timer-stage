@@ -1,0 +1,1 @@
+ALTER TABLE `timers` ADD `link_to_next` integer DEFAULT false NOT NULL;

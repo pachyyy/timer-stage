@@ -52,6 +52,11 @@ export const timers = sqliteTable(
     /** Optional absolute wall-clock start this segment is scheduled for. Informational only — it
      * drives the ahead/behind-schedule readout, never an automatic start. */
     scheduledStartMs: integer('scheduled_start_ms'),
+    /** When true, the moment THIS segment's countdown reaches 0:00 while running, the controller
+     * auto-selects and auto-starts whatever segment is next BY POSITION at that instant — not a
+     * fixed target id, so reordering/deleting the "next" segment just changes what this points at.
+     * Purely a per-account UX convenience; no entitlements interaction. */
+    linkToNext: integer('link_to_next', { mode: 'boolean' }).notNull().default(false),
   },
   // Every room-state load orders this exact (roomId, position) pair — see loadRoomStatePayload.
   (table) => [index('timers_room_position_idx').on(table.roomId, table.position)],

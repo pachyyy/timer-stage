@@ -64,6 +64,13 @@
       "when": 1788838797956,
       "tag": "0008_lovely_mach_iv",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1789697032392,
+      "tag": "0009_lumpy_stingray",
+      "breakpoints": true
     }
   ]
 }
