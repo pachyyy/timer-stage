@@ -344,6 +344,30 @@ Adding a UI string: add it to both JSON files under the right namespace, then `u
 `messages/<code>.json` with every key the others have (nothing currently checks the two files stay
 in sync — a missing key throws at render time for that string, not at build time).
 
+**Terminology glossary** — the concepts below each have exactly one name in user-facing copy;
+don't reintroduce a retired synonym when adding a new string.
+
+| Concept | EN | ID | Retired synonyms |
+|---|---|---|---|
+| Container + join code | Room | Ruang | — |
+| The thing being timed (live or recorded) | Event | Acara | show, run |
+| One agenda row | Segment | Segmen | timer (as a row) |
+| The countdown clock itself | Timer | Timer | — |
+| Person holding control | Operator | Operator | controller, admin, organizer |
+| Room owner, only where owner-vs-granted matters | Host | Host | — |
+| Person who joined | Participant | Peserta | viewer (as a person), crew member |
+| A display showing the timer | Screen | Layar | viewer screen, penonton |
+| A row in the run timeline | Action | Tindakan | event (as a column) |
+| Prepaid balance | Credits | Kredit | plan |
+
+This governs user-facing copy only — the `runs`/`run_events` DB tables, the `/runs` API routes,
+`RunEventType`, and other TypeScript/DB identifiers keep their existing names deliberately; the
+`control` message namespace is also named after the `/r/[roomId]/control` route, not the role.
+The `.xlsx` export (`src/lib/export/run-workbook.ts`) duplicates a chunk of this glossary as
+hardcoded English strings (`EVENT_LABELS`, the sheet title, the header row) since it can't call
+`useTranslations` — keep it in sync by hand when the glossary changes; it means the export itself
+is unlocalized (always English) regardless of the viewer's locale.
+
 **Cost**: reading the locale cookie in `getRequestConfig` makes every page dynamic — `/docs` and
 even `/_not-found` went from statically prerendered to server-rendered per request. Revisit
 together with the "keep marketing pages static" scaling note above if that ever matters (a

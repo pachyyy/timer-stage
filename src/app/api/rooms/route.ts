@@ -33,14 +33,14 @@ export async function POST(req: NextRequest) {
   // `users` lookup, not a `rooms` one, so "the room doesn't exist yet" is a non-issue.
   const segmentGate = await canAddSegments(session?.user?.id ?? null, 0, timerInputs.length)
   if (!segmentGate.allowed) {
-    return NextResponse.json({ error: segmentGate.reason ?? t('planLimitReached') }, { status: 402 })
+    return NextResponse.json({ error: segmentGate.reason ?? t('limitReached') }, { status: 402 })
   }
 
   // Anonymous creation is never gated on room count — see canCreateRoom's doc comment. For a
   // signed-in, non-"permanent" account this is the point where a room credit is actually spent.
   const roomGate = await canCreateRoom(owner)
   if (!roomGate.allowed) {
-    return NextResponse.json({ error: roomGate.reason ?? t('planLimitReached') }, { status: 402 })
+    return NextResponse.json({ error: roomGate.reason ?? t('limitReached') }, { status: 402 })
   }
 
   const { roomId, controllerToken, viewerToken } = await createRoom({

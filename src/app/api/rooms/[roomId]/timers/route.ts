@@ -37,7 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ roo
   const gate = await canAddSegments(room?.ownerUserId ?? null, existing.length, 1)
   if (!gate.allowed) {
     const t = await getTranslations('gate')
-    return NextResponse.json({ error: gate.reason ?? t('planLimitReached') }, { status: 402 })
+    return NextResponse.json({ error: gate.reason ?? t('limitReached') }, { status: 402 })
   }
 
   const id = generateId()

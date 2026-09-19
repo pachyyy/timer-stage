@@ -47,7 +47,6 @@ export default async function PricingPage() {
                 })}
               </li>
               <li>• {t('roomsBullet2')}</li>
-              <li>• {t('roomsBullet3')}</li>
             </ul>
           </CardContent>
         </Card>

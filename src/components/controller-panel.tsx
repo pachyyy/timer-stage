@@ -51,7 +51,7 @@ export function ControllerPanel({
   onBlackoutChange: (v: boolean) => void
   onEndShow: () => void
 }) {
-  const t = useTranslations('controllerPanel')
+  const t = useTranslations('operatorPanel')
   const tCommon = useTranslations('common')
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const lastPhaseRef = useRef<TimerPhase | null>(null)
@@ -84,7 +84,7 @@ export function ControllerPanel({
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border p-5">
-      <div className="text-sm text-muted-foreground">{timerName ?? tCommon('noTimerSelected')}</div>
+      <div className="text-sm text-muted-foreground">{timerName ?? tCommon('noSegmentSelected')}</div>
 
       <div
         ref={(node) => {
@@ -140,7 +140,7 @@ export function ControllerPanel({
           disabled={!hasOpenRun}
           className="text-destructive hover:text-destructive"
         >
-          <Square className="size-3.5" /> {t('endShow')}
+          <Square className="size-3.5" /> {t('endEvent')}
         </Button>
       </div>
 

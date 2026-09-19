@@ -105,10 +105,10 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
                   <CardContent className="flex items-center justify-between gap-3 py-3">
                     <div className="flex flex-col gap-0.5">
                       <span className="font-medium">
-                        {t('runLabel', { seq: summary.run.seq })}
+                        {t('eventLabel', { seq: summary.run.seq })}
                         {summary.run.endedAtMs === null && (
                           <span className="ml-2 text-xs font-normal text-amber-600 dark:text-amber-400">
-                            {t('live')}
+                            {t('inProgress')}
                           </span>
                         )}
                         {summary.run.abandoned && (

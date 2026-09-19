@@ -26,10 +26,10 @@ const EVENT_LABELS: Record<RunEventType, string> = {
   reset: 'Reset',
   select: 'Select',
   adjust: 'Adjust',
-  blackout_on: 'Blackout on',
-  blackout_off: 'Blackout off',
+  blackout_on: 'Screens blacked out',
+  blackout_off: 'Screens restored',
   message: 'Message',
-  run_end: 'End show',
+  run_end: 'End event',
 }
 
 function eventDetail(event: RunEventRecord, nameById: Map<string, string>): string {
@@ -63,7 +63,7 @@ export async function buildRunWorkbook(input: {
 
   const { tzOffsetMinutes } = input
   const generatedAt = toLocalDate(Date.now(), tzOffsetMinutes)
-  const title = `${input.roomName} — Run ${input.run.seq}${input.run.abandoned ? ' (abandoned)' : ''} — generated ${generatedAt.toISOString().slice(0, 16).replace('T', ' ')} (UTC${tzOffsetMinutes <= 0 ? '+' : '-'}${Math.abs(tzOffsetMinutes / 60)})`
+  const title = `${input.roomName} — Event #${input.run.seq}${input.run.abandoned ? ' (unfinished)' : ''} — generated ${generatedAt.toISOString().slice(0, 16).replace('T', ' ')} (UTC${tzOffsetMinutes <= 0 ? '+' : '-'}${Math.abs(tzOffsetMinutes / 60)})`
 
   const nameById = new Map(input.report.segments.map((s) => [s.timerId, s.name]))
 
@@ -126,7 +126,7 @@ export async function buildRunWorkbook(input: {
   eventsSheet.addRow([title])
   eventsSheet.mergeCells(1, 1, 1, 4)
   eventsSheet.getRow(1).font = { bold: true }
-  eventsSheet.addRow(['Time', 'Event', 'Segment', 'Detail'])
+  eventsSheet.addRow(['Time', 'Action', 'Segment', 'Detail'])
   eventsSheet.getRow(2).font = { bold: true }
   eventsSheet.columns = [{ width: 18 }, { width: 14 }, { width: 26 }, { width: 30 }]
 
@@ -162,7 +162,7 @@ export async function buildRunWorkbook(input: {
     row.getCell(5).numFmt = 'yyyy-mm-dd hh:mm:ss'
   }
   if (input.adjustments.length === 0) {
-    adjSheet.addRow(['No mid-show time adjustments in this run.'])
+    adjSheet.addRow(['No mid-event time adjustments.'])
   }
 
   // exceljs's own declared Buffer type doesn't line up with @types/node's ambient Buffer, and a

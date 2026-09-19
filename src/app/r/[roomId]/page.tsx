@@ -33,7 +33,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   // Handed to TimerDisplay so the final-minute blink can invert the background from inside the same
   // animation-frame loop that drives the digits.
   const surfaceRef = useRef<HTMLDivElement | null>(null)
-  const t = useTranslations('viewer')
+  const t = useTranslations('screen')
   const tConnection = useTranslations('connectionBadge')
   const tCommon = useTranslations('common')
 
@@ -140,7 +140,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
           />
         </>
       ) : (
-        <div className="text-2xl opacity-40">{tCommon('noTimerSelected')}</div>
+        <div className="text-2xl opacity-40">{tCommon('noSegmentSelected')}</div>
       )}
 
       {wakeLockError && (

@@ -24,7 +24,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ room
   const gate = await canViewHistory(room?.ownerUserId ?? null)
   if (!gate.allowed) {
     const t = await getTranslations('gate')
-    return NextResponse.json({ error: gate.reason ?? t('planLimitReached') }, { status: 402 })
+    return NextResponse.json({ error: gate.reason ?? t('limitReached') }, { status: 402 })
   }
 
   const runs = await listRuns(roomId)

@@ -89,7 +89,7 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
               {p.role === 'controller' ? (
                 <>
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                    {t('controllerBadge')}
+                    {t('operatorBadge')}
                   </span>
                   <Button
                     variant="ghost"
@@ -97,7 +97,7 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
                     disabled={pendingId === p.id}
                     onClick={() => setRole(p.id, 'viewer')}
                   >
-                    {t('demote')}
+                    {t('revokeControl')}
                   </Button>
                 </>
               ) : (
@@ -107,7 +107,7 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
                   disabled={pendingId === p.id}
                   onClick={() => setRole(p.id, 'controller')}
                 >
-                  {t('makeController')}
+                  {t('giveControl')}
                 </Button>
               )}
               <Button
@@ -130,7 +130,7 @@ export function ParticipantsPanel({ roomId, token }: { roomId: string; token: st
           pendingRemove
             ? t(
                 rows.find((p) => p.id === pendingRemove.id)?.role === 'controller'
-                  ? 'removeDescController'
+                  ? 'removeDescOperator'
                   : 'removeDescViewer',
                 { name: pendingRemove.name },
               )

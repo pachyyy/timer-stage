@@ -35,7 +35,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   const t = useTranslations('control')
   const tCommon = useTranslations('common')
   const tNav = useTranslations('nav')
-  const tController = useTranslations('controllerPanel')
+  const tOperator = useTranslations('operatorPanel')
 
   const MESSAGE_DURATIONS: { label: string; ms: number | null }[] = [
     { label: t('durationUntilCleared'), ms: null },
@@ -252,7 +252,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
         <h1 className="text-xl font-semibold">{t('demotedTitle')}</h1>
         <p className="text-sm text-muted-foreground">{t('demotedDesc')}</p>
         <Button asChild variant="outline">
-          <a href={`/r/${roomId}`}>{t('goToViewer')}</a>
+          <a href={`/r/${roomId}`}>{t('goToScreen')}</a>
         </Button>
       </main>
     )
@@ -573,9 +573,9 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
 
           <ConfirmDialog
             open={pendingEndShow}
-            title={t('endShowTitle')}
-            description={t('endShowDesc')}
-            confirmLabel={tController('endShow')}
+            title={t('endEventTitle')}
+            description={t('endEventDesc')}
+            confirmLabel={tOperator('endEvent')}
             onConfirm={() => {
               roomActions.endShow(roomId, token).then(applyPayload)
               setPendingEndShow(false)
@@ -589,7 +589,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
             description={
               pendingSwitch
                 ? t(state.status === 'running' ? 'switchDescRunning' : 'switchDescPaused', {
-                    current: activeTimer?.name ?? t('theCurrentTimer'),
+                    current: activeTimer?.name ?? t('theCurrentSegment'),
                     next: pendingSwitch.name,
                   })
                 : ''

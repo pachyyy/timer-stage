@@ -17,16 +17,16 @@ import type { CoalescedAdjustment, RunEventRecord, RunEventType, RunRecord, RunR
 import { cn } from '@/lib/utils'
 
 const EVENT_LABEL_KEYS: Record<RunEventType, string> = {
-  start: 'eventStart',
-  resume: 'eventResume',
-  pause: 'eventPause',
-  reset: 'eventReset',
-  select: 'eventSelect',
-  adjust: 'eventAdjust',
-  blackout_on: 'eventBlackoutOn',
-  blackout_off: 'eventBlackoutOff',
-  message: 'eventMessage',
-  run_end: 'eventRunEnd',
+  start: 'actionStart',
+  resume: 'actionResume',
+  pause: 'actionPause',
+  reset: 'actionReset',
+  select: 'actionSelect',
+  adjust: 'actionAdjust',
+  blackout_on: 'actionBlackoutOn',
+  blackout_off: 'actionBlackoutOff',
+  message: 'actionMessage',
+  run_end: 'actionEventEnd',
 }
 
 function fmtTime(ms: number): string {
@@ -111,7 +111,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
             <a href={`/r/${roomId}/history${token ? `?t=${token}` : ''}`}>
-              <ArrowLeft className="size-3.5" /> {t('allRuns')}
+              <ArrowLeft className="size-3.5" /> {t('allEvents')}
             </a>
           </Button>
           <Button asChild variant="outline" size="sm">
@@ -127,7 +127,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
         <>
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <span>{fmtTime(detail.run.startedAtMs)}</span>
-            {detail.run.abandoned && <span className="text-amber-600 dark:text-amber-400">{t('abandonedRun')}</span>}
+            {detail.run.abandoned && <span className="text-amber-600 dark:text-amber-400">{t('unfinishedEvent')}</span>}
             {detail.report.incomplete && (
               <span className="text-amber-600 dark:text-amber-400">{t('inProgress')}</span>
             )}
@@ -227,7 +227,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
                 <thead>
                   <tr className="border-b text-left text-xs text-muted-foreground">
                     <th className="py-1.5 pr-2">{t('colTime')}</th>
-                    <th className="py-1.5 pr-2">{t('colEvent')}</th>
+                    <th className="py-1.5 pr-2">{t('colAction')}</th>
                     <th className="py-1.5 pr-2">{t('colSegment')}</th>
                     <th className="py-1.5 pr-2">{t('colDetail')}</th>
                   </tr>

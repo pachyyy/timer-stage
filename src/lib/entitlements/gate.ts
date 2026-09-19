@@ -175,5 +175,5 @@ export async function canStartRun(ownerUserId: string | null, roomId: string): P
   if (!(await hasAnyRun(roomId))) return ALLOWED
 
   const t = await getTranslations('gate')
-  return { allowed: false, reason: t('oneRunPerRoom') }
+  return { allowed: false, reason: t('oneEventPerRoom') }
 }
