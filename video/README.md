@@ -10,8 +10,9 @@ npm run dev      # Remotion Studio on http://localhost:3100 (3000 is the app's o
 npm run gifs     # renders every section into ../public/docs/*.gif
 ```
 
-Single section: `npm run gif:overview`, `gif:sign-in`, `gif:create-room`. Indonesian: add
-`--props='{"locale":"id"}'` to the render command (merged over the composition's defaults).
+Single sections: `npm run gifs -- RunTimer History` (composition ids). Indonesian: `npm run gifs:id`
+renders into `../public/docs/id/` — the docs page doesn't use those yet; it shows the English GIFs in
+both locales.
 
 ## How it stays in sync with the app
 
@@ -33,7 +34,9 @@ Single section: `npm run gif:overview`, `gif:sign-in`, `gif:create-room`. Indone
 
 1. Add `src/scenes/<Name>.tsx` — `Stage` → `BrowserFrame` → `Screen` with one `<Page>` per route
    (all mounted, cross-faded by opacity) and a `<Cursor>` overlay.
-2. Register it in `src/Root.tsx` and add a `gif:<name>` script in `package.json`.
+2. Register it in `src/Root.tsx`, add its id → slug to `scripts/render-gifs.mjs`, and add the section
+   (same slug) to the app's `src/lib/docs/sections.ts` plus its copy under `docs.sections` in both
+   `messages/*.json`.
 3. Check frames without opening Studio:
    `npx remotion render <Id> out/frames --frames=30,90,150 --image-format=png`.
 

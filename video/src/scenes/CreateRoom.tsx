@@ -5,7 +5,8 @@ import { BROWSER_BAR_HEIGHT, BrowserFrame } from "../components/BrowserFrame";
 import { Cursor, type Waypoint } from "../components/Cursor";
 import { Page, Screen } from "../components/Screen";
 import { Stage } from "../components/Stage";
-import { ControlPage } from "../components/app/ControlPage";
+import { AgendaCard, ControlPage } from "../components/app/ControlPage";
+import { OperatorPanel } from "../components/app/OperatorPanel";
 import { DashboardPage, type DraftRow } from "../components/app/DashboardPage";
 import { makeT, type Locale } from "../lib/i18n";
 import { pressScale, progress, typed, typedEnd } from "../lib/motion";
@@ -143,16 +144,15 @@ export const CreateRoom: React.FC<CreateRoomProps> = ({ locale, userName, eventN
             <ControlPage
               t={t}
               roomName={eventName}
-              segments={agenda}
-              activeIndex={0}
-              remainingMs={agenda[0].durationMs}
-              isRunning={false}
               scrollY={interpolate(frame, [SCROLL_CONTROL, SCROLL_CONTROL + 24], [0, 150], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
                 easing: easeInOut,
               })}
-            />
+            >
+              <OperatorPanel t={t} timerName={agenda[0].name} remainingMs={agenda[0].durationMs} isRunning={false} />
+              <AgendaCard t={t} segments={agenda} activeIndex={0} />
+            </ControlPage>
           </Page>
         </Screen>
       </BrowserFrame>

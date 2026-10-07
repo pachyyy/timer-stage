@@ -25,10 +25,8 @@
   },
   "scripts": {
     "dev": "remotion studio",
-    "gif:overview": "remotion render Overview ../public/docs/overview.gif --codec=gif --every-nth-frame=2",
-    "gif:sign-in": "remotion render SignIn ../public/docs/sign-in.gif --codec=gif --every-nth-frame=2",
-    "gif:create-room": "remotion render CreateRoom ../public/docs/create-room.gif --codec=gif --every-nth-frame=2",
-    "gifs": "npm run gif:overview && npm run gif:sign-in && npm run gif:create-room",
+    "gifs": "node scripts/render-gifs.mjs",
+    "gifs:id": "node scripts/render-gifs.mjs --locale=id",
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc"

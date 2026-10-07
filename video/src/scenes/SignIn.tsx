@@ -4,14 +4,12 @@ import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { BROWSER_BAR_HEIGHT, BrowserFrame } from "../components/BrowserFrame";
 import { Cursor } from "../components/Cursor";
 import { Page, Screen } from "../components/Screen";
 import { Stage } from "../components/Stage";
 import { DashboardPage } from "../components/app/DashboardPage";
-import { Logo } from "../components/app/Logo";
+import { LandingPage } from "../components/app/LandingPage";
 import { SiteNavbar } from "../components/app/SiteNavbar";
 import { makeT, type Locale, type T } from "../lib/i18n";
 import { pressScale, progress } from "../lib/motion";
@@ -20,49 +18,6 @@ import { UI_SCALE } from "../lib/theme";
 export type SignInProps = { locale: Locale; userName: string };
 
 const WINDOW = { x: 40, y: 40, w: 1200, h: 720 };
-
-/** src/app/(marketing)/page.tsx — signed-out landing. */
-const LandingPage: React.FC<{ t: T; loginRef: React.Ref<HTMLButtonElement>; loginStyle: React.CSSProperties }> = ({
-  t,
-  loginRef,
-  loginStyle,
-}) => (
-  <>
-    <SiteNavbar t={t} activePath="/" loginRef={loginRef} loginStyle={loginStyle} />
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center gap-10 px-4 py-10">
-      <div className="text-center">
-        <div className="flex items-center justify-center gap-2">
-          <Logo size={40} />
-          <h1 className="bg-[linear-gradient(135deg,var(--primary-gradient-from),var(--primary-gradient-to))] bg-clip-text text-4xl font-semibold tracking-tight text-transparent">
-            Cue
-          </h1>
-        </div>
-        <p className="mt-3 text-lg text-muted-foreground">{t("landing", "tagline")}</p>
-        <div className="mt-6 flex items-center justify-center gap-3">
-          <Button size="lg">{t("landing", "signupCta")}</Button>
-          <Button size="lg" variant="outline">
-            {t("landing", "pricingCta")}
-          </Button>
-        </div>
-      </div>
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>{t("landing", "codeCardTitle")}</CardTitle>
-          <CardDescription>{t("landing", "codeCardDesc")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-1.5">
-            <Label>{t("joinForm", "label")}</Label>
-            <Input readOnly placeholder="e.g. 8QZDV2" className="font-mono text-lg tracking-widest uppercase" />
-          </div>
-          <Button size="lg" className="mt-3 w-full" disabled>
-            {t("joinForm", "button")}
-          </Button>
-        </CardContent>
-      </Card>
-    </main>
-  </>
-);
 
 /** src/app/(marketing)/login/page.tsx. */
 const LoginPage: React.FC<{ t: T; googleRef: React.Ref<HTMLButtonElement>; googleStyle: React.CSSProperties }> = ({

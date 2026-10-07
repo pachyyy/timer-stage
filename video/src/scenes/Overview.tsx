@@ -10,6 +10,7 @@ import { Logo } from "../components/app/Logo";
 import { MessageCard } from "../components/app/MessageCard";
 import { OperatorPanel } from "../components/app/OperatorPanel";
 import { ViewerScreen } from "../components/app/ViewerScreen";
+import { CAPTIONS } from "../lib/captions";
 import { makeT, type Locale } from "../lib/i18n";
 import { pressScale, progress, typed, typedEnd } from "../lib/motion";
 
@@ -20,11 +21,6 @@ export type OverviewProps = {
   segmentMinutes: number;
 };
 
-/** Device captions — the only copy here with no counterpart in the app's own dictionaries. */
-const CAPTIONS: Record<Locale, { operator: string; stage: string; phone: string; tablet: string }> = {
-  en: { operator: "Operator", stage: "Stage screen", phone: "Participant's phone", tablet: "Tablet" },
-  id: { operator: "Operator", stage: "Layar panggung", phone: "Ponsel peserta", tablet: "Tablet" },
-};
 
 const WINDOW = { x: 40, y: 56, w: 640, h: 640 };
 const OPERATOR_SCALE = 1.1;

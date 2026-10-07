@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { formatDuration } from "@/lib/timer/model";
 import { phaseFor, type TimerPhase } from "@/lib/timer/phase";
 import type { T } from "../../lib/i18n";
+import { SwitchMock } from "./Dialog";
 
 const PHASE_CLASS: Record<TimerPhase, string> = {
   normal: "text-foreground",
@@ -20,13 +21,35 @@ export const OperatorPanel: React.FC<{
   remainingMs: number;
   wrapUpMs?: number;
   isRunning: boolean;
+  /** Whether an event is open — gates "End event", as `hasOpenRun` does in the real panel. */
+  hasOpenRun?: boolean;
+  blackout?: boolean;
   /** Which ±1 min button is mid-flash (the real panel's click confirmation). */
   flash?: "minus" | "plus" | null;
   startRef?: React.Ref<HTMLButtonElement>;
   startStyle?: React.CSSProperties;
   plusRef?: React.Ref<HTMLButtonElement>;
   plusStyle?: React.CSSProperties;
-}> = ({ t, timerName, remainingMs, wrapUpMs = 60_000, isRunning, flash, startRef, startStyle, plusRef, plusStyle }) => (
+  blackoutRef?: React.Ref<HTMLSpanElement>;
+  endRef?: React.Ref<HTMLButtonElement>;
+  endStyle?: React.CSSProperties;
+}> = ({
+  t,
+  timerName,
+  remainingMs,
+  wrapUpMs = 60_000,
+  isRunning,
+  hasOpenRun = isRunning,
+  blackout = false,
+  flash,
+  startRef,
+  startStyle,
+  plusRef,
+  plusStyle,
+  blackoutRef,
+  endRef,
+  endStyle,
+}) => (
   <div className="flex flex-col gap-4 rounded-xl border p-5">
     <div className="text-sm text-muted-foreground">{timerName}</div>
     <div className={`font-mono text-6xl font-semibold tabular-nums ${PHASE_CLASS[phaseFor(remainingMs, wrapUpMs)]}`}>
@@ -51,13 +74,17 @@ export const OperatorPanel: React.FC<{
     </div>
     <div className="flex items-center justify-between gap-2 pt-2">
       <div className="flex items-center gap-2">
-        {/* Switch, unchecked — mirrors src/components/ui/switch.tsx's resting state. */}
-        <span className="inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent bg-input shadow-xs">
-          <span className="block size-4 rounded-full bg-background ring-0" />
-        </span>
+        <SwitchMock checked={blackout} innerRef={blackoutRef} />
         <span className="text-sm leading-none font-medium">{t("operatorPanel", "blackoutLabel")}</span>
       </div>
-      <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" disabled={!isRunning}>
+      <Button
+        ref={endRef}
+        variant="outline"
+        size="sm"
+        className="text-destructive hover:text-destructive"
+        disabled={!hasOpenRun}
+        style={endStyle}
+      >
         <Square className="size-3.5" /> {t("operatorPanel", "endEvent")}
       </Button>
     </div>

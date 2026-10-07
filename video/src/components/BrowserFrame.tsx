@@ -30,9 +30,9 @@ export const BrowserFrame: React.FC<{
         <span className="size-3 rounded-full bg-[#febc2e]" />
         <span className="size-3 rounded-full bg-[#28c840]" />
       </div>
-      <div className="mx-auto flex h-7 w-[46%] items-center justify-center gap-1.5 rounded-md bg-background text-[13px] text-muted-foreground">
-        <Lock className="size-3" />
-        <span>
+      <div className="mx-auto flex h-7 w-[46%] min-w-0 items-center justify-center gap-1.5 rounded-md bg-background px-2 text-[13px] text-muted-foreground">
+        <Lock className="size-3 shrink-0" />
+        <span className="truncate">
           {HOST}
           {path}
         </span>

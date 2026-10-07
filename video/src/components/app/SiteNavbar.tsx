@@ -10,7 +10,9 @@ export const SiteNavbar: React.FC<{
   activePath: string;
   loginRef?: React.Ref<HTMLButtonElement>;
   loginStyle?: React.CSSProperties;
-}> = ({ t, activePath, loginRef, loginStyle }) => {
+  /** Below `sm` the real navbar hides its centre links. */
+  mobile?: boolean;
+}> = ({ t, activePath, loginRef, loginStyle, mobile }) => {
   const links = [
     { href: "/", label: t("nav", "home") },
     { href: "/pricing", label: t("nav", "pricing") },
@@ -23,7 +25,7 @@ export const SiteNavbar: React.FC<{
           <Logo />
           <span className="font-semibold tracking-tight">Cue</span>
         </div>
-        <nav className="flex items-center gap-6 text-sm text-muted-foreground">
+        <nav className={mobile ? "hidden" : "flex items-center gap-6 text-sm text-muted-foreground"}>
           {links.map((link) => (
             <span key={link.href} className={activePath === link.href ? "text-foreground" : undefined}>
               {link.label}

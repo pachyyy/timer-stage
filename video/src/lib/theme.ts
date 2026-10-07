@@ -23,6 +23,5 @@ export const UI_SCALE = 1.2;
 export const easeOut = Easing.bezier(0.16, 1, 0.3, 1);
 export const easeInOut = Easing.bezier(0.65, 0, 0.35, 1);
 
-/** Prefixed to each route in the fake address bar — empty shows the path alone. Set it to the
- * production domain once there is one. */
-export const HOST = "";
+/** Shown before each route in the fake address bar and in the share card's screen link. */
+export const HOST = "cuetimed.vercel.app";
