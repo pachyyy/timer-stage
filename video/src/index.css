@@ -1,0 +1,7 @@
+/* The app's own theme — tokens, radius, shadcn base layer — so every primitive renders exactly as
+ * it does in the product. */
+@import "../../src/app/globals.css";
+
+/* Tailwind only auto-scans this project; the shared primitives' classes live in the app. */
+@source "../../src/components/ui";
+@source "./";

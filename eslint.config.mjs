@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Remotion docs-animation project — its own package, lint and tsconfig (see video/README.md).
+    "video/**",
   ]),
 ]);
 

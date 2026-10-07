@@ -1,0 +1,39 @@
+{
+  "name": "cue-docs-video",
+  "version": "1.0.0",
+  "description": "Animated walkthroughs for the Cue docs, rendered with Remotion",
+  "repository": {},
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@remotion/cli": "4.0.533",
+    "@remotion/google-fonts": "4.0.533",
+    "@remotion/tailwind-v4": "4.0.533",
+    "@remotion/transitions": "4.0.533",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "remotion": "4.0.533",
+    "tailwindcss": "^4.2.0"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.533",
+    "@types/react": "19.2.7",
+    "@types/web": "0.0.166",
+    "eslint": "9.39.5",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "dev": "remotion studio",
+    "gif:overview": "remotion render Overview ../public/docs/overview.gif --codec=gif --every-nth-frame=2",
+    "gif:sign-in": "remotion render SignIn ../public/docs/sign-in.gif --codec=gif --every-nth-frame=2",
+    "gif:create-room": "remotion render CreateRoom ../public/docs/create-room.gif --codec=gif --every-nth-frame=2",
+    "gifs": "npm run gif:overview && npm run gif:sign-in && npm run gif:create-room",
+    "build": "remotion bundle",
+    "upgrade": "remotion upgrade",
+    "lint": "eslint src && tsc"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}
