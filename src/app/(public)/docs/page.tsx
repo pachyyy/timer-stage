@@ -1,26 +1,14 @@
+import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { DocSectionPage } from '@/components/doc-section-page'
+import { DOC_SECTIONS } from '@/lib/docs/sections'
 
-export const metadata = { title: 'Docs — Cue' }
-
-/** Placeholder — the user will design and write real documentation here later. */
-export default async function DocsPage() {
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('docs')
+  return { title: `${t('title')} — Cue`, description: t('subtitle') }
+}
 
-  return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-16">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-2 text-muted-foreground">{t('subtitle')}</p>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('comingSoonTitle')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{t('placeholder')}</p>
-        </CardContent>
-      </Card>
-    </main>
-  )
+/** /docs itself is the first section, Overview; the rest live at /docs/[section]. */
+export default function DocsPage() {
+  return <DocSectionPage section={DOC_SECTIONS[0]} />
 }

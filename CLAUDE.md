@@ -222,7 +222,12 @@ redirects), so which chrome to show can't be decided by route group alone: `Adap
 `useSession()`, so clicking "Pricing" or "Docs" from the sidebar keeps the sidebar instead of
 dropping back to the navbar.
 - `/pricing` — flat pricing copy (see Pricing below).
-- `/docs` — placeholder.
+- `/docs` and `/docs/[section]` — the user guide: `DocsNav` beside one page per section
+  (`src/lib/docs/sections.ts` is the ordered list; Overview lives at `/docs` itself), each with copy
+  from `docs.sections.*` in `messages/*.json` and a looping GIF from `public/docs/<slug>.gif`. Those
+  GIFs are rendered by the separate Remotion project in `video/` (see its README) — re-render with
+  `npm run gifs` there after changing any UI they show. `sections.test.ts` fails if a section is
+  missing copy in either locale or its GIF.
 
 `(app)`'s redirect is explicitly skipped when `isAuthConfigured()` is false (no `AUTH_*` env vars
 set), so local dev keeps working with zero env vars. `(public)`'s `AdaptiveShell` needs no such

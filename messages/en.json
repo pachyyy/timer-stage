@@ -73,9 +73,111 @@
   },
   "docs": {
     "title": "Documentation",
-    "subtitle": "Guides for running an event with Cue are coming soon.",
-    "comingSoonTitle": "Coming soon",
-    "placeholder": "This page is a placeholder."
+    "subtitle": "Everything you need to run an event with Cue, one step at a time.",
+    "navTitle": "Guide",
+    "stepsTitle": "Steps",
+    "tipLabel": "Tip",
+    "previous": "Previous",
+    "next": "Next",
+    "sectionCount": "Section {current} of {total}",
+    "sections": {
+      "overview": {
+        "title": "Overview",
+        "lead": "Cue is a shared countdown timer for live events. One operator runs the clock, and every screen — the stage monitor, a tablet, anyone's phone — shows the same time, in sync.",
+        "steps": [
+          "Sign in and create a room for your event, with its agenda of segments.",
+          "Open the room's screen link on the stage monitor, and share the room code with your crew.",
+          "Press Start. Every screen counts down together, and adjustments and messages reach all of them at once.",
+          "End the event when you're done. Its full timeline is saved to History."
+        ],
+        "tip": "Screens keep counting even if their connection drops — the time is worked out on each device, not streamed to it."
+      },
+      "signIn": {
+        "title": "Sign in",
+        "lead": "You need an account to create and own rooms. Joining a room as a participant never needs one.",
+        "steps": [
+          "Click Log in (or Sign up) in the top bar.",
+          "Choose Continue with Google and pick your account.",
+          "You land on your Dashboard, ready to create a room."
+        ],
+        "tip": "A room you own can be run from any device you're signed in on — no operator link needed."
+      },
+      "createRoom": {
+        "title": "Create a room",
+        "lead": "A room holds one event: its agenda, its screens, and everyone who joins.",
+        "steps": [
+          "On the Dashboard, open the Create a room tab and give your event a name.",
+          "Click Add segment for each part of the agenda, and set its length in minutes.",
+          "Click Create room. The operator page opens with your agenda loaded."
+        ],
+        "tip": "Each room covers one event. See Pricing for how room credits work."
+      },
+      "buildAgenda": {
+        "title": "Build the agenda",
+        "lead": "Edit the agenda any time from the operator page — every change reaches the screens right away.",
+        "steps": [
+          "Type a segment name and length at the bottom of the Agenda card, then click Add.",
+          "Drag a segment by its handle to change the order.",
+          "Click Link to next under a segment to start the following one automatically when it reaches zero.",
+          "Click the pencil to edit a segment's duration, scheduled start, speaker, notes and wrap-up warning."
+        ],
+        "tip": "Scheduled start is for reference only — nothing starts by itself unless segments are linked."
+      },
+      "runTimer": {
+        "title": "Run the timer",
+        "lead": "Everything you do on the operator panel shows on every screen at the same moment.",
+        "steps": [
+          "Press Start (or the Space bar) to run the selected segment. Press it again to pause.",
+          "Use −1 min and +1 min to adjust the time on the fly.",
+          "Near the end the time turns amber. In the final minute the screens flash to catch the speaker's eye, and past zero the time turns red.",
+          "Switch on Black out screens to hide the timer on every screen."
+        ],
+        "tip": "To move on, click the next segment in the agenda."
+      },
+      "shareScreen": {
+        "title": "Share a screen",
+        "lead": "Any browser can be a screen — a stage monitor, a TV, the laptop on the projector.",
+        "steps": [
+          "On the operator page, find Share this room and copy the Direct screen link.",
+          "Open the link on the display and give the screen a name, like Main stage.",
+          "The timer fills the screen. Click it once to go full-screen.",
+          "The screen appears in your Participants list."
+        ],
+        "tip": "On devices that support it, the screen stays awake while the timer is open."
+      },
+      "joinRoom": {
+        "title": "Join as a participant",
+        "lead": "Crew and speakers can follow the timer on their own phones — no account needed.",
+        "steps": [
+          "Open Cue and enter the room code under Have a room code?",
+          "Type your name so the operator knows who's watching.",
+          "The live timer appears, along with any message the operator sends."
+        ],
+        "tip": "Signed in? You can also join from the Join with code tab on your Dashboard."
+      },
+      "participants": {
+        "title": "Manage participants",
+        "lead": "Everyone who joins is listed on the operator page, where you can share control.",
+        "steps": [
+          "Find the person in the Participants card on the operator page.",
+          "Click Give control. A banner appears on their screen — one tap opens their own operator panel.",
+          "Click Revoke control to take it back. It applies from their very next action.",
+          "Click Remove to send someone back to the join screen."
+        ],
+        "tip": "Give control to your stage manager so they can run the timer from their phone."
+      },
+      "history": {
+        "title": "End event & history",
+        "lead": "When the event is over, end it to keep a full record of how it ran.",
+        "steps": [
+          "Click End event on the operator panel and confirm.",
+          "Open History from the top of the operator page.",
+          "Pick the event to see planned vs. actual time for each segment, every adjustment and the full timeline.",
+          "Click Download .xlsx to get the same report as a spreadsheet."
+        ],
+        "tip": "History is kept for every room owned by a signed-in account."
+      }
+    }
   },
   "dashboard": {
     "subtitle": "Create a room and share the code, or join one someone shared with you.",

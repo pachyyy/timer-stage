@@ -73,9 +73,111 @@
   },
   "docs": {
     "title": "Dokumentasi",
-    "subtitle": "Panduan menjalankan acara dengan Cue akan segera hadir.",
-    "comingSoonTitle": "Segera hadir",
-    "placeholder": "Halaman ini masih placeholder."
+    "subtitle": "Semua yang Anda perlukan untuk menjalankan acara dengan Cue, langkah demi langkah.",
+    "navTitle": "Panduan",
+    "stepsTitle": "Langkah",
+    "tipLabel": "Tips",
+    "previous": "Sebelumnya",
+    "next": "Berikutnya",
+    "sectionCount": "Bagian {current} dari {total}",
+    "sections": {
+      "overview": {
+        "title": "Ikhtisar",
+        "lead": "Cue adalah timer hitung mundur bersama untuk acara langsung. Satu operator menjalankan waktu, dan setiap layar — monitor panggung, tablet, ponsel siapa pun — menampilkan waktu yang sama secara serempak.",
+        "steps": [
+          "Masuk dan buat ruang untuk acara Anda, lengkap dengan agenda segmennya.",
+          "Buka tautan layar ruang di monitor panggung, lalu bagikan kode ruang ke kru Anda.",
+          "Tekan Mulai. Semua layar menghitung mundur bersama, dan setiap penyesuaian serta pesan sampai ke semuanya sekaligus.",
+          "Akhiri acara setelah selesai. Seluruh linimasanya tersimpan di Riwayat."
+        ],
+        "tip": "Layar tetap menghitung meski koneksinya terputus — waktu dihitung di masing-masing perangkat, bukan dikirim terus-menerus."
+      },
+      "signIn": {
+        "title": "Masuk",
+        "lead": "Anda perlu akun untuk membuat dan memiliki ruang. Bergabung ke ruang sebagai peserta tidak pernah memerlukan akun.",
+        "steps": [
+          "Klik Masuk (atau Daftar) di bilah atas.",
+          "Pilih Lanjutkan dengan Google, lalu pilih akun Anda.",
+          "Anda akan tiba di Dasbor, siap membuat ruang."
+        ],
+        "tip": "Ruang milik Anda bisa dijalankan dari perangkat mana pun tempat Anda masuk — tanpa tautan operator."
+      },
+      "createRoom": {
+        "title": "Buat ruang",
+        "lead": "Satu ruang menampung satu acara: agendanya, layarnya, dan semua orang yang bergabung.",
+        "steps": [
+          "Di Dasbor, buka tab Buat ruang dan beri nama acara Anda.",
+          "Klik Tambah segmen untuk setiap bagian agenda, lalu atur durasinya dalam menit.",
+          "Klik Buat ruang. Halaman operator terbuka dengan agenda Anda."
+        ],
+        "tip": "Setiap ruang untuk satu acara. Lihat Harga untuk cara kerja kredit ruang."
+      },
+      "buildAgenda": {
+        "title": "Susun agenda",
+        "lead": "Ubah agenda kapan saja dari halaman operator — setiap perubahan langsung sampai ke layar.",
+        "steps": [
+          "Ketik nama dan durasi segmen di bagian bawah kartu Agenda, lalu klik Tambah.",
+          "Seret segmen lewat pegangannya untuk mengubah urutan.",
+          "Klik Tautkan ke berikutnya di bawah segmen agar segmen selanjutnya mulai otomatis saat waktunya habis.",
+          "Klik ikon pensil untuk mengubah durasi, jadwal mulai, pembicara, catatan, dan peringatan akhir segmen."
+        ],
+        "tip": "Jadwal mulai hanya sebagai acuan — tidak ada yang mulai sendiri kecuali segmen ditautkan."
+      },
+      "runTimer": {
+        "title": "Jalankan timer",
+        "lead": "Semua yang Anda lakukan di panel operator tampil di setiap layar pada saat yang sama.",
+        "steps": [
+          "Tekan Mulai (atau tombol Spasi) untuk menjalankan segmen yang dipilih. Tekan lagi untuk jeda.",
+          "Gunakan −1 mnt dan +1 mnt untuk menyesuaikan waktu kapan saja.",
+          "Menjelang akhir, waktu berubah kuning. Pada menit terakhir layar berkedip agar pembicara sadar, dan setelah lewat nol waktu berubah merah.",
+          "Aktifkan Gelapkan layar untuk menyembunyikan timer di semua layar."
+        ],
+        "tip": "Untuk lanjut, klik segmen berikutnya di agenda."
+      },
+      "shareScreen": {
+        "title": "Bagikan layar",
+        "lead": "Browser apa pun bisa menjadi layar — monitor panggung, TV, atau laptop di proyektor.",
+        "steps": [
+          "Di halaman operator, cari Bagikan ruang ini dan salin Tautan langsung ke layar.",
+          "Buka tautan itu di perangkat tampilan dan beri nama layarnya, misalnya Panggung utama.",
+          "Timer memenuhi layar. Klik sekali untuk masuk mode layar penuh.",
+          "Layar tersebut muncul di daftar Peserta Anda."
+        ],
+        "tip": "Di perangkat yang mendukung, layar tetap menyala selama timer terbuka."
+      },
+      "joinRoom": {
+        "title": "Bergabung sebagai peserta",
+        "lead": "Kru dan pembicara bisa mengikuti timer dari ponsel masing-masing — tanpa akun.",
+        "steps": [
+          "Buka Cue dan masukkan kode ruang di bawah Punya kode ruang?",
+          "Ketik nama Anda agar operator tahu siapa yang menonton.",
+          "Timer langsung tampil, bersama pesan apa pun yang dikirim operator."
+        ],
+        "tip": "Sudah masuk? Anda juga bisa bergabung dari tab Gabung dengan kode di Dasbor."
+      },
+      "participants": {
+        "title": "Kelola peserta",
+        "lead": "Setiap orang yang bergabung tercantum di halaman operator, tempat Anda bisa berbagi kendali.",
+        "steps": [
+          "Cari orang tersebut di kartu Peserta pada halaman operator.",
+          "Klik Beri kendali. Sebuah banner muncul di layarnya — sekali ketuk membuka panel operatornya sendiri.",
+          "Klik Cabut kendali untuk menariknya kembali. Berlaku mulai tindakan berikutnya.",
+          "Klik Keluarkan untuk mengembalikan seseorang ke layar bergabung."
+        ],
+        "tip": "Beri kendali ke stage manager Anda agar ia bisa menjalankan timer dari ponselnya."
+      },
+      "history": {
+        "title": "Akhiri acara & riwayat",
+        "lead": "Setelah acara selesai, akhiri acara untuk menyimpan catatan lengkap jalannya acara.",
+        "steps": [
+          "Klik Akhiri acara di panel operator, lalu konfirmasi.",
+          "Buka Riwayat dari bagian atas halaman operator.",
+          "Pilih acaranya untuk melihat waktu rencana vs. aktual tiap segmen, setiap penyesuaian, dan linimasa lengkap.",
+          "Klik Unduh .xlsx untuk mendapatkan laporan yang sama dalam bentuk spreadsheet."
+        ],
+        "tip": "Riwayat disimpan untuk setiap ruang milik akun yang sudah masuk."
+      }
+    }
   },
   "dashboard": {
     "subtitle": "Buat ruang dan bagikan kodenya, atau gabung ke ruang yang dibagikan seseorang kepadamu.",
