@@ -268,7 +268,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <Link href="/" className="shrink-0">
-            <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+            <Image src="/clepsy.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
           <h1 className="shrink-0 text-xl font-semibold">{t('title')}</h1>
           {state && !editingName && (

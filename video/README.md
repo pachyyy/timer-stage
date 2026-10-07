@@ -1,4 +1,4 @@
-# Cue docs animations
+# Clepsy docs animations
 
 Looping GIFs for the docs page, one per sidebar section, rendered with
 [Remotion](https://www.remotion.dev). A separate npm project from the app on purpose — Remotion

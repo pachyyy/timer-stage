@@ -1,7 +1,7 @@
 {
-  "name": "cue-docs-video",
+  "name": "clepsy-docs-video",
   "version": "1.0.0",
-  "description": "Animated walkthroughs for the Cue docs, rendered with Remotion",
+  "description": "Animated walkthroughs for the Clepsy docs, rendered with Remotion",
   "repository": {},
   "license": "UNLICENSED",
   "private": true,

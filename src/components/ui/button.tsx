@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Gradient (not a flat fill) to match the brand red in public/cue.svg — endpoints are
+        // Gradient (not a flat fill) to match the brand red in public/clepsy.svg — endpoints are
         // separate --primary-gradient-* tokens (globals.css) rather than derived from --primary,
         // so each theme can pick a pairing that stays legible under --primary-foreground.
         default:

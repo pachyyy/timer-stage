@@ -27,7 +27,7 @@ const only = args.filter((a) => !a.startsWith("--"));
 const ids = only.length ? only : Object.keys(SECTIONS);
 const outDir = locale === "en" ? "../public/docs" : `../public/docs/${locale}`;
 // A props file rather than inline JSON — quoting JSON through the Windows shell is a losing game.
-const propsFile = join(tmpdir(), "cue-docs-props.json");
+const propsFile = join(tmpdir(), "clepsy-docs-props.json");
 writeFileSync(propsFile, JSON.stringify({ locale }));
 
 for (const id of ids) {

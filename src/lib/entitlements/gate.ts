@@ -23,7 +23,7 @@ export interface GateResult {
 const ALLOWED: GateResult = { allowed: true }
 
 /**
- * Cue's pricing is now a prepaid-quota model, not subscription tiers (see
+ * Clepsy's pricing is now a prepaid-quota model, not subscription tiers (see
  * 03_pachy_panel/docs/ARCHITECTURE.md §8): every room includes this many participants for free;
  * a 4th+ draws from the owner's purchased userQuota. Every signed-in, non-"permanent" room gets
  * the same flat, full feature set — see SEGMENTS_PER_QUOTA_ROOM — the only things actually
@@ -33,7 +33,7 @@ export const FREE_PARTICIPANTS_PER_ROOM = 3
 export const SEGMENTS_PER_QUOTA_ROOM = 30
 
 /**
- * "permanent" is the one remaining pachy-core-resolved concept for Cue: a hand-picked, fully
+ * "permanent" is the one remaining pachy-core-resolved concept for Clepsy: a hand-picked, fully
  * uncapped grant (see the panel's seed script) that bypasses quota entirely — unlimited rooms,
  * unlimited participants, never single-use. Everyone else who signs in starts at a zero balance
  * (see quota.ts's STARTER_ROOM_QUOTA) and has to be topped up via the panel's admin-API call into

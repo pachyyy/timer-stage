@@ -1,6 +1,6 @@
 /**
- * The shape of a Cue plan's `limits` JSON blob, as defined in 03_pachy_panel's `plans` table
- * (that repo owns the shape; this file is Cue's own copy of the contract, per
+ * The shape of a Clepsy plan's `limits` JSON blob, as defined in 03_pachy_panel's `plans` table
+ * (that repo owns the shape; this file is Clepsy's own copy of the contract, per
  * docs/ARCHITECTURE.md §6 — "a small shared module, copied into each app for now"). `null` on a
  * numeric field means "no cap" — used by the "permanent" tier.
  */

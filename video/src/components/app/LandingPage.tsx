@@ -34,7 +34,7 @@ export const LandingPage: React.FC<{
           <div className="flex items-center justify-center gap-2">
             <Logo size={40} />
             <h1 className="bg-[linear-gradient(135deg,var(--primary-gradient-from),var(--primary-gradient-to))] bg-clip-text text-4xl font-semibold tracking-tight text-transparent">
-              Cue
+              Clepsy
             </h1>
           </div>
           <p className="mt-3 text-lg text-muted-foreground">{t("landing", "tagline")}</p>

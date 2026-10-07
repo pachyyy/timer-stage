@@ -148,7 +148,7 @@ export const Overview: React.FC<OverviewProps> = ({ locale, roomCode, segmentNam
         <div className="flex items-center gap-4">
           <Logo size={76} className="rounded-2xl" />
           <span className="bg-[linear-gradient(135deg,var(--primary-gradient-from),var(--primary-gradient-to))] bg-clip-text text-[84px] leading-none font-semibold tracking-tight text-transparent">
-            Cue
+            Clepsy
           </span>
         </div>
         <p className="max-w-3xl text-center text-[30px] leading-snug text-muted-foreground">

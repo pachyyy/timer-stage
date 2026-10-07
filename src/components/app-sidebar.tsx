@@ -186,8 +186,8 @@ export function AppSidebar() {
       >
         <div className={cn('flex items-center gap-2 px-4 py-4', collapsed && 'justify-center px-0')}>
           <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
-            <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="shrink-0 rounded-md" />
-            {!collapsed && <span className="truncate font-semibold tracking-tight">Cue</span>}
+            <Image src="/clepsy.svg" alt="" width={24} height={24} unoptimized className="shrink-0 rounded-md" />
+            {!collapsed && <span className="truncate font-semibold tracking-tight">Clepsy</span>}
           </Link>
         </div>
 
@@ -209,8 +209,8 @@ export function AppSidebar() {
       {/* Mobile top bar — sticky for the same reason as the desktop aside above */}
       <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-background px-4 py-3 md:hidden">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
-          <span className="font-semibold tracking-tight">Cue</span>
+          <Image src="/clepsy.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+          <span className="font-semibold tracking-tight">Clepsy</span>
         </Link>
         <Button variant="ghost" size="icon" aria-label={t('openMenu')} onClick={() => setMobileOpen(true)}>
           <Menu className="size-5" />
@@ -224,8 +224,8 @@ export function AppSidebar() {
         >
           <DialogTitle className="sr-only">{t('menu')}</DialogTitle>
           <div className="flex items-center gap-2 px-4 py-4">
-            <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
-            <span className="font-semibold tracking-tight">Cue</span>
+            <Image src="/clepsy.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+            <span className="font-semibold tracking-tight">Clepsy</span>
           </div>
           <div className="flex-1 px-2">{navList(() => setMobileOpen(false))}</div>
           {footer()}

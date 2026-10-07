@@ -59,8 +59,8 @@ export function SiteNavbar() {
     >
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4">
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
-          <span className="font-semibold tracking-tight">Cue</span>
+          <Image src="/clepsy.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+          <span className="font-semibold tracking-tight">Clepsy</span>
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground sm:flex">
@@ -119,8 +119,8 @@ export function SiteNavbar() {
           <DialogTitle className="sr-only">{t('menu')}</DialogTitle>
           <div className="flex h-14 items-center justify-between border-b px-4">
             <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-2">
-              <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
-              <span className="font-semibold tracking-tight">Cue</span>
+              <Image src="/clepsy.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+              <span className="font-semibold tracking-tight">Clepsy</span>
             </Link>
             <Button variant="ghost" size="icon" aria-label={t('closeMenu')} onClick={() => setMenuOpen(false)}>
               <X className="size-5" />

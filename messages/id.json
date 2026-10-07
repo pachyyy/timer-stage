@@ -180,7 +180,7 @@
   },
   "docs": {
     "title": "Dokumentasi",
-    "subtitle": "Semua yang Anda perlukan untuk menjalankan acara dengan Cue, langkah demi langkah.",
+    "subtitle": "Semua yang Anda perlukan untuk menjalankan acara dengan Clepsy, langkah demi langkah.",
     "navTitle": "Panduan",
     "stepsTitle": "Langkah",
     "tipLabel": "Tips",
@@ -190,7 +190,7 @@
     "sections": {
       "overview": {
         "title": "Ikhtisar",
-        "lead": "Cue adalah timer hitung mundur bersama untuk acara langsung. Satu operator menjalankan waktu, dan setiap layar — monitor panggung, tablet, ponsel siapa pun — menampilkan waktu yang sama secara serempak.",
+        "lead": "Clepsy adalah timer hitung mundur bersama untuk acara langsung. Satu operator menjalankan waktu, dan setiap layar — monitor panggung, tablet, ponsel siapa pun — menampilkan waktu yang sama secara serempak.",
         "steps": [
           "Masuk dan buat ruang untuk acara Anda, lengkap dengan agenda segmennya.",
           "Buka tautan layar ruang di monitor panggung, lalu bagikan kode ruang ke kru Anda.",
@@ -256,7 +256,7 @@
         "title": "Bergabung sebagai peserta",
         "lead": "Kru dan pembicara bisa mengikuti timer dari ponsel masing-masing — tanpa akun.",
         "steps": [
-          "Buka Cue dan masukkan kode ruang di bawah Punya kode ruang?",
+          "Buka Clepsy dan masukkan kode ruang di bawah Punya kode ruang?",
           "Ketik nama Anda agar operator tahu siapa yang menonton.",
           "Timer langsung tampil, bersama pesan apa pun yang dikirim operator."
         ],
@@ -514,7 +514,7 @@
     "product": "Produk",
     "getStarted": "Mulai",
     "contact": "Kontak",
-    "whatsappMessage": "Halo, saya punya pertanyaan tentang Cue",
+    "whatsappMessage": "Halo, saya punya pertanyaan tentang Clepsy",
     "blurb": "Countdown timer bersama untuk acara langsung, tersinkron di setiap layar."
   }
 }

@@ -89,7 +89,7 @@ export async function tryConsumeUserQuota(userId: string, roomId: string, count 
  * Adds credit — what the panel's admin-API top-up calls. Deltas can be zero (to top up only one
  * of the two pools) but not negative; a correction is a manual ledger note, not this function.
  * Looks the account up by email since that's the identity the panel/admin thinks in — returns
- * null if this email has never signed into Cue, since accountQuota is keyed on our own `userId`
+ * null if this email has never signed into Clepsy, since accountQuota is keyed on our own `userId`
  * and there's nothing to attach a balance to yet (see the admin route for how that's surfaced).
  */
 export async function grantQuotaByEmail(

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-/** The one account-level setting Cue has today: display name (shown in the gear menu and, via
+/** The one account-level setting Clepsy has today: display name (shown in the gear menu and, via
  * `runs.label`/room ownership, nowhere the participant side can see — this is controller-only
  * identity, not anything a viewer or joined participant is exposed to). */
 export default function AccountPage() {

@@ -38,7 +38,7 @@ export const AppSidebar: React.FC<{ t: T; activeHref: string; userName: string }
     <aside className="relative flex w-60 shrink-0 flex-col border-r">
       <div className="flex items-center gap-2 px-4 py-4">
         <Logo />
-        <span className="truncate font-semibold tracking-tight">Cue</span>
+        <span className="truncate font-semibold tracking-tight">Clepsy</span>
       </div>
       <div className="flex-1 px-2">
         <nav className="flex flex-col gap-1">{main.map(item)}</nav>

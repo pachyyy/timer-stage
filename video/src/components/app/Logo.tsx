@@ -1,6 +1,6 @@
 import type React from "react";
 
-/** public/cue.svg, inlined (minus its C2PA metadata) so it renders without an asset round-trip. */
+/** public/clepsy.svg, inlined (minus its C2PA metadata) so it renders without an asset round-trip. */
 export const Logo: React.FC<{ size?: number; className?: string; style?: React.CSSProperties }> = ({
   size = 24,
   className,

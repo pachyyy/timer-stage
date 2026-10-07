@@ -58,7 +58,7 @@ export async function GET(
     tzOffsetMinutes,
   })
 
-  const safeName = (room?.name ?? 'cue').replace(/[^a-z0-9]+/gi, '-').toLowerCase()
+  const safeName = (room?.name ?? 'clepsy').replace(/[^a-z0-9]+/gi, '-').toLowerCase()
   const filename = `${safeName}-run-${loaded.run.seq}.xlsx`
 
   // The plain Web `Response` (not NextResponse) is used here deliberately — NextResponse's own

@@ -180,7 +180,7 @@
   },
   "docs": {
     "title": "Documentation",
-    "subtitle": "Everything you need to run an event with Cue, one step at a time.",
+    "subtitle": "Everything you need to run an event with Clepsy, one step at a time.",
     "navTitle": "Guide",
     "stepsTitle": "Steps",
     "tipLabel": "Tip",
@@ -190,7 +190,7 @@
     "sections": {
       "overview": {
         "title": "Overview",
-        "lead": "Cue is a shared countdown timer for live events. One operator runs the clock, and every screen — the stage monitor, a tablet, anyone's phone — shows the same time, in sync.",
+        "lead": "Clepsy is a shared countdown timer for live events. One operator runs the clock, and every screen — the stage monitor, a tablet, anyone's phone — shows the same time, in sync.",
         "steps": [
           "Sign in and create a room for your event, with its agenda of segments.",
           "Open the room's screen link on the stage monitor, and share the room code with your crew.",
@@ -256,7 +256,7 @@
         "title": "Join as a participant",
         "lead": "Crew and speakers can follow the timer on their own phones — no account needed.",
         "steps": [
-          "Open Cue and enter the room code under Have a room code?",
+          "Open Clepsy and enter the room code under Have a room code?",
           "Type your name so the operator knows who's watching.",
           "The live timer appears, along with any message the operator sends."
         ],
@@ -514,7 +514,7 @@
     "product": "Product",
     "getStarted": "Get started",
     "contact": "Contact",
-    "whatsappMessage": "Hi, I have a question about Cue",
+    "whatsappMessage": "Hi, I have a question about Clepsy",
     "blurb": "A shared countdown timer for live events, synced across every screen."
   }
 }

@@ -75,7 +75,7 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Link href="/">
-            <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+            <Image src="/clepsy.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
           <h1 className="text-xl font-semibold">{tNav('history')}</h1>
           {roomName && <span className="truncate text-sm text-muted-foreground">— {roomName}</span>}

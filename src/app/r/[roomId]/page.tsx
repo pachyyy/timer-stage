@@ -100,7 +100,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
         <ConnectionBadge status={status} />
       </div>
 
-      <Image src="/cue.svg" alt="" width={28} height={28} unoptimized className="fixed top-4 left-4 rounded-md opacity-60" />
+      <Image src="/clepsy.svg" alt="" width={28} height={28} unoptimized className="fixed top-4 left-4 rounded-md opacity-60" />
 
       {message && (
         <div

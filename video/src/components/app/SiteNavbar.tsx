@@ -23,7 +23,7 @@ export const SiteNavbar: React.FC<{
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4">
         <div className="flex shrink-0 items-center gap-2">
           <Logo />
-          <span className="font-semibold tracking-tight">Cue</span>
+          <span className="font-semibold tracking-tight">Clepsy</span>
         </div>
         <nav className={mobile ? "hidden" : "flex items-center gap-6 text-sm text-muted-foreground"}>
           {links.map((link) => (

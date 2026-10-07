@@ -5,7 +5,7 @@ import { getQuotaByEmail, grantQuotaByEmail } from '@/lib/db/quota'
 export const dynamic = 'force-dynamic'
 
 /**
- * Cue's first `/api/admin/v1/*` route (see 03_pachy_panel/docs/ARCHITECTURE.md §7) — the panel
+ * Clepsy's first `/api/admin/v1/*` route (see 03_pachy_panel/docs/ARCHITECTURE.md §7) — the panel
  * calls this to read/top up someone's room+participant quota, since balances live here in
  * stagetimer's own DB, not in the shared pachy-core control plane (see schema.ts's
  * accountQuota doc comment for why).
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const balance = await getQuotaByEmail(email)
   if (!balance) {
     return NextResponse.json(
-      { error: `${email} hasn't signed into Cue yet — there's no account to check a balance for.` },
+      { error: `${email} hasn't signed into Clepsy yet — there's no account to check a balance for.` },
       { status: 404 },
     )
   }
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   const result = await grantQuotaByEmail(email, roomDelta, userDelta, note)
   if (!result) {
     return NextResponse.json(
-      { error: `${email} hasn't signed into Cue yet — ask them to sign in once, then grant quota.` },
+      { error: `${email} hasn't signed into Clepsy yet — ask them to sign in once, then grant quota.` },
       { status: 404 },
     )
   }

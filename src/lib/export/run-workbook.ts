@@ -58,7 +58,7 @@ export async function buildRunWorkbook(input: {
   // needed inside this one export handler.
   const ExcelJS = (await import('exceljs')).default
   const workbook = new ExcelJS.Workbook()
-  workbook.creator = 'Cue'
+  workbook.creator = 'Clepsy'
   workbook.created = new Date()
 
   const { tzOffsetMinutes } = input

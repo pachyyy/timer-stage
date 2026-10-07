@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cue",
+  title: "Clepsy",
   description: "A shared countdown timer for live events, synced across every screen.",
 };
 

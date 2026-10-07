@@ -35,8 +35,8 @@ export function SiteFooter() {
       <div className="mx-auto grid w-full max-w-5xl grid-cols-2 gap-8 px-4 py-10 sm:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div className="col-span-2 flex flex-col gap-3 sm:col-span-1">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/cue.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
-            <span className="font-semibold tracking-tight">Cue</span>
+            <Image src="/clepsy.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
+            <span className="font-semibold tracking-tight">Clepsy</span>
           </Link>
           <p className="max-w-xs text-sm text-muted-foreground">{t('blurb')}</p>
         </div>
@@ -68,7 +68,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t">
         <p className="mx-auto w-full max-w-5xl px-4 py-4 text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Cue
+          © {new Date().getFullYear()} Clepsy
         </p>
       </div>
     </footer>

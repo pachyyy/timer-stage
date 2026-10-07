@@ -32,7 +32,7 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>()
 
 /**
- * Resolves what plan `email` is on for Cue, reading the shared pachy-core control-plane DB
+ * Resolves what plan `email` is on for Clepsy, reading the shared pachy-core control-plane DB
  * directly and read-only — see docs in 03_pachy_panel/docs/ARCHITECTURE.md §6.
  *
  * `email === null` means there's no identity to resolve at all (an anonymous room has no

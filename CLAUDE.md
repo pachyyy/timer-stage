@@ -27,9 +27,17 @@ clean before considering work done; also run `npm run build` before pushing, sin
 step catches route-typing issues the others don't. Every new schema change needs `npm run
 db:generate` committed alongside it — see Deploying.
 
+**Naming:** the product was renamed from Cue to Clepsy. Everything user-facing says Clepsy, but
+three internal identifiers deliberately keep the old names — renaming them breaks something outside
+this repo: `PACHY_APP_ID=cue` / the panel's `APP_TOKEN_CUE` (the app's id in the shared
+`pachy-core` DB), the `CueLimits` contract type that mirrors the panel's plan schema, and the
+`stagetimer:` / `cue:` localStorage prefixes (renaming would drop every browser's saved operator
+links and joined-participant sessions). The Vercel projects and the `cuetimed.vercel.app` domain
+are unchanged too.
+
 ## Architecture
 
-Stage Timer (product name "Cue"): a controller screen drives a countdown, one or more fullscreen
+Stage Timer (product name "Clepsy", formerly "Cue"): a controller screen drives a countdown, one or more fullscreen
 viewer screens (confidence monitors) display it in sync. Next.js App Router + TypeScript +
 Tailwind + shadcn/ui; Drizzle ORM over libSQL (Turso in prod, a local SQLite file in dev); Ably for
 realtime with an automatic polling fallback; Auth.js v5 for optional Google sign-in.
@@ -253,7 +261,7 @@ room with a currently open run, respectively).
 
 ### Pricing: prepaid quota, not subscription tiers (`src/lib/entitlements/`, `src/lib/db/quota.ts`)
 
-Cue's monetization is a prepaid-credits model: a signed-in account has a `roomQuota` (room
+Clepsy's monetization is a prepaid-credits model: a signed-in account has a `roomQuota` (room
 credits) and `userQuota` (extra-participant credits), tracked in **this app's own database**
 (`accountQuota`/`quotaLedger` in `schema.ts`), not in the shared `03_pachy_panel` control-plane DB
 (`pachy-core`). That's deliberate — see `accountQuota`'s doc comment: spending a credit has to
@@ -309,7 +317,7 @@ separate free/mid/top plan concept for them beyond their starter balance.
   `POST/GET /api/admin/v1/quota` (guarded by `ADMIN_API_TOKEN`, see `src/lib/admin-api/auth.ts`) —
   the first implemented piece of the admin-API contract from `docs/ARCHITECTURE.md` §7, built here
   specifically because quota balances live in this app's DB, not the panel's. A grant requires the
-  email to have signed into Cue at least once (`accountQuota` is keyed on our own `userId`, not
+  email to have signed into Clepsy at least once (`accountQuota` is keyed on our own `userId`, not
   email) — the route returns a clear 404 if not.
 
 ### Internationalization (`src/i18n/`, `messages/`)

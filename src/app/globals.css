@@ -11,7 +11,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  /* Brand red, matched to the #ec3013 mark in public/cue.svg. Reuses the same red family as
+  /* Brand red, matched to the #ec3013 mark in public/clepsy.svg. Reuses the same red family as
    * --destructive (see below) — nothing currently uses the destructive button variant, so there's
    * no clash between "primary brand action" and "dangerous action" colors yet; revisit if that
    * changes. */
