@@ -2,21 +2,11 @@ import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FREE_PARTICIPANTS_PER_ROOM, SEGMENTS_PER_QUOTA_ROOM } from '@/lib/entitlements/gate'
+// Prices are imported, as are the two limits above, so this page can never quote a number that
+// disagrees with the landing page or with what src/lib/entitlements/gate.ts actually enforces.
+import { EXTRA_PARTICIPANT_PRICE, ROOM_PRICE, whatsappUrl } from '@/lib/pricing'
 
 export const dynamic = 'force-dynamic'
-
-// There's deliberately no self-serve checkout (see 03_pachy_panel/docs/ARCHITECTURE.md §1) —
-// quota is topped up by hand from the panel. This is where a visitor is told how to actually buy
-// more. International format, digits only, no leading "+" or "00" (wa.me's own requirement) —
-// e.g. "6281234567890" for an Indonesian number starting with 0.
-const UPGRADE_WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_UPGRADE_WHATSAPP || '6289654861141'
-
-// Hardcoded display copy, deliberately not part of the CueLimits/pachy-core contract — price is
-// Cue's own marketing concern. Edit directly when a price changes; FREE_PARTICIPANTS_PER_ROOM and
-// SEGMENTS_PER_QUOTA_ROOM above are imported (not retyped) so this page can never say a number
-// that disagrees with what src/lib/entitlements/gate.ts actually enforces.
-const ROOM_PRICE = 'Rp35.000'
-const EXTRA_PARTICIPANT_PRICE = 'Rp5.000'
 
 export default async function PricingPage() {
   const t = await getTranslations('pricing')
@@ -73,7 +63,7 @@ export default async function PricingPage() {
           <p className="text-sm text-muted-foreground">{t('noCheckout')}</p>
           <Button asChild>
             <a
-              href={`https://wa.me/${UPGRADE_WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi, I want to buy Cue room/participant credits')}`}
+              href={whatsappUrl()}
               target="_blank"
               rel="noopener noreferrer"
             >

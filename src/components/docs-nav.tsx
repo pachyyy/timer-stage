@@ -19,7 +19,7 @@ export function DocsNav() {
       <p className="mb-2 hidden px-3 text-xs font-medium tracking-wide text-muted-foreground uppercase md:block">
         {t('navTitle')}
       </p>
-      <nav className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-col md:overflow-visible md:px-0 md:pb-0">
+      <nav className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-col md:overflow-visible md:px-0 md:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {DOC_SECTIONS.map((section) => {
           const href = docHref(section)
           const active = pathname === href

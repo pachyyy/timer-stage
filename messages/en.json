@@ -36,7 +36,9 @@
     "openMenu": "Open menu",
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
-    "menu": "Menu"
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "language": "Language"
   },
   "joinForm": {
     "label": "Room code",
@@ -47,7 +49,112 @@
     "signupCta": "Sign up free",
     "pricingCta": "See pricing",
     "codeCardTitle": "Have a room code?",
-    "codeCardDesc": "Join as a participant — no account needed."
+    "codeCardDesc": "Join as a participant — no account needed.",
+    "heroTitle": "Keep every speaker on time.",
+    "howCta": "See how it works",
+    "heroImageAlt": "An operator starts the timer and every screen counts down together",
+    "howTitle": "How it works",
+    "howSubtitle": "From agenda to stage in three steps.",
+    "steps": [
+      {
+        "title": "Create a room",
+        "body": "Name your event and lay out its agenda, segment by segment."
+      },
+      {
+        "title": "Put it on every screen",
+        "body": "Open the screen link on the stage monitor, and share the room code with your crew."
+      },
+      {
+        "title": "Run the event",
+        "body": "Start, adjust and send messages from one panel — every screen follows instantly."
+      }
+    ],
+    "featuresTitle": "Built for the people backstage",
+    "features": [
+      {
+        "title": "Always in sync",
+        "body": "Every screen shows the same second — and keeps counting even if the Wi-Fi drops."
+      },
+      {
+        "title": "Messages to screens",
+        "body": "Send “Wrap up in 2 minutes” to the stage, and it appears on every screen at once."
+      },
+      {
+        "title": "Warnings speakers notice",
+        "body": "The time turns amber near the end, screens flash in the final minute, and red means overtime."
+      },
+      {
+        "title": "Share control",
+        "body": "Hand the timer to your stage manager's phone, and take it back with one click."
+      },
+      {
+        "title": "History & Excel export",
+        "body": "See planned vs. actual time for every segment, and download it as a spreadsheet."
+      },
+      {
+        "title": "English & Bahasa Indonesia",
+        "body": "Everyone picks their own language, on the operator panel and on every screen."
+      }
+    ],
+    "useCasesTitle": "Made for every kind of stage",
+    "useCases": [
+      {
+        "title": "Conferences & events",
+        "body": "Keep keynotes, panels and breakout sessions on schedule, right from the AV desk.",
+        "agenda": [
+          "Keynote",
+          "Panel",
+          "Q&A"
+        ]
+      },
+      {
+        "title": "Churches",
+        "body": "Give worship leaders and preachers a calm, clear countdown on the confidence monitor.",
+        "agenda": [
+          "Worship",
+          "Sermon",
+          "Announcements"
+        ]
+      },
+      {
+        "title": "Corporate meetings",
+        "body": "Run town halls and all-hands where every presenter can see their own time.",
+        "agenda": [
+          "CEO update",
+          "Team demos",
+          "Q&A"
+        ]
+      }
+    ],
+    "pricingTitle": "Pay per event, not per month",
+    "pricingBody": "Joining is always free. A room covers one event, with {free} participants included.",
+    "pricingFrom": "Rooms from {price}",
+    "faqTitle": "Questions",
+    "faq": [
+      {
+        "q": "Do participants need an account or an app?",
+        "a": "No. Anyone can join from a phone or laptop browser with the room code — just their name, nothing to install."
+      },
+      {
+        "q": "What happens if the internet drops?",
+        "a": "Screens keep counting on their own. The time is worked out on each device, so a short outage doesn't stop the clock, and screens catch up the moment they reconnect."
+      },
+      {
+        "q": "What can I use as a screen?",
+        "a": "Anything with a web browser — a TV, the laptop on the projector, a tablet or a phone. Open the screen link and the timer fills it."
+      },
+      {
+        "q": "Can someone else run the timer?",
+        "a": "Yes. Give any participant control from the operator page, and take it back whenever you like."
+      },
+      {
+        "q": "How do I pay?",
+        "a": "There's no subscription. You buy room credits for the events you run — see Pricing for details."
+      }
+    ],
+    "finalTitle": "Run your next event on time.",
+    "finalBody": "Set up a room in under a minute.",
+    "docsCta": "Read the docs"
   },
   "login": {
     "titleLogin": "Log in",
@@ -402,5 +509,12 @@
     "oneEventPerRoom": "This room already ran its one event. Create a new room (spends a room credit) for your next one.",
     "signInToCreate": "Sign in to create a room.",
     "limitReached": "You've reached a limit. See the Pricing page for details."
+  },
+  "footer": {
+    "product": "Product",
+    "getStarted": "Get started",
+    "contact": "Contact",
+    "whatsappMessage": "Hi, I have a question about Cue",
+    "blurb": "A shared countdown timer for live events, synced across every screen."
   }
 }

@@ -36,7 +36,9 @@
     "openMenu": "Buka menu",
     "collapseSidebar": "Ciutkan panel samping",
     "expandSidebar": "Perluas panel samping",
-    "menu": "Menu"
+    "menu": "Menu",
+    "closeMenu": "Tutup menu",
+    "language": "Bahasa"
   },
   "joinForm": {
     "label": "Kode ruang",
@@ -47,7 +49,112 @@
     "signupCta": "Daftar gratis",
     "pricingCta": "Lihat harga",
     "codeCardTitle": "Punya kode ruang?",
-    "codeCardDesc": "Gabung sebagai peserta — tanpa perlu akun."
+    "codeCardDesc": "Gabung sebagai peserta — tanpa perlu akun.",
+    "heroTitle": "Setiap pembicara tepat waktu.",
+    "howCta": "Lihat cara kerjanya",
+    "heroImageAlt": "Operator memulai timer dan semua layar menghitung mundur bersama",
+    "howTitle": "Cara kerjanya",
+    "howSubtitle": "Dari agenda ke panggung dalam tiga langkah.",
+    "steps": [
+      {
+        "title": "Buat ruang",
+        "body": "Beri nama acara Anda dan susun agendanya, segmen demi segmen."
+      },
+      {
+        "title": "Tampilkan di setiap layar",
+        "body": "Buka tautan layar di monitor panggung, lalu bagikan kode ruang ke kru Anda."
+      },
+      {
+        "title": "Jalankan acara",
+        "body": "Mulai, sesuaikan, dan kirim pesan dari satu panel — semua layar langsung mengikuti."
+      }
+    ],
+    "featuresTitle": "Dibuat untuk tim di balik panggung",
+    "features": [
+      {
+        "title": "Selalu serempak",
+        "body": "Setiap layar menampilkan detik yang sama — dan tetap menghitung meski Wi-Fi terputus."
+      },
+      {
+        "title": "Pesan ke layar",
+        "body": "Kirim “Selesaikan dalam 2 menit” ke panggung, dan pesan itu muncul di semua layar sekaligus."
+      },
+      {
+        "title": "Peringatan yang terlihat",
+        "body": "Waktu berubah kuning menjelang akhir, layar berkedip di menit terakhir, dan merah berarti lewat waktu."
+      },
+      {
+        "title": "Berbagi kendali",
+        "body": "Serahkan timer ke ponsel stage manager Anda, dan tarik kembali dengan sekali klik."
+      },
+      {
+        "title": "Riwayat & ekspor Excel",
+        "body": "Lihat waktu rencana vs. aktual setiap segmen, dan unduh sebagai spreadsheet."
+      },
+      {
+        "title": "Bahasa Inggris & Indonesia",
+        "body": "Setiap orang memilih bahasanya sendiri, di panel operator maupun di setiap layar."
+      }
+    ],
+    "useCasesTitle": "Untuk setiap jenis panggung",
+    "useCases": [
+      {
+        "title": "Konferensi & acara",
+        "body": "Jaga keynote, diskusi panel, dan sesi paralel tetap sesuai jadwal, langsung dari meja AV.",
+        "agenda": [
+          "Keynote",
+          "Diskusi panel",
+          "Tanya jawab"
+        ]
+      },
+      {
+        "title": "Gereja",
+        "body": "Beri worship leader dan pengkhotbah hitung mundur yang jelas dan tenang di confidence monitor.",
+        "agenda": [
+          "Pujian",
+          "Khotbah",
+          "Warta jemaat"
+        ]
+      },
+      {
+        "title": "Rapat perusahaan",
+        "body": "Jalankan town hall dan rapat besar di mana setiap presenter bisa melihat waktunya sendiri.",
+        "agenda": [
+          "Update CEO",
+          "Demo tim",
+          "Tanya jawab"
+        ]
+      }
+    ],
+    "pricingTitle": "Bayar per acara, bukan per bulan",
+    "pricingBody": "Bergabung selalu gratis. Satu ruang untuk satu acara, sudah termasuk {free} peserta.",
+    "pricingFrom": "Ruang mulai {price}",
+    "faqTitle": "Pertanyaan",
+    "faq": [
+      {
+        "q": "Apakah peserta perlu akun atau aplikasi?",
+        "a": "Tidak. Siapa pun bisa bergabung dari browser ponsel atau laptop dengan kode ruang — cukup nama, tanpa perlu instal apa pun."
+      },
+      {
+        "q": "Bagaimana jika internet terputus?",
+        "a": "Layar tetap menghitung sendiri. Waktu dihitung di masing-masing perangkat, jadi gangguan singkat tidak menghentikan waktu, dan layar langsung menyesuaikan begitu tersambung lagi."
+      },
+      {
+        "q": "Apa yang bisa dipakai sebagai layar?",
+        "a": "Apa pun yang punya browser — TV, laptop di proyektor, tablet, atau ponsel. Buka tautan layar dan timer langsung memenuhinya."
+      },
+      {
+        "q": "Bisakah orang lain menjalankan timer?",
+        "a": "Bisa. Beri kendali ke peserta mana pun dari halaman operator, dan tarik kembali kapan saja."
+      },
+      {
+        "q": "Bagaimana cara membayar?",
+        "a": "Tidak ada langganan. Anda membeli kredit ruang untuk acara yang Anda jalankan — lihat Harga untuk detailnya."
+      }
+    ],
+    "finalTitle": "Jalankan acara berikutnya tepat waktu.",
+    "finalBody": "Siapkan ruang dalam waktu kurang dari semenit.",
+    "docsCta": "Baca dokumentasi"
   },
   "login": {
     "titleLogin": "Masuk",
@@ -402,5 +509,12 @@
     "oneEventPerRoom": "Ruang ini sudah menjalankan satu acaranya. Buat ruang baru (memakai satu kredit ruang) untuk acara berikutnya.",
     "signInToCreate": "Masuk untuk membuat ruang.",
     "limitReached": "Kamu mencapai batas. Lihat halaman Harga untuk detail."
+  },
+  "footer": {
+    "product": "Produk",
+    "getStarted": "Mulai",
+    "contact": "Kontak",
+    "whatsappMessage": "Halo, saya punya pertanyaan tentang Cue",
+    "blurb": "Countdown timer bersama untuk acara langsung, tersinkron di setiap layar."
   }
 }
