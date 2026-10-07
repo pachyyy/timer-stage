@@ -1,0 +1,3 @@
+# The Remotion project that renders the docs GIFs — its own package, never part of the Next build.
+# Only its output (public/docs/*.gif) ships.
+video/
