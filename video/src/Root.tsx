@@ -9,6 +9,7 @@ import { Participants } from "./scenes/Participants";
 import { RunTimer } from "./scenes/RunTimer";
 import { ShareScreen } from "./scenes/ShareScreen";
 import { SignIn } from "./scenes/SignIn";
+import { Story, STORY_DURATION } from "./scenes/Story";
 
 /**
  * One composition per docs section, in the docs sidebar's order (src/lib/docs/sections.ts
@@ -16,6 +17,7 @@ import { SignIn } from "./scenes/SignIn";
  */
 export const RemotionRoot: React.FC = () => {
   return (
+    <>
     <Folder name="Docs">
       <Composition
         id="Overview"
@@ -155,5 +157,23 @@ export const RemotionRoot: React.FC = () => {
         }}
       />
     </Folder>
+    <Folder name="Social">
+      {/* 9:16 Instagram story — rendered to an MP4 with `npm run story`, not a docs GIF. */}
+      <Composition
+        id="InstagramStory"
+        component={Story}
+        durationInFrames={STORY_DURATION}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{
+          roomCode: "K7M2QX",
+          segmentName: "Opening remarks",
+          segmentMinutes: 5,
+          participantName: "Jamie",
+        }}
+      />
+    </Folder>
+    </>
   );
 };

@@ -9,8 +9,10 @@ export const Device: React.FC<{
   height: number;
   label: string;
   style?: React.CSSProperties;
+  /** Overrides for the caption — the 9:16 story needs it larger than the docs GIFs do. */
+  labelStyle?: React.CSSProperties;
   children: React.ReactNode;
-}> = ({ kind, x, y, width, height, label, style, children }) => {
+}> = ({ kind, x, y, width, height, label, style, labelStyle, children }) => {
   const bezel = kind === "phone" ? 7 : 9;
   const radius = kind === "phone" ? 26 : kind === "tablet" ? 18 : 12;
   return (
@@ -35,7 +37,7 @@ export const Device: React.FC<{
           <div className="h-1.5 w-40 rounded-full bg-zinc-500" />
         </>
       )}
-      <div className="mt-3 flex items-center gap-1.5 text-[15px] font-medium text-muted-foreground">
+      <div className="mt-3 flex items-center gap-1.5 text-[15px] font-medium text-muted-foreground" style={labelStyle}>
         <span className="size-1.5 rounded-full bg-emerald-500" />
         {label}
       </div>

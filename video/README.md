@@ -14,6 +14,11 @@ Single sections: `npm run gifs -- RunTimer History` (composition ids). Indonesia
 renders into `../public/docs/id/` — the docs page doesn't use those yet; it shows the English GIFs in
 both locales.
 
+`npm run story` renders the 20-second 9:16 Instagram story (`src/scenes/Story.tsx`, the
+`InstagramStory` composition) to `out/clepsy-instagram-story.mp4` — 1080×1920, H.264, no audio
+(add music in Instagram). It keeps its headlines and devices clear of the bands Instagram covers
+with its own UI.
+
 ## How it stays in sync with the app
 
 - **Real primitives.** Scenes import `@/components/ui/*` (Button, Card, Input, Tabs…) and pure
