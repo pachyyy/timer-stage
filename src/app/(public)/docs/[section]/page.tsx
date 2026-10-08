@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!section) return {}
   const t = await getTranslations('docs')
   return {
-    title: `${t(`sections.${section.key}.title`)} — ${t('title')} — Clepsy`,
+    title: `${t(`sections.${section.key}.title`)} · ${t('title')} · Clepsy`,
     description: t(`sections.${section.key}.lead`),
   }
 }

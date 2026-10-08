@@ -226,7 +226,7 @@ const PageHeader: React.FC<{ t: T; title: string; roomName: string; backLabel: s
     <div className="flex items-center gap-2">
       <Logo />
       <h1 className="text-xl font-semibold">{title}</h1>
-      <span className="truncate text-sm text-muted-foreground">— {roomName}</span>
+      <span className="truncate text-sm text-muted-foreground">· {roomName}</span>
     </div>
     <div className="flex items-center gap-2">
       {allEventsLabel && (

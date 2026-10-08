@@ -273,7 +273,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
           <h1 className="shrink-0 text-xl font-semibold">{t('title')}</h1>
           {state && !editingName && (
             <span className="flex min-w-0 items-center gap-1">
-              <span className="truncate text-sm text-muted-foreground">— {state.name}</span>
+              <span className="truncate text-sm text-muted-foreground">· {state.name}</span>
               <button
                 type="button"
                 onClick={() => {

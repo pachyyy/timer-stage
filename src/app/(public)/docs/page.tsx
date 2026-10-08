@@ -5,7 +5,7 @@ import { DOC_SECTIONS } from '@/lib/docs/sections'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('docs')
-  return { title: `${t('title')} — Clepsy`, description: t('subtitle') }
+  return { title: `${t('title')} · Clepsy`, description: t('subtitle') }
 }
 
 /** /docs itself is the first section, Overview; the rest live at /docs/[section]. */

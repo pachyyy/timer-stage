@@ -63,7 +63,7 @@ export async function buildRunWorkbook(input: {
 
   const { tzOffsetMinutes } = input
   const generatedAt = toLocalDate(Date.now(), tzOffsetMinutes)
-  const title = `${input.roomName} — Event #${input.run.seq}${input.run.abandoned ? ' (unfinished)' : ''} — generated ${generatedAt.toISOString().slice(0, 16).replace('T', ' ')} (UTC${tzOffsetMinutes <= 0 ? '+' : '-'}${Math.abs(tzOffsetMinutes / 60)})`
+  const title = `${input.roomName} · Event #${input.run.seq}${input.run.abandoned ? ' (unfinished)' : ''} · generated ${generatedAt.toISOString().slice(0, 16).replace('T', ' ')} (UTC${tzOffsetMinutes <= 0 ? '+' : '-'}${Math.abs(tzOffsetMinutes / 60)})`
 
   const nameById = new Map(input.report.segments.map((s) => [s.timerId, s.name]))
 

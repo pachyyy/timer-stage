@@ -49,7 +49,7 @@
     "signupCta": "Daftar gratis",
     "pricingCta": "Lihat harga",
     "codeCardTitle": "Punya kode ruang?",
-    "codeCardDesc": "Gabung sebagai peserta — tanpa perlu akun.",
+    "codeCardDesc": "Gabung sebagai peserta, tanpa perlu akun.",
     "heroTitle": "Setiap pembicara tepat waktu.",
     "howCta": "Lihat cara kerjanya",
     "heroImageAlt": "Operator memulai timer dan semua layar menghitung mundur bersama",
@@ -66,14 +66,14 @@
       },
       {
         "title": "Jalankan acara",
-        "body": "Mulai, sesuaikan, dan kirim pesan dari satu panel — semua layar langsung mengikuti."
+        "body": "Mulai, sesuaikan, dan kirim pesan dari satu panel, dan semua layar langsung mengikuti."
       }
     ],
     "featuresTitle": "Dibuat untuk tim di balik panggung",
     "features": [
       {
         "title": "Selalu serempak",
-        "body": "Setiap layar menampilkan detik yang sama — dan tetap menghitung meski Wi-Fi terputus."
+        "body": "Setiap layar menampilkan detik yang sama, dan tetap menghitung meski Wi-Fi terputus."
       },
       {
         "title": "Pesan ke layar",
@@ -133,7 +133,7 @@
     "faq": [
       {
         "q": "Apakah peserta perlu akun atau aplikasi?",
-        "a": "Tidak. Siapa pun bisa bergabung dari browser ponsel atau laptop dengan kode ruang — cukup nama, tanpa perlu instal apa pun."
+        "a": "Tidak. Siapa pun bisa bergabung dari browser ponsel atau laptop dengan kode ruang. Cukup nama, tanpa perlu instal apa pun."
       },
       {
         "q": "Bagaimana jika internet terputus?",
@@ -141,7 +141,7 @@
       },
       {
         "q": "Apa yang bisa dipakai sebagai layar?",
-        "a": "Apa pun yang punya browser — TV, laptop di proyektor, tablet, atau ponsel. Buka tautan layar dan timer langsung memenuhinya."
+        "a": "Apa pun yang punya browser: TV, laptop di proyektor, tablet, atau ponsel. Buka tautan layar dan timer langsung memenuhinya."
       },
       {
         "q": "Bisakah orang lain menjalankan timer?",
@@ -149,7 +149,7 @@
       },
       {
         "q": "Bagaimana cara membayar?",
-        "a": "Tidak ada langganan. Anda membeli kredit ruang untuk acara yang Anda jalankan — lihat Harga untuk detailnya."
+        "a": "Tidak ada langganan. Anda membeli kredit ruang untuk acara yang Anda jalankan. Lihat Harga untuk detailnya."
       }
     ],
     "finalTitle": "Jalankan acara berikutnya tepat waktu.",
@@ -166,16 +166,16 @@
   },
   "pricing": {
     "title": "Harga",
-    "subtitle": "Setiap ruang gratis untuk ditonton dan digabungi lewat kode — tanpa perlu akun. Berikut ini hanya berlaku untuk membuat dan memiliki ruang.",
+    "subtitle": "Setiap ruang gratis untuk ditonton dan digabungi lewat kode, tanpa perlu akun. Berikut ini hanya berlaku untuk membuat dan memiliki ruang.",
     "roomsTitle": "Ruang",
     "roomsUnit": "/ ruang",
     "roomsBullet1": "Termasuk {free} peserta, riwayat acara lengkap, ekspor .xlsx, dan hingga {segments} segmen",
-    "roomsBullet2": "Cocok untuk satu acara — setelah acara selesai, ruang tersebut selesai juga. Acara berikutnya butuh ruang sendiri.",
+    "roomsBullet2": "Cocok untuk satu acara. Setelah acara selesai, ruang tersebut selesai juga. Acara berikutnya butuh ruang sendiri.",
     "participantsTitle": "Peserta tambahan",
     "participantsUnit": "/ orang",
     "participantsBullet1": "Hanya jika sebuah ruang butuh lebih dari {free} peserta",
     "participantsBullet2": "Beli dalam jumlah banyak sekaligus dan gunakan di ruang mana pun, kapan pun kamu butuh",
-    "noCheckout": "Belum ada checkout mandiri — hubungi kami di WhatsApp dengan jumlah ruang dan/atau peserta tambahan yang kamu inginkan beserta email akunnya, dan kami akan menambah saldomu.",
+    "noCheckout": "Belum ada checkout mandiri. Hubungi kami di WhatsApp dengan jumlah ruang dan/atau peserta tambahan yang kamu inginkan beserta email akunnya, dan kami akan menambah saldomu.",
     "whatsappCta": "Chat di WhatsApp"
   },
   "docs": {
@@ -190,14 +190,14 @@
     "sections": {
       "overview": {
         "title": "Ikhtisar",
-        "lead": "Clepsy adalah timer hitung mundur bersama untuk acara langsung. Satu operator menjalankan waktu, dan setiap layar — monitor panggung, tablet, ponsel siapa pun — menampilkan waktu yang sama secara serempak.",
+        "lead": "Clepsy adalah timer hitung mundur bersama untuk acara langsung. Satu operator menjalankan waktu, dan setiap layar (monitor panggung, tablet, ponsel siapa pun) menampilkan waktu yang sama secara serempak.",
         "steps": [
           "Masuk dan buat ruang untuk acara Anda, lengkap dengan agenda segmennya.",
           "Buka tautan layar ruang di monitor panggung, lalu bagikan kode ruang ke kru Anda.",
           "Tekan Mulai. Semua layar menghitung mundur bersama, dan setiap penyesuaian serta pesan sampai ke semuanya sekaligus.",
           "Akhiri acara setelah selesai. Seluruh linimasanya tersimpan di Riwayat."
         ],
-        "tip": "Layar tetap menghitung meski koneksinya terputus — waktu dihitung di masing-masing perangkat, bukan dikirim terus-menerus."
+        "tip": "Layar tetap menghitung meski koneksinya terputus, karena waktu dihitung di masing-masing perangkat, bukan dikirim terus-menerus."
       },
       "signIn": {
         "title": "Masuk",
@@ -207,7 +207,7 @@
           "Pilih Lanjutkan dengan Google, lalu pilih akun Anda.",
           "Anda akan tiba di Dasbor, siap membuat ruang."
         ],
-        "tip": "Ruang milik Anda bisa dijalankan dari perangkat mana pun tempat Anda masuk — tanpa tautan operator."
+        "tip": "Ruang milik Anda bisa dijalankan dari perangkat mana pun tempat Anda masuk, tanpa tautan operator."
       },
       "createRoom": {
         "title": "Buat ruang",
@@ -221,14 +221,14 @@
       },
       "buildAgenda": {
         "title": "Susun agenda",
-        "lead": "Ubah agenda kapan saja dari halaman operator — setiap perubahan langsung sampai ke layar.",
+        "lead": "Ubah agenda kapan saja dari halaman operator. Setiap perubahan langsung sampai ke layar.",
         "steps": [
           "Ketik nama dan durasi segmen di bagian bawah kartu Agenda, lalu klik Tambah.",
           "Seret segmen lewat pegangannya untuk mengubah urutan.",
           "Klik Tautkan ke berikutnya di bawah segmen agar segmen selanjutnya mulai otomatis saat waktunya habis.",
           "Klik ikon pensil untuk mengubah durasi, jadwal mulai, pembicara, catatan, dan peringatan akhir segmen."
         ],
-        "tip": "Jadwal mulai hanya sebagai acuan — tidak ada yang mulai sendiri kecuali segmen ditautkan."
+        "tip": "Jadwal mulai hanya sebagai acuan. Tidak ada yang mulai sendiri kecuali segmen ditautkan."
       },
       "runTimer": {
         "title": "Jalankan timer",
@@ -243,7 +243,7 @@
       },
       "shareScreen": {
         "title": "Bagikan layar",
-        "lead": "Browser apa pun bisa menjadi layar — monitor panggung, TV, atau laptop di proyektor.",
+        "lead": "Browser apa pun bisa menjadi layar: monitor panggung, TV, atau laptop di proyektor.",
         "steps": [
           "Di halaman operator, cari Bagikan ruang ini dan salin Tautan langsung ke layar.",
           "Buka tautan itu di perangkat tampilan dan beri nama layarnya, misalnya Panggung utama.",
@@ -254,7 +254,7 @@
       },
       "joinRoom": {
         "title": "Bergabung sebagai peserta",
-        "lead": "Kru dan pembicara bisa mengikuti timer dari ponsel masing-masing — tanpa akun.",
+        "lead": "Kru dan pembicara bisa mengikuti timer dari ponsel masing-masing, tanpa akun.",
         "steps": [
           "Buka Clepsy dan masukkan kode ruang di bawah Punya kode ruang?",
           "Ketik nama Anda agar operator tahu siapa yang menonton.",
@@ -267,7 +267,7 @@
         "lead": "Setiap orang yang bergabung tercantum di halaman operator, tempat Anda bisa berbagi kendali.",
         "steps": [
           "Cari orang tersebut di kartu Peserta pada halaman operator.",
-          "Klik Beri kendali. Sebuah banner muncul di layarnya — sekali ketuk membuka panel operatornya sendiri.",
+          "Klik Beri kendali. Sebuah banner muncul di layarnya, dan sekali ketuk membuka panel operatornya sendiri.",
           "Klik Cabut kendali untuk menariknya kembali. Berlaku mulai tindakan berikutnya.",
           "Klik Keluarkan untuk mengembalikan seseorang ke layar bergabung."
         ],
@@ -292,7 +292,7 @@
     "tabJoin": "Gabung dengan kode",
     "tabRunning": "Acara berlangsung",
     "newRoomTitle": "Ruang baru",
-    "newRoomDesc": "Susun agendamu — bisa diedit lagi nanti dari panel operator.",
+    "newRoomDesc": "Susun agendamu. Agenda bisa diedit lagi nanti dari panel operator.",
     "eventNameLabel": "Nama acara",
     "eventNamePlaceholder": "Rapat Triwulan Q3",
     "agendaLabel": "Agenda",
@@ -317,11 +317,11 @@
     "signInHint": "Masuk untuk melihat semua ruang yang tertaut ke akunmu.",
     "creditsLine": "{rooms, plural, other {# kredit ruang}} · {users, plural, other {# kredit peserta tambahan}} tersisa.",
     "importTitle": "Ada ruang di browser ini yang belum tersimpan ke akunmu",
-    "importDesc": "{count, plural, other {# ruang yang kamu buat dari browser ini belum tertaut — impor untuk mengendalikannya dari perangkat mana pun.}}",
+    "importDesc": "{count, plural, other {# ruang yang kamu buat dari browser ini belum tertaut. Impor untuk mengendalikannya dari perangkat mana pun.}}",
     "importButton": "Impor {count}",
     "importing": "Mengimpor…",
     "loadingRooms": "Memuat ruang…",
-    "noRooms": "Belum ada ruang yang tertaut ke akunmu — buat satu dari Dasbor.",
+    "noRooms": "Belum ada ruang yang tertaut ke akunmu. Buat satu dari Dasbor.",
     "archivedCount": "{count, plural, other {# ruang diarsipkan}}",
     "archivedBadge": "Diarsipkan",
     "runCount": "{count, plural, other {# acara}}",
@@ -333,8 +333,8 @@
   },
   "history": {
     "signInHint": "Masuk untuk melihat semua acara di seluruh ruangmu.",
-    "noRuns": "Belum ada acara tercatat — riwayat dimulai begitu kamu menekan Mulai pada sebuah segmen dan nanti mengakhiri acara, di salah satu ruangmu.",
-    "runLabel": "{roomName} — Acara ke-{seq}"
+    "noRuns": "Belum ada acara tercatat. Riwayat dimulai begitu kamu menekan Mulai pada sebuah segmen dan nanti mengakhiri acara, di salah satu ruangmu.",
+    "runLabel": "{roomName} · Acara ke-{seq}"
   },
   "account": {
     "signInHint": "Masuk untuk mengelola akunmu.",
@@ -345,7 +345,7 @@
     "saved": "Tersimpan."
   },
   "agendaList": {
-    "empty": "Belum ada segmen — tambahkan satu di bawah.",
+    "empty": "Belum ada segmen. Tambahkan satu di bawah.",
     "dragHandle": "Seret untuk mengurutkan ulang",
     "editSegment": "Edit segmen",
     "deleteSegment": "Hapus segmen",
@@ -390,34 +390,34 @@
     "giveControl": "Beri kendali",
     "remove": "Keluarkan",
     "removeTitle": "Keluarkan peserta?",
-    "removeDescOperator": "Keluarkan \"{name}\" dari ruang ini? Mereka akan dikembalikan ke layar gabung dan langsung kehilangan akses operator. Mereka bisa bergabung kembali dengan nama kapan saja — ini tidak memblokir mereka.",
-    "removeDescViewer": "Keluarkan \"{name}\" dari ruang ini? Mereka akan dikembalikan ke layar gabung. Mereka bisa bergabung kembali dengan nama kapan saja — ini tidak memblokir mereka."
+    "removeDescOperator": "Keluarkan \"{name}\" dari ruang ini? Mereka akan dikembalikan ke layar gabung dan langsung kehilangan akses operator. Mereka tetap bisa bergabung kembali dengan nama kapan saja.",
+    "removeDescViewer": "Keluarkan \"{name}\" dari ruang ini? Mereka akan dikembalikan ke layar gabung. Mereka tetap bisa bergabung kembali dengan nama kapan saja."
   },
   "segmentDialog": {
     "title": "Edit segmen",
-    "desc": "Perubahan berlaku begitu kamu simpan — semua yang menonton langsung melihatnya.",
+    "desc": "Perubahan berlaku begitu kamu simpan, dan semua yang menonton langsung melihatnya.",
     "nameLabel": "Nama",
     "durationLabel": "Durasi",
     "scheduledLabel": "Jadwal mulai (opsional)",
-    "scheduledHint": "Hanya informatif — dipakai untuk menunjukkan seberapa cepat atau lambat acara dari jadwal. Tidak ada yang dimulai otomatis.",
+    "scheduledHint": "Hanya informatif. Dipakai untuk menunjukkan seberapa cepat atau lambat acara dari jadwal. Tidak ada yang dimulai otomatis.",
     "speakerLabel": "Pembicara",
     "notesLabel": "Catatan",
-    "notesPlaceholder": "Opsional — hanya terlihat oleh operator",
+    "notesPlaceholder": "Opsional, hanya terlihat oleh operator",
     "wrapUpLabel": "Peringatan sisa waktu",
     "wrapUpSuffix": "mnt sebelum berakhir",
     "untitledName": "Tanpa judul"
   },
   "screen": {
     "notFoundDesc": "Periksa kembali kode atau tautannya lalu coba lagi.",
-    "promotedBanner": "Kamu dijadikan operator — buka panel",
-    "wakeLockWarning": "Layar bisa tertidur — wake lock tidak tersedia"
+    "promotedBanner": "Kamu dijadikan operator. Buka panel",
+    "wakeLockWarning": "Layar bisa tertidur (wake lock tidak tersedia)"
   },
   "control": {
     "title": "Operator",
     "renameRoom": "Ganti nama ruang",
     "saveName": "Simpan nama",
     "cancelRename": "Batal ganti nama",
-    "claimError": "Ruang ini tidak bisa disimpan — kamu butuh tautan operator asli ruang ini, bukan tautan akses yang diberikan.",
+    "claimError": "Ruang ini tidak bisa disimpan. Kamu butuh tautan operator asli ruang ini, bukan tautan akses yang diberikan.",
     "claimPrompt": "Simpan ruang ini ke akunmu untuk kendali dan riwayat lintas perangkat.",
     "failedStart": "Gagal memulai.",
     "agendaTitle": "Agenda",
@@ -432,11 +432,11 @@
     "duration30s": "30 dtk",
     "duration1min": "1 mnt",
     "showingNow": "Tampil di layar sekarang: <b>{message}</b>",
-    "messageHint": "Belum ada pesan di layar. Layar akan menampilkan banner di bagian atas, dan ponsel akan bergetar jika mendukung getaran (khusus Android — iPhone tidak bisa).",
+    "messageHint": "Belum ada pesan di layar. Layar akan menampilkan banner di bagian atas, dan ponsel akan bergetar jika mendukung getaran (khusus Android, iPhone tidak bisa).",
     "shareTitle": "Bagikan ruang ini",
-    "roomCodeHint": "Kode ruang — bacakan langsung atau diketik di tab \"Gabung dengan kode\" pada dasbor",
+    "roomCodeHint": "Kode ruang: bacakan langsung atau ketik di tab \"Gabung dengan kode\" pada dasbor",
     "viewerLinkLabel": "Tautan langsung ke layar",
-    "shareHint": "Siapa pun yang membukanya akan memasukkan nama dan muncul di bawah — kamu bisa memberi mereka akses operator jika mau.",
+    "shareHint": "Siapa pun yang membukanya akan memasukkan nama dan muncul di bawah. Kamu bisa memberi mereka akses operator jika mau.",
     "participantsTitle": "Peserta",
     "thisSegment": "segmen ini",
     "theCurrentSegment": "Segmen saat ini",
@@ -446,19 +446,19 @@
     "demotedDesc": "Host ruang ini mengambil kembali kendali.",
     "goToScreen": "Buka layar timer",
     "endEventTitle": "Akhiri acara?",
-    "endEventDesc": "Ini akan mengarsipkan acara saat ini ke Riwayat dan menghentikan timer. Agendamu tetap sama persis — kamu bisa menjalankannya lagi, dan akan tercatat sebagai acara baru.",
+    "endEventDesc": "Ini akan mengarsipkan acara saat ini ke Riwayat dan menghentikan timer. Agendamu tetap sama persis. Kamu bisa menjalankannya lagi, dan akan tercatat sebagai acara baru.",
     "switchTitle": "Ganti segmen?",
     "switchDescRunning": "\"{current}\" masih berjalan. Beralih ke \"{next}\" akan menghentikannya dan mengatur ulang progresnya ke nol.",
     "switchDescPaused": "\"{current}\" masih dijeda di tengah jalan. Beralih ke \"{next}\" akan menghentikannya dan mengatur ulang progresnya ke nol.",
     "switchConfirm": "Ganti",
     "deleteTitle": "Hapus segmen ini?",
     "deleteDesc": "Hapus \"{name}\"? Tindakan ini tidak bisa dibatalkan.",
-    "deleteDescActive": "Hapus \"{name}\"? Tindakan ini tidak bisa dibatalkan. Ini segmen yang sedang dipilih — menghapusnya juga akan menghentikan acara."
+    "deleteDescActive": "Hapus \"{name}\"? Tindakan ini tidak bisa dibatalkan. Ini segmen yang sedang dipilih, jadi menghapusnya juga akan menghentikan acara."
   },
   "historyRoom": {
     "backToLive": "Kembali ke acara langsung",
     "loadError": "Riwayat ruang ini tidak bisa dimuat.",
-    "noRuns": "Belum ada acara tercatat — riwayat dimulai begitu kamu menekan Mulai pada sebuah segmen dan nanti mengakhiri acara.",
+    "noRuns": "Belum ada acara tercatat. Riwayat dimulai begitu kamu menekan Mulai pada sebuah segmen dan nanti mengakhiri acara.",
     "eventLabel": "Acara ke-{seq}",
     "inProgress": "berlangsung",
     "segmentCount": "{count, plural, other {# segmen}}"
@@ -498,11 +498,11 @@
   },
   "gate": {
     "outOfRoomCredits": "Kredit ruangmu habis. Beli lagi di halaman Harga untuk membuat ruang baru.",
-    "roomFull": "Ruang ini sudah penuh — hanya mengizinkan {cap, plural, other {# peserta}}.",
+    "roomFull": "Ruang ini sudah penuh dan hanya mengizinkan {cap, plural, other {# peserta}}.",
     "participantCreditsOut": "Ruang ini sudah mencapai {free, plural, other {# peserta gratis}}, dan kredit peserta pemilik sudah habis. Beli lagi di halaman Harga.",
-    "historyAnonBlocked": "Riwayat acara tidak tersedia untuk ruang anonim — masuk sebelum membuat ruang agar dapat riwayat.",
-    "exportAnonBlocked": "Ekspor tidak tersedia untuk ruang anonim — masuk sebelum membuat ruang agar bisa ekspor.",
-    "segmentsAnonCap": "Ruang anonim hanya boleh sampai {cap, plural, other {# segmen}} — masuk sebelum membuat ruang untuk lebih banyak.",
+    "historyAnonBlocked": "Riwayat acara tidak tersedia untuk ruang anonim. Masuk sebelum membuat ruang agar dapat riwayat.",
+    "exportAnonBlocked": "Ekspor tidak tersedia untuk ruang anonim. Masuk sebelum membuat ruang agar bisa ekspor.",
+    "segmentsAnonCap": "Ruang anonim hanya boleh sampai {cap, plural, other {# segmen}}. Masuk sebelum membuat ruang untuk lebih banyak.",
     "segmentsCap": "Ruang hanya boleh sampai {cap} segmen. {trimHint}.",
     "trimHintRemove": "Hapus satu sebelum menambah yang lain",
     "trimHintTrim": "Kurangi agendamu lalu coba lagi",

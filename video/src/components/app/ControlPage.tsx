@@ -29,7 +29,7 @@ export const ControlPage: React.FC<{
         <Logo />
         <h1 className="shrink-0 text-xl font-semibold">{t("control", "title")}</h1>
         <span className="flex min-w-0 items-center gap-1">
-          <span className="truncate text-sm text-muted-foreground">— {roomName}</span>
+          <span className="truncate text-sm text-muted-foreground">· {roomName}</span>
           <Pencil className="size-3.5 shrink-0 text-muted-foreground" />
         </span>
       </div>

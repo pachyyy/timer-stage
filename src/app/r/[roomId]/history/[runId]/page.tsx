@@ -106,7 +106,7 @@ export default function RunDetailPage({ params }: { params: Promise<{ roomId: st
             <Image src="/clepsy.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
           <h1 className="text-xl font-semibold">{t('title', { seq: detail?.run.seq ?? '' })}</h1>
-          {detail?.roomName && <span className="truncate text-sm text-muted-foreground">— {detail.roomName}</span>}
+          {detail?.roomName && <span className="truncate text-sm text-muted-foreground">· {detail.roomName}</span>}
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">

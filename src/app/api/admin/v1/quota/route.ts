@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const balance = await getQuotaByEmail(email)
   if (!balance) {
     return NextResponse.json(
-      { error: `${email} hasn't signed into Clepsy yet — there's no account to check a balance for.` },
+      { error: `${email} hasn't signed into Clepsy yet, so there's no account to check a balance for.` },
       { status: 404 },
     )
   }
@@ -44,13 +44,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'roomDelta and/or userDelta must be non-zero' }, { status: 400 })
   }
   if (roomDelta < 0 || userDelta < 0) {
-    return NextResponse.json({ error: 'deltas must be positive — this endpoint only grants credit' }, { status: 400 })
+    return NextResponse.json({ error: 'deltas must be positive, since this endpoint only grants credit' }, { status: 400 })
   }
 
   const result = await grantQuotaByEmail(email, roomDelta, userDelta, note)
   if (!result) {
     return NextResponse.json(
-      { error: `${email} hasn't signed into Clepsy yet — ask them to sign in once, then grant quota.` },
+      { error: `${email} hasn't signed into Clepsy yet. Ask them to sign in once, then grant quota.` },
       { status: 404 },
     )
   }

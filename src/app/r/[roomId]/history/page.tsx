@@ -78,7 +78,7 @@ export default function HistoryPage({ params }: { params: Promise<{ roomId: stri
             <Image src="/clepsy.svg" alt="" width={24} height={24} unoptimized className="rounded-md" />
           </Link>
           <h1 className="text-xl font-semibold">{tNav('history')}</h1>
-          {roomName && <span className="truncate text-sm text-muted-foreground">— {roomName}</span>}
+          {roomName && <span className="truncate text-sm text-muted-foreground">· {roomName}</span>}
         </div>
         <Button asChild variant="outline" size="sm">
           <a href={`/r/${roomId}/control${token ? `?t=${token}` : ''}`}>

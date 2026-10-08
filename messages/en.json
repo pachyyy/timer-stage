@@ -49,7 +49,7 @@
     "signupCta": "Sign up free",
     "pricingCta": "See pricing",
     "codeCardTitle": "Have a room code?",
-    "codeCardDesc": "Join as a participant — no account needed.",
+    "codeCardDesc": "Join as a participant. No account needed.",
     "heroTitle": "Keep every speaker on time.",
     "howCta": "See how it works",
     "heroImageAlt": "An operator starts the timer and every screen counts down together",
@@ -66,14 +66,14 @@
       },
       {
         "title": "Run the event",
-        "body": "Start, adjust and send messages from one panel — every screen follows instantly."
+        "body": "Start, adjust and send messages from one panel, and every screen follows instantly."
       }
     ],
     "featuresTitle": "Built for the people backstage",
     "features": [
       {
         "title": "Always in sync",
-        "body": "Every screen shows the same second — and keeps counting even if the Wi-Fi drops."
+        "body": "Every screen shows the same second, and keeps counting even if the Wi-Fi drops."
       },
       {
         "title": "Messages to screens",
@@ -133,7 +133,7 @@
     "faq": [
       {
         "q": "Do participants need an account or an app?",
-        "a": "No. Anyone can join from a phone or laptop browser with the room code — just their name, nothing to install."
+        "a": "No. Anyone can join from a phone or laptop browser with the room code. All they need is their name, with nothing to install."
       },
       {
         "q": "What happens if the internet drops?",
@@ -141,7 +141,7 @@
       },
       {
         "q": "What can I use as a screen?",
-        "a": "Anything with a web browser — a TV, the laptop on the projector, a tablet or a phone. Open the screen link and the timer fills it."
+        "a": "Anything with a web browser: a TV, the laptop on the projector, a tablet or a phone. Open the screen link and the timer fills it."
       },
       {
         "q": "Can someone else run the timer?",
@@ -149,7 +149,7 @@
       },
       {
         "q": "How do I pay?",
-        "a": "There's no subscription. You buy room credits for the events you run — see Pricing for details."
+        "a": "There's no subscription. You buy room credits for the events you run. See Pricing for details."
       }
     ],
     "finalTitle": "Run your next event on time.",
@@ -166,16 +166,16 @@
   },
   "pricing": {
     "title": "Pricing",
-    "subtitle": "Every room is free to view and join by code — no account needed. What follows only applies to creating and owning rooms.",
+    "subtitle": "Every room is free to view and join by code, with no account needed. What follows only applies to creating and owning rooms.",
     "roomsTitle": "Rooms",
     "roomsUnit": "/ room",
     "roomsBullet1": "Includes {free} participants, full event history, .xlsx export, and up to {segments} segments",
-    "roomsBullet2": "Good for one event — once the event ends, that room is done. Your next event needs its own room.",
+    "roomsBullet2": "Good for one event. Once the event ends, that room is done, and your next event needs its own room.",
     "participantsTitle": "Extra participants",
     "participantsUnit": "/ person",
     "participantsBullet1": "Only if a room needs more than {free} participants",
     "participantsBullet2": "Buy a batch up front and use it across any of your rooms, whenever you need it",
-    "noCheckout": "No self-serve checkout yet — message us on WhatsApp with how many rooms and/or extra participants you want and the account email to put them on, and we'll top up your balance.",
+    "noCheckout": "No self-serve checkout yet. Message us on WhatsApp with how many rooms and/or extra participants you want and the account email to put them on, and we'll top up your balance.",
     "whatsappCta": "Chat on WhatsApp"
   },
   "docs": {
@@ -190,14 +190,14 @@
     "sections": {
       "overview": {
         "title": "Overview",
-        "lead": "Clepsy is a shared countdown timer for live events. One operator runs the clock, and every screen — the stage monitor, a tablet, anyone's phone — shows the same time, in sync.",
+        "lead": "Clepsy is a shared countdown timer for live events. One operator runs the clock, and every screen (the stage monitor, a tablet, anyone's phone) shows the same time, in sync.",
         "steps": [
           "Sign in and create a room for your event, with its agenda of segments.",
           "Open the room's screen link on the stage monitor, and share the room code with your crew.",
           "Press Start. Every screen counts down together, and adjustments and messages reach all of them at once.",
           "End the event when you're done. Its full timeline is saved to History."
         ],
-        "tip": "Screens keep counting even if their connection drops — the time is worked out on each device, not streamed to it."
+        "tip": "Screens keep counting even if their connection drops, because the time is worked out on each device, not streamed to it."
       },
       "signIn": {
         "title": "Sign in",
@@ -207,7 +207,7 @@
           "Choose Continue with Google and pick your account.",
           "You land on your Dashboard, ready to create a room."
         ],
-        "tip": "A room you own can be run from any device you're signed in on — no operator link needed."
+        "tip": "A room you own can be run from any device you're signed in on. No operator link needed."
       },
       "createRoom": {
         "title": "Create a room",
@@ -221,14 +221,14 @@
       },
       "buildAgenda": {
         "title": "Build the agenda",
-        "lead": "Edit the agenda any time from the operator page — every change reaches the screens right away.",
+        "lead": "Edit the agenda any time from the operator page. Every change reaches the screens right away.",
         "steps": [
           "Type a segment name and length at the bottom of the Agenda card, then click Add.",
           "Drag a segment by its handle to change the order.",
           "Click Link to next under a segment to start the following one automatically when it reaches zero.",
           "Click the pencil to edit a segment's duration, scheduled start, speaker, notes and wrap-up warning."
         ],
-        "tip": "Scheduled start is for reference only — nothing starts by itself unless segments are linked."
+        "tip": "Scheduled start is for reference only. Nothing starts by itself unless segments are linked."
       },
       "runTimer": {
         "title": "Run the timer",
@@ -243,7 +243,7 @@
       },
       "shareScreen": {
         "title": "Share a screen",
-        "lead": "Any browser can be a screen — a stage monitor, a TV, the laptop on the projector.",
+        "lead": "Any browser can be a screen: a stage monitor, a TV, the laptop on the projector.",
         "steps": [
           "On the operator page, find Share this room and copy the Direct screen link.",
           "Open the link on the display and give the screen a name, like Main stage.",
@@ -254,7 +254,7 @@
       },
       "joinRoom": {
         "title": "Join as a participant",
-        "lead": "Crew and speakers can follow the timer on their own phones — no account needed.",
+        "lead": "Crew and speakers can follow the timer on their own phones, with no account needed.",
         "steps": [
           "Open Clepsy and enter the room code under Have a room code?",
           "Type your name so the operator knows who's watching.",
@@ -267,7 +267,7 @@
         "lead": "Everyone who joins is listed on the operator page, where you can share control.",
         "steps": [
           "Find the person in the Participants card on the operator page.",
-          "Click Give control. A banner appears on their screen — one tap opens their own operator panel.",
+          "Click Give control. A banner appears on their screen, and one tap opens their own operator panel.",
           "Click Revoke control to take it back. It applies from their very next action.",
           "Click Remove to send someone back to the join screen."
         ],
@@ -292,7 +292,7 @@
     "tabJoin": "Join with code",
     "tabRunning": "Running event",
     "newRoomTitle": "New room",
-    "newRoomDesc": "Set up your agenda — you can edit it later from the operator panel.",
+    "newRoomDesc": "Set up your agenda. You can edit it later from the operator panel.",
     "eventNameLabel": "Event name",
     "eventNamePlaceholder": "Q3 All Hands",
     "agendaLabel": "Agenda",
@@ -317,11 +317,11 @@
     "signInHint": "Sign in to see every room linked to your account.",
     "creditsLine": "{rooms, plural, one {# room credit} other {# room credits}} · {users, plural, one {# extra participant credit} other {# extra participant credits}} left.",
     "importTitle": "Rooms on this browser aren't saved to your account",
-    "importDesc": "{count, plural, one {# room you created from this browser isn't linked yet — import it to control from any device.} other {# rooms you created from this browser aren't linked yet — import them to control from any device.}}",
+    "importDesc": "{count, plural, one {# room you created from this browser isn't linked yet. Import it to control from any device.} other {# rooms you created from this browser aren't linked yet. Import them to control from any device.}}",
     "importButton": "Import {count}",
     "importing": "Importing…",
     "loadingRooms": "Loading rooms…",
-    "noRooms": "No rooms linked to your account yet — create one from the Dashboard.",
+    "noRooms": "No rooms linked to your account yet. Create one from the Dashboard.",
     "archivedCount": "{count, plural, one {# archived room} other {# archived rooms}}",
     "archivedBadge": "Archived",
     "runCount": "{count, plural, one {# event} other {# events}}",
@@ -333,8 +333,8 @@
   },
   "history": {
     "signInHint": "Sign in to see every event across your rooms.",
-    "noRuns": "No events recorded yet — history starts once you press Start on a segment and later end the event, in any of your rooms.",
-    "runLabel": "{roomName} — Event #{seq}"
+    "noRuns": "No events recorded yet. History starts once you press Start on a segment and later end the event, in any of your rooms.",
+    "runLabel": "{roomName} · Event #{seq}"
   },
   "account": {
     "signInHint": "Sign in to manage your account.",
@@ -345,7 +345,7 @@
     "saved": "Saved."
   },
   "agendaList": {
-    "empty": "No segments yet — add one below.",
+    "empty": "No segments yet. Add one below.",
     "dragHandle": "Drag to reorder",
     "editSegment": "Edit segment",
     "deleteSegment": "Delete segment",
@@ -390,34 +390,34 @@
     "giveControl": "Give control",
     "remove": "Remove",
     "removeTitle": "Remove participant?",
-    "removeDescOperator": "Remove \"{name}\" from this room? They'll be sent back to the join screen and lose operator access immediately. They can rejoin with a name at any time — this doesn't block them.",
-    "removeDescViewer": "Remove \"{name}\" from this room? They'll be sent back to the join screen. They can rejoin with a name at any time — this doesn't block them."
+    "removeDescOperator": "Remove \"{name}\" from this room? They'll be sent back to the join screen and lose operator access immediately. They can still rejoin with a name at any time.",
+    "removeDescViewer": "Remove \"{name}\" from this room? They'll be sent back to the join screen. They can still rejoin with a name at any time."
   },
   "segmentDialog": {
     "title": "Edit segment",
-    "desc": "Changes apply the moment you save — everyone watching sees them.",
+    "desc": "Changes apply the moment you save, and everyone watching sees them.",
     "nameLabel": "Name",
     "durationLabel": "Duration",
     "scheduledLabel": "Scheduled start (optional)",
-    "scheduledHint": "Informational only — used to show how far ahead or behind schedule the event is running. Nothing starts automatically.",
+    "scheduledHint": "Informational only. Used to show how far ahead or behind schedule the event is running. Nothing starts automatically.",
     "speakerLabel": "Speaker",
     "notesLabel": "Notes",
-    "notesPlaceholder": "Optional — visible to the operator only",
+    "notesPlaceholder": "Optional, visible to the operator only",
     "wrapUpLabel": "Wrap-up warning",
     "wrapUpSuffix": "min before the end",
     "untitledName": "Untitled"
   },
   "screen": {
     "notFoundDesc": "Double-check the code or link and try again.",
-    "promotedBanner": "You've been made an operator — open panel",
-    "wakeLockWarning": "Screen may sleep — wake lock unavailable"
+    "promotedBanner": "You've been made an operator. Open panel",
+    "wakeLockWarning": "Screen may sleep (wake lock unavailable)"
   },
   "control": {
     "title": "Operator",
     "renameRoom": "Rename room",
     "saveName": "Save name",
     "cancelRename": "Cancel rename",
-    "claimError": "Couldn't save this room — you need the room's original operator link, not a granted-access one.",
+    "claimError": "Couldn't save this room. You need the room's original operator link, not a granted-access one.",
     "claimPrompt": "Save this room to your account for cross-device control and history.",
     "failedStart": "Failed to start.",
     "agendaTitle": "Agenda",
@@ -432,11 +432,11 @@
     "duration30s": "30s",
     "duration1min": "1 min",
     "showingNow": "On screen now: <b>{message}</b>",
-    "messageHint": "Nothing on screen. Screens get a banner at the top, and phones buzz if they support vibration (Android only — iPhones can't).",
+    "messageHint": "Nothing on screen. Screens get a banner at the top, and phones buzz if they support vibration (Android only, not iPhones).",
     "shareTitle": "Share this room",
-    "roomCodeHint": "Room code — read aloud or typed into the \"Join with code\" tab on the dashboard",
+    "roomCodeHint": "Room code: read it aloud or type it into the \"Join with code\" tab on the dashboard",
     "viewerLinkLabel": "Direct screen link",
-    "shareHint": "Either way, whoever opens it enters their name and shows up below — you can grant them operator access if you want.",
+    "shareHint": "Either way, whoever opens it enters their name and shows up below. You can grant them operator access if you want.",
     "participantsTitle": "Participants",
     "thisSegment": "this segment",
     "theCurrentSegment": "The current segment",
@@ -446,19 +446,19 @@
     "demotedDesc": "The room's host took back control.",
     "goToScreen": "Go to timer screen",
     "endEventTitle": "End this event?",
-    "endEventDesc": "This archives this event to History and stops the timer. Your agenda stays exactly as it is — you can run it again, and it'll be recorded as a new event.",
+    "endEventDesc": "This archives this event to History and stops the timer. Your agenda stays exactly as it is. You can run it again, and it'll be recorded as a new event.",
     "switchTitle": "Switch segments?",
     "switchDescRunning": "\"{current}\" is still running. Switching to \"{next}\" will stop it and reset its progress to zero.",
     "switchDescPaused": "\"{current}\" is still paused partway through. Switching to \"{next}\" will stop it and reset its progress to zero.",
     "switchConfirm": "Switch",
     "deleteTitle": "Delete this segment?",
     "deleteDesc": "Delete \"{name}\"? This can't be undone.",
-    "deleteDescActive": "Delete \"{name}\"? This can't be undone. It's the segment currently selected — deleting it will also stop the event."
+    "deleteDescActive": "Delete \"{name}\"? This can't be undone. It's the segment currently selected, so deleting it will also stop the event."
   },
   "historyRoom": {
     "backToLive": "Back to live",
     "loadError": "Could not load history for this room.",
-    "noRuns": "No events recorded yet — history starts once you press Start on a segment and later end the event.",
+    "noRuns": "No events recorded yet. History starts once you press Start on a segment and later end the event.",
     "eventLabel": "Event #{seq}",
     "inProgress": "in progress",
     "segmentCount": "{count, plural, one {# segment} other {# segments}}"
@@ -498,11 +498,11 @@
   },
   "gate": {
     "outOfRoomCredits": "You're out of room credits. Buy more on the Pricing page to create another room.",
-    "roomFull": "This room is full — it allows {cap, plural, one {# participant} other {# participants}}.",
+    "roomFull": "This room is full. It allows {cap, plural, one {# participant} other {# participants}}.",
     "participantCreditsOut": "This room already has its {free, plural, one {# free participant} other {# free participants}}, and the owner is out of participant credits. Buy more on the Pricing page.",
-    "historyAnonBlocked": "Event history isn't available for anonymous rooms — sign in before creating a room to get history.",
-    "exportAnonBlocked": "Exporting isn't available for anonymous rooms — sign in before creating a room to export.",
-    "segmentsAnonCap": "Anonymous rooms allow up to {cap, plural, one {# segment} other {# segments}} — sign in before creating a room for more.",
+    "historyAnonBlocked": "Event history isn't available for anonymous rooms. Sign in before creating a room to get history.",
+    "exportAnonBlocked": "Exporting isn't available for anonymous rooms. Sign in before creating a room to export.",
+    "segmentsAnonCap": "Anonymous rooms allow up to {cap, plural, one {# segment} other {# segments}}. Sign in before creating a room for more.",
     "segmentsCap": "Rooms allow up to {cap} segments. {trimHint}.",
     "trimHintRemove": "Remove one before adding another",
     "trimHintTrim": "Trim your agenda and try again",
