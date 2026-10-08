@@ -15,9 +15,14 @@ renders into `../public/docs/id/` — the docs page doesn't use those yet; it sh
 both locales.
 
 `npm run story` renders the 20-second 9:16 Instagram story (`src/scenes/Story.tsx`, the
-`InstagramStory` composition) to `out/clepsy-instagram-story.mp4` — 1080×1920, H.264, no audio
-(add music in Instagram). It keeps its headlines and devices clear of the bands Instagram covers
-with its own UI.
+`InstagramStory` composition) to `out/clepsy-instagram-story.mp4` — 1080×1920, H.264 + AAC. It
+keeps its headlines and devices clear of the bands Instagram covers with its own UI.
+
+Its soundtrack is synthesised, not downloaded: `scripts/make-story-audio.mjs` writes an original
+120 BPM music bed and the UI sound effects into `public/story/` (git-ignored; `npm run story` runs
+it first, and `npm run story:audio` alone is enough before opening the story in the Studio). At
+30 fps a beat is 15 frames, so every cut and cue in `Story.tsx` sits on a multiple of 15 — keep it
+that way when retiming, or the clicks drift off the kick.
 
 ## How it stays in sync with the app
 

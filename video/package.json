@@ -27,7 +27,8 @@
     "dev": "remotion studio",
     "gifs": "node scripts/render-gifs.mjs",
     "gifs:id": "node scripts/render-gifs.mjs --locale=id",
-    "story": "remotion render InstagramStory out/clepsy-instagram-story.mp4 --codec=h264 --crf=16",
+    "story:audio": "node scripts/make-story-audio.mjs",
+    "story": "node scripts/make-story-audio.mjs && remotion render InstagramStory out/clepsy-instagram-story.mp4 --codec=h264 --crf=16",
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc"
