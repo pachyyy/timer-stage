@@ -3,6 +3,8 @@
 // page's pricing teaser and the footer, so the three can't quote different numbers.
 export const ROOM_PRICE = 'Rp35.000'
 export const EXTRA_PARTICIPANT_PRICE = 'Rp5.000'
+// Placeholder until the real Chorus price is decided — see /pricing.
+export const CHORUS_PRICE = 'Rp25.000'
 
 // There's deliberately no self-serve checkout (see 03_pachy_panel/docs/ARCHITECTURE.md §1) —
 // quota is topped up by hand from the panel. This is where a visitor is told how to actually buy
@@ -10,6 +12,6 @@ export const EXTRA_PARTICIPANT_PRICE = 'Rp5.000'
 // e.g. "6281234567890" for an Indonesian number starting with 0.
 const UPGRADE_WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_UPGRADE_WHATSAPP || '6289654861141'
 
-export function whatsappUrl(message = 'Hi, I want to buy Clepsy room/participant credits'): string {
+export function whatsappUrl(message = 'Hi, I want to buy Clepsy room/participant/Chorus credits'): string {
   return `https://wa.me/${UPGRADE_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
 }

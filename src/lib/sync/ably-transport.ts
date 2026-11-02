@@ -1,5 +1,5 @@
 import * as Ably from 'ably'
-import type { RoomStatePayload, RoomTransport, TransportStatus } from './transport'
+import { ROOM_CHANNEL, type ChannelSpec, type SyncTransport, type TransportStatus, type Versioned } from './transport'
 
 /**
  * Ably-backed transport. The API key never reaches the browser: the client authenticates via
@@ -13,7 +13,7 @@ import type { RoomStatePayload, RoomTransport, TransportStatus } from './transpo
  * Swapping this for Pusher or Supabase Realtime means writing one file that implements
  * RoomTransport; nothing else in the app depends on Ably's API shape.
  */
-export class AblyTransport implements RoomTransport {
+export class AblyTransport<T extends Versioned> implements SyncTransport<T> {
   private client: Ably.Realtime | null = null
   private _status: TransportStatus = 'connecting'
   private statusListeners = new Set<(s: TransportStatus) => void>()
@@ -21,6 +21,7 @@ export class AblyTransport implements RoomTransport {
   constructor(
     private clientId: string,
     private roomToken: string,
+    private spec: ChannelSpec = ROOM_CHANNEL,
   ) {}
 
   get status() {
@@ -39,10 +40,10 @@ export class AblyTransport implements RoomTransport {
     return () => this.statusListeners.delete(cb)
   }
 
-  subscribe(roomId: string, onState: (state: RoomStatePayload) => void): () => void {
+  subscribe(id: string, onState: (state: T) => void): () => void {
     const client = new Ably.Realtime({
       authUrl: '/api/ably/auth',
-      authParams: { roomId, token: this.roomToken, clientId: this.clientId },
+      authParams: { kind: this.spec.authKind, roomId: id, token: this.roomToken, clientId: this.clientId },
       clientId: this.clientId,
     })
     this.client = client
@@ -64,9 +65,9 @@ export class AblyTransport implements RoomTransport {
       }
     })
 
-    const channel = client.channels.get(`room:${roomId}`)
+    const channel = client.channels.get(this.spec.channelName(id))
     const handler = (message: Ably.Message) => {
-      onState(message.data as RoomStatePayload)
+      onState(message.data as T)
     }
     // subscribe() implicitly attaches and returns a promise that REJECTS if the client is
     // close()'d before the attach finishes (e.g. a fast unmount — React Strict Mode's dev-only

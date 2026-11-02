@@ -1,5 +1,6 @@
 import { auth } from '@/auth'
 import { checkRoomAccess, type RoomAccess } from './guard'
+import { checkChorusAccess, type ChorusAccess } from './chorus-guard'
 
 /**
  * Token-or-account gate: wraps checkRoomAccess with the current signed-in user's id (if any), so
@@ -12,4 +13,10 @@ import { checkRoomAccess, type RoomAccess } from './guard'
 export async function resolveRoomAccess(roomId: string, token: string | null): Promise<RoomAccess> {
   const session = await auth()
   return checkRoomAccess(roomId, token, session?.user?.id ?? null)
+}
+
+/** The same token-or-account wrapper, for Chorus sessions. */
+export async function resolveChorusAccess(code: string, token: string | null): Promise<ChorusAccess> {
+  const session = await auth()
+  return checkChorusAccess(code, token, session?.user?.id ?? null)
 }

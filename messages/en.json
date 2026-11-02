@@ -41,8 +41,8 @@
     "language": "Language"
   },
   "joinForm": {
-    "label": "Room code",
-    "button": "Join room"
+    "label": "Room or Chorus code",
+    "button": "Join"
   },
   "landing": {
     "tagline": "A shared countdown timer for live events, synced across every screen.",
@@ -175,8 +175,12 @@
     "participantsUnit": "/ person",
     "participantsBullet1": "Only if a room needs more than {free} participants",
     "participantsBullet2": "Buy a batch up front and use it across any of your rooms, whenever you need it",
-    "noCheckout": "No self-serve checkout yet. Message us on WhatsApp with how many rooms and/or extra participants you want and the account email to put them on, and we'll top up your balance.",
-    "whatsappCta": "Chat on WhatsApp"
+    "noCheckout": "No self-serve checkout yet. Message us on WhatsApp with how many rooms, extra participants and/or Chorus sessions you want and the account email to put them on, and we'll top up your balance.",
+    "whatsappCta": "Chat on WhatsApp",
+    "chorusTitle": "Chorus sessions",
+    "chorusUnit": "/ session",
+    "chorusBullet1": "Live audience Q&A: as many questions as you like, anonymous answers, and no sign-in for the audience",
+    "chorusBullet2": "Good for one presentation. Once you end it, the answers stay saved, and your next presentation needs a new session."
   },
   "docs": {
     "title": "Documentation",
@@ -300,8 +304,8 @@
     "addSegment": "Add segment",
     "createRoom": "Create room",
     "creating": "Creating…",
-    "joinTitle": "Join a room",
-    "joinDesc": "Enter the room code the host shared with you.",
+    "joinTitle": "Join with a code",
+    "joinDesc": "Enter the code the host shared with you. A 6-digit code opens a Chorus session.",
     "joinHint": "You will be asked for your name so the room's host knows who's watching.",
     "runningTitle": "Running event",
     "runningDesc": "Jump back into an event that's currently in progress.",
@@ -310,12 +314,21 @@
     "goToEvent": "Go to event",
     "statusRunning": "Running",
     "statusPaused": "Paused",
-    "statusBetween": "Between segments"
+    "statusBetween": "Between segments",
+    "kindLabel": "What are you creating?",
+    "kindRoom": "Timer room",
+    "kindRoomDesc": "Agenda, countdowns and cues",
+    "kindChorus": "Chorus",
+    "kindChorusDesc": "Live audience Q&A",
+    "newChorusTitle": "New Chorus session",
+    "newChorusDesc": "Prepare your questions. The audience answers anonymously from their phones.",
+    "chorusBadge": "Chorus",
+    "statusLive": "Live"
   },
   "myRooms": {
     "permanentBadge": "Permanent",
     "signInHint": "Sign in to see every room linked to your account.",
-    "creditsLine": "{rooms, plural, one {# room credit} other {# room credits}} · {users, plural, one {# extra participant credit} other {# extra participant credits}} left.",
+    "creditsLine": "{rooms, plural, one {# room credit} other {# room credits}} · {users, plural, one {# extra participant credit} other {# extra participant credits}} · {chorus, plural, one {# Chorus credit} other {# Chorus credits}} left.",
     "importTitle": "Rooms on this browser aren't saved to your account",
     "importDesc": "{count, plural, one {# room you created from this browser isn't linked yet. Import it to control from any device.} other {# rooms you created from this browser aren't linked yet. Import them to control from any device.}}",
     "importButton": "Import {count}",
@@ -329,7 +342,12 @@
     "archive": "Archive",
     "unarchive": "Unarchive",
     "history": "History",
-    "open": "Open"
+    "open": "Open",
+    "roomsTitle": "Timer rooms",
+    "chorusTitle": "Chorus sessions",
+    "noChorus": "No Chorus sessions yet. Create one from the Dashboard.",
+    "questionCount": "{count, plural, one {# question} other {# questions}}",
+    "results": "Results"
   },
   "history": {
     "signInHint": "Sign in to see every event across your rooms.",
@@ -508,7 +526,8 @@
     "trimHintTrim": "Trim your agenda and try again",
     "oneEventPerRoom": "This room already ran its one event. Create a new room (spends a room credit) for your next one.",
     "signInToCreate": "Sign in to create a room.",
-    "limitReached": "You've reached a limit. See the Pricing page for details."
+    "limitReached": "You've reached a limit. See the Pricing page for details.",
+    "outOfChorusCredits": "You're out of Chorus credits. Buy more on the Pricing page to create another session."
   },
   "footer": {
     "product": "Product",
@@ -516,5 +535,132 @@
     "contact": "Contact",
     "whatsappMessage": "Hi, I have a question about Clepsy",
     "blurb": "A shared countdown timer for live events, synced across every screen."
+  },
+  "chorusApi": {
+    "untitled": "Untitled session",
+    "tooManyQuestions": "A session can have up to {max} questions.",
+    "noQuestions": "Add at least one question before presenting.",
+    "actionRejected": "That can't be done right now. The session may have moved on, so refresh and try again.",
+    "ended": "This session has ended, so it can't be changed.",
+    "invalidAnswer": "Write an answer of up to 280 characters.",
+    "questionClosed": "That question just closed. Here's the current one.",
+    "tooFast": "Slow down a little. You can send again in {seconds, plural, one {# second} other {# seconds}}.",
+    "signInToCreate": "Sign in to create a Chorus session."
+  },
+  "chorus": {
+    "name": "Chorus",
+    "statusDraft": "Not started",
+    "statusLive": "Live",
+    "statusEnded": "Ended",
+    "questionOf": "Question {current} of {total}",
+    "answersCount": "{count, plural, one {# answer} other {# answers}}"
+  },
+  "chorusCreate": {
+    "titleLabel": "Session title",
+    "titlePlaceholder": "Town hall Q&A",
+    "questionsLabel": "Questions",
+    "questionPlaceholder": "What would you like to ask?",
+    "addQuestion": "Add question",
+    "removeQuestion": "Remove question",
+    "create": "Create session",
+    "creating": "Creating…",
+    "hint": "You can add, edit and reorder questions later.",
+    "failed": "Something went wrong creating the session. Please try again."
+  },
+  "chorusShare": {
+    "title": "Share",
+    "scanHint": "Scan to answer",
+    "codeLabel": "Code",
+    "audienceLinkLabel": "Audience link",
+    "presenterLinkLabel": "Presenter window link",
+    "presenterHint": "Open the presenter window and drag it to the projector, or open this link on the projector computer. Click it once to go fullscreen.",
+    "openPresenter": "Open presenter window"
+  },
+  "chorusControls": {
+    "present": "Present",
+    "prev": "Previous",
+    "next": "Next",
+    "end": "End",
+    "fontLabel": "Answer size",
+    "smaller": "Smaller answers",
+    "larger": "Larger answers",
+    "keysHint": "Tip: ← and → (or a presentation clicker) move between questions.",
+    "draftHint": "Press Present to show the first question. Phones and the presenter window follow along.",
+    "noQuestionsHint": "Add a question to get started.",
+    "endedHint": "This session has ended. Its answers are saved.",
+    "endTitle": "End this session?",
+    "endDesc": "Ending is final: phones show a thank-you screen and this session can't be presented again. Every answer stays saved.",
+    "endConfirm": "End session",
+    "failed": "Something went wrong. Please try again."
+  },
+  "chorusControl": {
+    "title": "Chorus",
+    "loading": "Loading session…",
+    "notFoundTitle": "Session not found",
+    "notFoundDesc": "Check the code and try again.",
+    "rename": "Rename session",
+    "saveName": "Save name",
+    "cancelRename": "Cancel rename",
+    "failedRename": "Couldn't rename the session.",
+    "linkedTo": "Linked to room {room}",
+    "questionsTitle": "Questions",
+    "addQuestionPlaceholder": "Add a question…",
+    "add": "Add",
+    "editQuestion": "Edit question",
+    "deleteQuestion": "Delete question",
+    "dragHandle": "Drag to reorder",
+    "goToQuestion": "Show this question",
+    "onScreen": "On screen",
+    "noQuestions": "No questions yet.",
+    "deleteTitle": "Delete this question?",
+    "deleteDesc": "“{prompt}” and all of its answers will be deleted.",
+    "answersTitle": "Answers",
+    "resultsTitle": "Results",
+    "answersDraftHint": "Answers show up here once you present.",
+    "noAnswersYet": "No answers yet.",
+    "hide": "Hide",
+    "unhide": "Show",
+    "hiddenBadge": "Hidden",
+    "hiddenHint": "Hidden answers stay saved, but they don't appear on the presenter window."
+  },
+  "chorusAudience": {
+    "notFoundTitle": "Session not found",
+    "notFoundDesc": "Check the 6-digit code and try again.",
+    "waitingTitle": "You're in!",
+    "waitingDesc": "Waiting for the host to start. Keep this page open.",
+    "placeholder": "Type your answer…",
+    "send": "Send",
+    "sending": "Sending…",
+    "sent": "Sent! Feel free to send another.",
+    "anonymous": "Answers are anonymous.",
+    "charsLeft": "{count} left",
+    "failed": "Couldn't send. Check your connection and try again.",
+    "endedTitle": "Thanks for taking part!",
+    "endedDesc": "This session has ended."
+  },
+  "chorusPresenter": {
+    "joinAt": "Go to {url}",
+    "enterCode": "and enter the code",
+    "startingSoon": "Starting soon",
+    "noAnswers": "Answers will appear here",
+    "thanksTitle": "Thank you!",
+    "thanksDesc": "This session has ended.",
+    "invalidLink": "This presenter link isn't valid, so answers can't be shown."
+  },
+  "chorusRoomCard": {
+    "title": "Chorus",
+    "desc": "Live audience Q&A for this event. Phones answer anonymously while you present.",
+    "none": "No Chorus sessions linked to this room yet.",
+    "newSession": "New session",
+    "linkExisting": "Link existing",
+    "newTitle": "New Chorus session",
+    "newDesc": "Creates a session linked to this room. Uses one Chorus credit.",
+    "linkTitle": "Link a session",
+    "linkDesc": "Pick one of your Chorus sessions to run from this room.",
+    "noLinkable": "You don't have any other sessions to link.",
+    "signInToLink": "Sign in to link one of your sessions.",
+    "link": "Link",
+    "unlink": "Unlink",
+    "openControls": "Full controls"
   }
 }

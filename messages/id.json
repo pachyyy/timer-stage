@@ -41,8 +41,8 @@
     "language": "Bahasa"
   },
   "joinForm": {
-    "label": "Kode ruang",
-    "button": "Gabung ke ruang"
+    "label": "Kode ruang atau Chorus",
+    "button": "Gabung"
   },
   "landing": {
     "tagline": "Countdown timer bersama untuk acara langsung, tersinkron di setiap layar.",
@@ -175,8 +175,12 @@
     "participantsUnit": "/ orang",
     "participantsBullet1": "Hanya jika sebuah ruang butuh lebih dari {free} peserta",
     "participantsBullet2": "Beli dalam jumlah banyak sekaligus dan gunakan di ruang mana pun, kapan pun kamu butuh",
-    "noCheckout": "Belum ada checkout mandiri. Hubungi kami di WhatsApp dengan jumlah ruang dan/atau peserta tambahan yang kamu inginkan beserta email akunnya, dan kami akan menambah saldomu.",
-    "whatsappCta": "Chat di WhatsApp"
+    "noCheckout": "Belum ada checkout mandiri. Hubungi kami di WhatsApp dengan jumlah ruang, peserta tambahan, dan/atau sesi Chorus yang kamu inginkan beserta email akunnya, dan kami akan menambah saldomu.",
+    "whatsappCta": "Chat di WhatsApp",
+    "chorusTitle": "Sesi Chorus",
+    "chorusUnit": "/ sesi",
+    "chorusBullet1": "Tanya jawab langsung: pertanyaan sebanyak yang kamu mau, jawaban anonim, dan audiens tidak perlu masuk",
+    "chorusBullet2": "Berlaku untuk satu presentasi. Setelah diakhiri, jawabannya tetap tersimpan, dan presentasi berikutnya butuh sesi baru."
   },
   "docs": {
     "title": "Dokumentasi",
@@ -300,8 +304,8 @@
     "addSegment": "Tambah segmen",
     "createRoom": "Buat ruang",
     "creating": "Membuat…",
-    "joinTitle": "Gabung ke ruang",
-    "joinDesc": "Masukkan kode ruang yang dibagikan host kepadamu.",
+    "joinTitle": "Gabung dengan kode",
+    "joinDesc": "Masukkan kode yang dibagikan host kepadamu. Kode 6 angka membuka sesi Chorus.",
     "joinHint": "Kamu akan diminta memasukkan nama agar host ruang tahu siapa yang menonton.",
     "runningTitle": "Acara berlangsung",
     "runningDesc": "Kembali ke acara yang sedang berlangsung.",
@@ -310,12 +314,21 @@
     "goToEvent": "Buka acara",
     "statusRunning": "Berjalan",
     "statusPaused": "Dijeda",
-    "statusBetween": "Antar segmen"
+    "statusBetween": "Antar segmen",
+    "kindLabel": "Apa yang ingin kamu buat?",
+    "kindRoom": "Ruang timer",
+    "kindRoomDesc": "Agenda, hitung mundur, dan isyarat",
+    "kindChorus": "Chorus",
+    "kindChorusDesc": "Tanya jawab langsung dengan audiens",
+    "newChorusTitle": "Sesi Chorus baru",
+    "newChorusDesc": "Siapkan pertanyaanmu. Audiens menjawab secara anonim dari ponsel mereka.",
+    "chorusBadge": "Chorus",
+    "statusLive": "Berlangsung"
   },
   "myRooms": {
     "permanentBadge": "Permanen",
     "signInHint": "Masuk untuk melihat semua ruang yang tertaut ke akunmu.",
-    "creditsLine": "{rooms, plural, other {# kredit ruang}} · {users, plural, other {# kredit peserta tambahan}} tersisa.",
+    "creditsLine": "{rooms, plural, other {# kredit ruang}} · {users, plural, other {# kredit peserta tambahan}} · {chorus, plural, other {# kredit Chorus}} tersisa.",
     "importTitle": "Ada ruang di browser ini yang belum tersimpan ke akunmu",
     "importDesc": "{count, plural, other {# ruang yang kamu buat dari browser ini belum tertaut. Impor untuk mengendalikannya dari perangkat mana pun.}}",
     "importButton": "Impor {count}",
@@ -329,7 +342,12 @@
     "archive": "Arsipkan",
     "unarchive": "Keluarkan dari arsip",
     "history": "Riwayat",
-    "open": "Buka"
+    "open": "Buka",
+    "roomsTitle": "Ruang timer",
+    "chorusTitle": "Sesi Chorus",
+    "noChorus": "Belum ada sesi Chorus. Buat dari Dasbor.",
+    "questionCount": "{count, plural, other {# pertanyaan}}",
+    "results": "Hasil"
   },
   "history": {
     "signInHint": "Masuk untuk melihat semua acara di seluruh ruangmu.",
@@ -508,7 +526,8 @@
     "trimHintTrim": "Kurangi agendamu lalu coba lagi",
     "oneEventPerRoom": "Ruang ini sudah menjalankan satu acaranya. Buat ruang baru (memakai satu kredit ruang) untuk acara berikutnya.",
     "signInToCreate": "Masuk untuk membuat ruang.",
-    "limitReached": "Kamu mencapai batas. Lihat halaman Harga untuk detail."
+    "limitReached": "Kamu mencapai batas. Lihat halaman Harga untuk detail.",
+    "outOfChorusCredits": "Kredit Chorus-mu habis. Beli lagi di halaman Harga untuk membuat sesi baru."
   },
   "footer": {
     "product": "Produk",
@@ -516,5 +535,132 @@
     "contact": "Kontak",
     "whatsappMessage": "Halo, saya punya pertanyaan tentang Clepsy",
     "blurb": "Countdown timer bersama untuk acara langsung, tersinkron di setiap layar."
+  },
+  "chorusApi": {
+    "untitled": "Sesi tanpa judul",
+    "tooManyQuestions": "Satu sesi bisa berisi hingga {max} pertanyaan.",
+    "noQuestions": "Tambahkan minimal satu pertanyaan sebelum mempresentasikan.",
+    "actionRejected": "Itu tidak bisa dilakukan sekarang. Sesinya mungkin sudah berubah, jadi muat ulang dan coba lagi.",
+    "ended": "Sesi ini sudah berakhir, jadi tidak bisa diubah.",
+    "invalidAnswer": "Tulis jawaban maksimal 280 karakter.",
+    "questionClosed": "Pertanyaan itu baru saja ditutup. Ini pertanyaan yang sedang aktif.",
+    "tooFast": "Pelan-pelan sedikit. Kamu bisa mengirim lagi dalam {seconds, plural, other {# detik}}.",
+    "signInToCreate": "Masuk untuk membuat sesi Chorus."
+  },
+  "chorus": {
+    "name": "Chorus",
+    "statusDraft": "Belum dimulai",
+    "statusLive": "Berlangsung",
+    "statusEnded": "Selesai",
+    "questionOf": "Pertanyaan {current} dari {total}",
+    "answersCount": "{count, plural, other {# jawaban}}"
+  },
+  "chorusCreate": {
+    "titleLabel": "Judul sesi",
+    "titlePlaceholder": "Tanya jawab town hall",
+    "questionsLabel": "Pertanyaan",
+    "questionPlaceholder": "Apa yang ingin kamu tanyakan?",
+    "addQuestion": "Tambah pertanyaan",
+    "removeQuestion": "Hapus pertanyaan",
+    "create": "Buat sesi",
+    "creating": "Membuat…",
+    "hint": "Kamu bisa menambah, mengedit, dan mengurutkan ulang pertanyaan nanti.",
+    "failed": "Terjadi kesalahan saat membuat sesi. Silakan coba lagi."
+  },
+  "chorusShare": {
+    "title": "Bagikan",
+    "scanHint": "Pindai untuk menjawab",
+    "codeLabel": "Kode",
+    "audienceLinkLabel": "Tautan audiens",
+    "presenterLinkLabel": "Tautan jendela presentasi",
+    "presenterHint": "Buka jendela presentasi lalu seret ke proyektor, atau buka tautan ini di komputer proyektor. Klik sekali untuk layar penuh.",
+    "openPresenter": "Buka jendela presentasi"
+  },
+  "chorusControls": {
+    "present": "Presentasikan",
+    "prev": "Sebelumnya",
+    "next": "Berikutnya",
+    "end": "Akhiri",
+    "fontLabel": "Ukuran jawaban",
+    "smaller": "Perkecil jawaban",
+    "larger": "Perbesar jawaban",
+    "keysHint": "Tips: ← dan → (atau clicker presentasi) berpindah antar pertanyaan.",
+    "draftHint": "Tekan Presentasikan untuk menampilkan pertanyaan pertama. Ponsel dan jendela presentasi akan mengikuti.",
+    "noQuestionsHint": "Tambahkan pertanyaan untuk memulai.",
+    "endedHint": "Sesi ini sudah berakhir. Jawabannya tetap tersimpan.",
+    "endTitle": "Akhiri sesi ini?",
+    "endDesc": "Mengakhiri bersifat final: ponsel menampilkan layar terima kasih dan sesi ini tidak bisa dipresentasikan lagi. Semua jawaban tetap tersimpan.",
+    "endConfirm": "Akhiri sesi",
+    "failed": "Terjadi kesalahan. Silakan coba lagi."
+  },
+  "chorusControl": {
+    "title": "Chorus",
+    "loading": "Memuat sesi…",
+    "notFoundTitle": "Sesi tidak ditemukan",
+    "notFoundDesc": "Periksa kodenya lalu coba lagi.",
+    "rename": "Ganti nama sesi",
+    "saveName": "Simpan nama",
+    "cancelRename": "Batal ganti nama",
+    "failedRename": "Gagal mengganti nama sesi.",
+    "linkedTo": "Terhubung ke ruang {room}",
+    "questionsTitle": "Pertanyaan",
+    "addQuestionPlaceholder": "Tambah pertanyaan…",
+    "add": "Tambah",
+    "editQuestion": "Edit pertanyaan",
+    "deleteQuestion": "Hapus pertanyaan",
+    "dragHandle": "Seret untuk mengurutkan",
+    "goToQuestion": "Tampilkan pertanyaan ini",
+    "onScreen": "Di layar",
+    "noQuestions": "Belum ada pertanyaan.",
+    "deleteTitle": "Hapus pertanyaan ini?",
+    "deleteDesc": "“{prompt}” beserta semua jawabannya akan dihapus.",
+    "answersTitle": "Jawaban",
+    "resultsTitle": "Hasil",
+    "answersDraftHint": "Jawaban muncul di sini setelah kamu mulai presentasi.",
+    "noAnswersYet": "Belum ada jawaban.",
+    "hide": "Sembunyikan",
+    "unhide": "Tampilkan",
+    "hiddenBadge": "Disembunyikan",
+    "hiddenHint": "Jawaban yang disembunyikan tetap tersimpan, tapi tidak muncul di jendela presentasi."
+  },
+  "chorusAudience": {
+    "notFoundTitle": "Sesi tidak ditemukan",
+    "notFoundDesc": "Periksa kode 6 angkanya lalu coba lagi.",
+    "waitingTitle": "Kamu sudah bergabung!",
+    "waitingDesc": "Menunggu host memulai. Biarkan halaman ini tetap terbuka.",
+    "placeholder": "Ketik jawabanmu…",
+    "send": "Kirim",
+    "sending": "Mengirim…",
+    "sent": "Terkirim! Silakan kirim lagi kalau mau.",
+    "anonymous": "Jawaban bersifat anonim.",
+    "charsLeft": "Sisa {count}",
+    "failed": "Gagal mengirim. Periksa koneksimu lalu coba lagi.",
+    "endedTitle": "Terima kasih sudah berpartisipasi!",
+    "endedDesc": "Sesi ini sudah berakhir."
+  },
+  "chorusPresenter": {
+    "joinAt": "Buka {url}",
+    "enterCode": "lalu masukkan kode",
+    "startingSoon": "Segera dimulai",
+    "noAnswers": "Jawaban akan muncul di sini",
+    "thanksTitle": "Terima kasih!",
+    "thanksDesc": "Sesi ini sudah berakhir.",
+    "invalidLink": "Tautan presentasi ini tidak valid, jadi jawaban tidak bisa ditampilkan."
+  },
+  "chorusRoomCard": {
+    "title": "Chorus",
+    "desc": "Tanya jawab langsung untuk acara ini. Audiens menjawab secara anonim dari ponsel saat kamu presentasi.",
+    "none": "Belum ada sesi Chorus yang terhubung ke ruang ini.",
+    "newSession": "Sesi baru",
+    "linkExisting": "Hubungkan sesi",
+    "newTitle": "Sesi Chorus baru",
+    "newDesc": "Membuat sesi yang terhubung ke ruang ini. Memakai satu kredit Chorus.",
+    "linkTitle": "Hubungkan sesi",
+    "linkDesc": "Pilih salah satu sesi Chorus-mu untuk dijalankan dari ruang ini.",
+    "noLinkable": "Kamu tidak punya sesi lain untuk dihubungkan.",
+    "signInToLink": "Masuk untuk menghubungkan salah satu sesimu.",
+    "link": "Hubungkan",
+    "unlink": "Putuskan",
+    "openControls": "Kontrol lengkap"
   }
 }

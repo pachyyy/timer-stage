@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 /**
  * Clepsy's first `/api/admin/v1/*` route (see 03_pachy_panel/docs/ARCHITECTURE.md §7) — the panel
- * calls this to read/top up someone's room+participant quota, since balances live here in
+ * calls this to read/top up someone's room, participant and Chorus quota, since balances live here in
  * stagetimer's own DB, not in the shared pachy-core control plane (see schema.ts's
  * accountQuota doc comment for why).
  */
@@ -37,17 +37,18 @@ export async function POST(req: NextRequest) {
   const email = typeof body?.email === 'string' ? body.email.trim() : ''
   const roomDelta = Number.isFinite(body?.roomDelta) ? Math.trunc(body.roomDelta) : 0
   const userDelta = Number.isFinite(body?.userDelta) ? Math.trunc(body.userDelta) : 0
+  const chorusDelta = Number.isFinite(body?.chorusDelta) ? Math.trunc(body.chorusDelta) : 0
   const note = typeof body?.note === 'string' && body.note.trim() ? body.note.trim() : null
 
   if (!email) return NextResponse.json({ error: 'email is required' }, { status: 400 })
-  if (roomDelta === 0 && userDelta === 0) {
-    return NextResponse.json({ error: 'roomDelta and/or userDelta must be non-zero' }, { status: 400 })
+  if (roomDelta === 0 && userDelta === 0 && chorusDelta === 0) {
+    return NextResponse.json({ error: 'at least one of roomDelta, userDelta, chorusDelta must be non-zero' }, { status: 400 })
   }
-  if (roomDelta < 0 || userDelta < 0) {
+  if (roomDelta < 0 || userDelta < 0 || chorusDelta < 0) {
     return NextResponse.json({ error: 'deltas must be positive, since this endpoint only grants credit' }, { status: 400 })
   }
 
-  const result = await grantQuotaByEmail(email, roomDelta, userDelta, note)
+  const result = await grantQuotaByEmail(email, roomDelta, userDelta, chorusDelta, note)
   if (!result) {
     return NextResponse.json(
       { error: `${email} hasn't signed into Clepsy yet. Ask them to sign in once, then grant quota.` },

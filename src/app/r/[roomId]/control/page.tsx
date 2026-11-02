@@ -18,6 +18,7 @@ import { AgendaList } from '@/components/agenda-list'
 import { SegmentDialog } from '@/components/segment-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { ParticipantsPanel } from '@/components/participants-panel'
+import { ChorusRoomCard } from '@/components/chorus-room-card'
 import { ConnectionBadge } from '@/components/connection-badge'
 import { AuthButtons } from '@/components/auth-buttons'
 import { LocaleSwitcher } from '@/components/locale-switcher'
@@ -447,6 +448,8 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
               {addTimerError && <p className="text-sm text-destructive">{addTimerError}</p>}
             </CardContent>
           </Card>
+
+          <ChorusRoomCard roomId={roomId} roomToken={token} />
 
           <Card>
             <CardHeader>

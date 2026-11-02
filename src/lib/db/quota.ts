@@ -7,14 +7,18 @@ import { accountQuota, quotaLedger, users } from './schema'
  * first room; there is no longer an automatic free room on sign-up. */
 export const STARTER_ROOM_QUOTA = 0
 export const STARTER_USER_QUOTA = 0
+export const STARTER_CHORUS_QUOTA = 0
 
 export interface QuotaBalance {
   roomQuota: number
   userQuota: number
+  chorusQuota: number
 }
 
-function toBalance(row: { roomQuota: number; userQuota: number } | undefined): QuotaBalance {
-  return row ? { roomQuota: row.roomQuota, userQuota: row.userQuota } : { roomQuota: 0, userQuota: 0 }
+function toBalance(row: QuotaBalance | undefined): QuotaBalance {
+  return row
+    ? { roomQuota: row.roomQuota, userQuota: row.userQuota, chorusQuota: row.chorusQuota }
+    : { roomQuota: 0, userQuota: 0, chorusQuota: 0 }
 }
 
 /**
@@ -32,6 +36,7 @@ export async function getOrCreateAccountQuota(userId: string): Promise<QuotaBala
       userId,
       roomQuota: STARTER_ROOM_QUOTA,
       userQuota: STARTER_USER_QUOTA,
+      chorusQuota: STARTER_CHORUS_QUOTA,
       updatedAt: Date.now(),
     })
   } catch {
@@ -85,9 +90,26 @@ export async function tryConsumeUserQuota(userId: string, roomId: string, count 
   return ok
 }
 
+/** Same atomic-conditional pattern as tryConsumeRoomQuota, for a Chorus session credit. Also
+ * called before the session exists, so the ledger row has no session id either. */
+export async function tryConsumeChorusQuota(userId: string): Promise<boolean> {
+  await getOrCreateAccountQuota(userId)
+  const now = Date.now()
+  const result = await db
+    .update(accountQuota)
+    .set({ chorusQuota: sql`${accountQuota.chorusQuota} - 1`, updatedAt: now })
+    .where(and(eq(accountQuota.userId, userId), gt(accountQuota.chorusQuota, 0)))
+
+  const ok = (result.rowsAffected ?? 0) > 0
+  if (ok) {
+    await db.insert(quotaLedger).values({ userId, atMs: now, kind: 'chorus_consume', delta: -1, roomId: null, note: null })
+  }
+  return ok
+}
+
 /**
- * Adds credit — what the panel's admin-API top-up calls. Deltas can be zero (to top up only one
- * of the two pools) but not negative; a correction is a manual ledger note, not this function.
+ * Adds credit — what the panel's admin-API top-up calls. Deltas can be zero (to top up only some
+ * of the pools) but not negative; a correction is a manual ledger note, not this function.
  * Looks the account up by email since that's the identity the panel/admin thinks in — returns
  * null if this email has never signed into Clepsy, since accountQuota is keyed on our own `userId`
  * and there's nothing to attach a balance to yet (see the admin route for how that's surfaced).
@@ -96,6 +118,7 @@ export async function grantQuotaByEmail(
   email: string,
   roomDelta: number,
   userDelta: number,
+  chorusDelta: number,
   note: string | null,
 ): Promise<(QuotaBalance & { userId: string }) | null> {
   const [user] = await db
@@ -112,6 +135,7 @@ export async function grantQuotaByEmail(
     .set({
       roomQuota: sql`${accountQuota.roomQuota} + ${roomDelta}`,
       userQuota: sql`${accountQuota.userQuota} + ${userDelta}`,
+      chorusQuota: sql`${accountQuota.chorusQuota} + ${chorusDelta}`,
       updatedAt: now,
     })
     .where(eq(accountQuota.userId, user.id))
@@ -121,6 +145,9 @@ export async function grantQuotaByEmail(
   }
   if (userDelta !== 0) {
     await db.insert(quotaLedger).values({ userId: user.id, atMs: now, kind: 'user_grant', delta: userDelta, roomId: null, note })
+  }
+  if (chorusDelta !== 0) {
+    await db.insert(quotaLedger).values({ userId: user.id, atMs: now, kind: 'chorus_grant', delta: chorusDelta, roomId: null, note })
   }
 
   const [row] = await db.select().from(accountQuota).where(eq(accountQuota.userId, user.id)).limit(1)

@@ -61,9 +61,44 @@ export interface RoomStatePayload {
 
 export type TransportStatus = 'connecting' | 'live' | 'degraded' | 'offline' | 'not-found'
 
-export interface RoomTransport {
-  /** Subscribe to state updates for a room. Returns an unsubscribe function. */
-  subscribe(roomId: string, onState: (state: RoomStatePayload) => void): () => void
+/** Anything a transport carries: a snapshot with the monotonic version every consumer guards on. */
+export interface Versioned {
+  version: number
+}
+
+/**
+ * Generic over the payload so a second kind of synced screen (Chorus — see src/lib/chorus/) rides
+ * the exact same Ably-with-polling-fallback machinery instead of a fork of it. `RoomTransport` is
+ * the original room-flavoured name, kept so nothing room-side had to change.
+ */
+export interface SyncTransport<T extends Versioned> {
+  /** Subscribe to state updates for one room/session id. Returns an unsubscribe function. */
+  subscribe(id: string, onState: (state: T) => void): () => void
   readonly status: TransportStatus
   onStatusChange(cb: (status: TransportStatus) => void): () => void
+}
+
+export type RoomTransport = SyncTransport<RoomStatePayload>
+
+/**
+ * Where one kind of synced state lives: the snapshot URL polling hits, the realtime channel name,
+ * and the `kind` /api/ably/auth uses to pick which access check to run. Every implementation takes
+ * one of these, defaulting to the room one.
+ */
+export interface ChannelSpec {
+  pollPath(id: string): string
+  channelName(id: string): string
+  authKind: 'room' | 'chorus'
+}
+
+export const ROOM_CHANNEL: ChannelSpec = {
+  pollPath: (roomId) => `/api/rooms/${roomId}`,
+  channelName: (roomId) => `room:${roomId}`,
+  authKind: 'room',
+}
+
+export const CHORUS_CHANNEL: ChannelSpec = {
+  pollPath: (code) => `/api/chorus/${code}`,
+  channelName: (code) => `chorus:${code}`,
+  authKind: 'chorus',
 }

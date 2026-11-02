@@ -248,6 +248,8 @@ Outside both groups, unaffected by any of this:
 own header + `AuthButtons` gear (it's usable signed-out via `?t=`, so it isn't in `(app)`).
 `/r/[roomId]/history` and `/r/[roomId]/history/[runId]` — read-only, deliberately don't mount
 `useRoom`/a transport connection, since there's no live timer to keep synced.
+`/c/[code]` (audience phone), `/c/[code]/control` (operator) and `/c/[code]/present` (presenter
+window) — Chorus, see its own section below; outside the groups for the same reasons as `/r/`.
 
 API routes mirror this under `/api/rooms/[roomId]/...` — `actions` (start/pause/reset/adjust/
 select/blackout/end), `timers` (agenda CRUD + bulk reorder), `runs`/`runs/[runId]`/`runs/[runId]/export`
@@ -257,7 +259,9 @@ the signed-in account), plus the standalone `/api/time` (clock-sync reference, m
 `Cache-Control: no-store`), `/api/ably/auth` (issues scoped Ably tokens — the real Ably API key
 never reaches the browser), `/api/auth/[...nextauth]` (Auth.js), and `/api/me/rooms` /
 `/api/me/live-rooms` (account-scoped, no roomId param at all — every owned room, and every owned
-room with a currently open run, respectively).
+room with a currently open run, respectively). Chorus mirrors this under `/api/chorus/[code]/...`
+(`actions`, `questions`, `answers`, `link`), plus `/api/me/chorus` and `/api/rooms/[roomId]/chorus`
+(the sessions linked to a room).
 
 ### Pricing: prepaid quota, not subscription tiers (`src/lib/entitlements/`, `src/lib/db/quota.ts`)
 
@@ -372,6 +376,10 @@ don't reintroduce a retired synonym when adding a new string.
 | A display showing the timer | Screen | Layar | viewer screen, penonton |
 | A row in the run timeline | Action | Tindakan | event (as a column) |
 | Prepaid balance | Credits | Kredit | plan |
+| Live audience Q&A (product name) | Chorus / Chorus session | Chorus / Sesi Chorus | Slido, poll |
+| A prepared Chorus prompt | Question | Pertanyaan | — |
+| An audience reply | Answer | Jawaban | response, message |
+| Chorus's projector screen | Presenter window | Jendela presentasi | — |
 
 This governs user-facing copy only — the `runs`/`run_events` DB tables, the `/runs` API routes,
 `RunEventType`, and other TypeScript/DB identifiers keep their existing names deliberately; the
@@ -387,6 +395,43 @@ together with the "keep marketing pages static" scaling note above if that ever 
 client-rendered locale + a lighter, cookie-presence-only check server-side, same idea as that
 note's auth-state approach).
 
+### Chorus: live audience Q&A (`src/lib/chorus/`, `src/lib/db/chorus*.ts`, `/c/[code]`)
+
+A Slido/Menti-style feature: the host prepares open-text questions and presents them one at a time;
+the audience answers anonymously from their phones (no sign-in, no name prompt). It's its own share
+unit (`chorus_sessions`, not a kind of room) because it's priced separately and can exist without
+any timer room. Things that matter when changing it:
+
+- **Codes**: a session's id is a 6-digit **numeric** code; `generateRoomId` now re-rolls any
+  all-digit result, so one join box (`JoinRoomForm` → `classifyJoinCode`) routes digits to `/c/` and
+  anything else to `/r/`. `/c/[code]` forwards to `/r/[code]` if a pre-Chorus all-digit room exists.
+- **Same sync design as rooms, generalized, not forked**: `SyncTransport<T>` + a `ChannelSpec`
+  (`ROOM_CHANNEL` / `CHORUS_CHANNEL`) in `src/lib/sync/transport.ts`; `useVersionedState` is the
+  shared version guard. `chorus-state.ts` is the only writer of `chorus_state` and bumps `version`
+  on every client-visible change, exactly like `room-state.ts`.
+- **Answers never ride the broadcast channel.** Only the presenter window and the control page need
+  them, so they poll `/answers` with an ETag on a *separate* `answersVersion` counter. A new answer
+  must not bump `version` — that would make every phone in the audience refetch on every answer.
+- **The public payload carries only the current question**, never the list (`ChorusStatePayload`),
+  so the audience can't read ahead. Controller routes return `ChorusControlPayload` (adds the list
+  and the presenter token); `useChorusControl` keeps the list in its own state, refetched on each
+  version change.
+- **Access** (`checkChorusAccess`): controller = the session's token, its owner, OR controller
+  access to its linked room — which is how the room page's Chorus card runs it with the room token.
+  `presenterToken` (read-only) is the presenter window's credential; it's the only non-controller
+  that sees answers. Audience access needs nothing.
+- **One credit = one presentation**: `canCreateChorus` spends a `chorusQuota` credit at creation
+  (same shape as `canCreateRoom`), and `'ended'` is terminal in `applyChorusAction` — nothing but
+  answer font size changes after End, and an ended session's questions are read-only. Answers are
+  never deleted; Hide sets `hiddenAt` (deleting a *question* does cascade its answers, and the
+  confirm dialog says so).
+- **Spam**: the app's first rate limit, `src/lib/chorus/rate-limit.ts` — a per-device cooldown plus a
+  deliberately generous per-network cap (a whole venue often shares one public IP), read straight
+  off `chorus_answers`' indexes. IPs are stored only as a per-session hash.
+- **Presenter window**: `openPresenterWindow` uses a fixed window name so the button refocuses
+  rather than stacking popups. Clickers send keys to the focused (presenter) window, so it forwards
+  nav keys to its opener via `postMessage` (`presenter-keys.ts`); the control window acts on them.
+
 ## Deploying
 
 See README.md's "Deploying" section for the current checklist (Turso provisioning, the
@@ -401,6 +446,7 @@ Additionally for entitlements/quota:
   Turso DB) and `PACHY_APP_ID=cue` — used only to detect the `permanent` bypass now.
 - `ADMIN_API_TOKEN` — a random secret (`openssl rand -base64 32`), shared with the panel's
   `APP_TOKEN_CUE` for the same value. This is what guards `/api/admin/v1/*`; without it every
-  admin-API request 404s, and the panel's `/apps/cue/quota` can't top anyone up.
+  admin-API request 404s, and the panel's `/apps/cue/quota` can't top anyone up. The endpoint
+  also takes `chorusDelta` for Chorus credits; the panel's form needs that field to grant them.
 - Leave `ENTITLEMENTS_ENFORCED` unset/`false` after deploying, watch real traffic resolve
   correctly, then flip it to `true` once confident — see `src/lib/entitlements/gate.ts`.

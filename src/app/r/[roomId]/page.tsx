@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useEffect, useRef, useState } from 'react'
+import { use, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
@@ -9,6 +9,7 @@ import { useAutoAdvancePing } from '@/hooks/use-auto-advance-ping'
 import { useParticipant } from '@/hooks/use-participant'
 import { useMessageAlert } from '@/hooks/use-message-alert'
 import { useRoleAlert } from '@/hooks/use-role-alert'
+import { useStageScreen } from '@/hooks/use-stage-screen'
 import { TimerDisplay } from '@/components/timer-display'
 import { ConnectionBadge } from '@/components/connection-badge'
 import { JoinGate } from '@/components/join-gate'
@@ -29,7 +30,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   const { session, role, checkedStorage, removed, join } = useParticipant(roomId)
   const { message, flashing } = useMessageAlert(state, syncedNow)
   const promotionFlashing = useRoleAlert(role)
-  const [wakeLockError, setWakeLockError] = useState(false)
+  const { wakeLockError, requestFullscreen } = useStageScreen()
   // Handed to TimerDisplay so the final-minute blink can invert the background from inside the same
   // animation-frame loop that drives the digits.
   const surfaceRef = useRef<HTMLDivElement | null>(null)
@@ -37,29 +38,10 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   const tConnection = useTranslations('connectionBadge')
   const tCommon = useTranslations('common')
 
-  useEffect(() => {
-    let lock: WakeLockSentinel | null = null
-    if ('wakeLock' in navigator) {
-      navigator.wakeLock
-        .request('screen')
-        .then((l) => {
-          lock = l
-        })
-        .catch(() => setWakeLockError(true))
-    }
-    return () => {
-      lock?.release().catch(() => {})
-    }
-  }, [])
-
   // Backstop for the `linkToNext` agenda feature — see use-auto-advance-ping.ts's doc comment.
   // A viewer screen (this one) is often the most reliable place for this to keep running, since
   // it's usually the on-stage monitor left open for the whole show even when the controller isn't.
   useAutoAdvancePing({ roomId, isRunning: state?.status === 'running', applyPayload })
-
-  const requestFullscreen = () => {
-    document.documentElement.requestFullscreen?.().catch(() => {})
-  }
 
   if (status === 'not-found') {
     return (

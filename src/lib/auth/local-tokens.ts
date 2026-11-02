@@ -21,6 +21,33 @@ export function getControllerToken(roomId: string): string | null {
   }
 }
 
+/**
+ * The same cache for Chorus sessions: the controller token (so a refresh keeps control) and the
+ * presenter token (so the "Open presenter window" button works from the room card, which never
+ * sees the creation response). New `clepsy:` prefix — only the pre-rename keys above stay `stagetimer:`.
+ */
+const CHORUS_PREFIX = 'clepsy:chorus:'
+
+export function setChorusTokens(code: string, tokens: { controllerToken?: string; presenterToken?: string }) {
+  try {
+    if (tokens.controllerToken) localStorage.setItem(`${CHORUS_PREFIX}controller:${code}`, tokens.controllerToken)
+    if (tokens.presenterToken) localStorage.setItem(`${CHORUS_PREFIX}presenter:${code}`, tokens.presenterToken)
+  } catch {
+    // localStorage unavailable — the URL's own ?t= param still works
+  }
+}
+
+export function getChorusTokens(code: string): { controllerToken: string | null; presenterToken: string | null } {
+  try {
+    return {
+      controllerToken: localStorage.getItem(`${CHORUS_PREFIX}controller:${code}`),
+      presenterToken: localStorage.getItem(`${CHORUS_PREFIX}presenter:${code}`),
+    }
+  } catch {
+    return { controllerToken: null, presenterToken: null }
+  }
+}
+
 /** Every room this browser holds a controller token for — the raw material for the "import your
  * rooms" prompt on /my-rooms after signing in. Rooms already linked to an account (or belonging
  * to someone else) simply fail their claim attempt server-side; this list is just what to try. */

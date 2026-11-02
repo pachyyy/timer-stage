@@ -6,10 +6,12 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { classifyJoinCode } from '@/lib/chorus/model'
 
 /**
- * Room-code entry, shared by the landing page's join box and the navbar's "Join a room" dialog
- * (see site-navbar.tsx). No existence check here — the viewer page itself shows a clear "Room not
+ * Code entry, shared by the landing page's join box and the navbar's "Join a room" dialog
+ * (see site-navbar.tsx). One box for both kinds of code: six digits is a Chorus session, anything
+ * else a timer room — see classifyJoinCode. No existence check here — the viewer page itself shows a clear "Room not
  * found" state for a bad code, so there's no need for a round trip before navigating. Joining
  * never requires an account (see CLAUDE.md's Auth model: "Viewing is intentionally open by room
  * code alone").
@@ -20,9 +22,9 @@ export function JoinRoomForm({ className }: { className?: string }) {
   const t = useTranslations('joinForm')
 
   const join = () => {
-    const trimmed = code.trim()
-    if (!trimmed) return
-    router.push(`/r/${trimmed}`)
+    const target = classifyJoinCode(code)
+    if (!target) return
+    router.push(target.kind === 'chorus' ? `/c/${target.code}` : `/r/${target.code}`)
   }
 
   return (

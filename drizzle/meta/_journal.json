@@ -71,6 +71,13 @@
       "when": 1789697032392,
       "tag": "0009_lumpy_stingray",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1792557822540,
+      "tag": "0010_clever_manta",
+      "breakpoints": true
     }
   ]
 }

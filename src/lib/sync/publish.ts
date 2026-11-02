@@ -1,5 +1,6 @@
 import * as Ably from 'ably'
-import type { RoomStatePayload } from './transport'
+import { CHORUS_CHANNEL, ROOM_CHANNEL, type RoomStatePayload } from './transport'
+import type { ChorusStatePayload } from '@/lib/chorus/types'
 
 /**
  * Server-side publish after any mutation. Uses the REST client (no persistent connection needed
@@ -15,9 +16,16 @@ function getRestClient(): Ably.Rest | null {
   return restClient
 }
 
-export async function publishRoomState(roomId: string, payload: RoomStatePayload): Promise<void> {
+async function publishState(channelName: string, payload: unknown): Promise<void> {
   const client = getRestClient()
   if (!client) return
-  const channel = client.channels.get(`room:${roomId}`)
-  await channel.publish('state', payload)
+  await client.channels.get(channelName).publish('state', payload)
+}
+
+export async function publishRoomState(roomId: string, payload: RoomStatePayload): Promise<void> {
+  await publishState(ROOM_CHANNEL.channelName(roomId), payload)
+}
+
+export async function publishChorusState(code: string, payload: ChorusStatePayload): Promise<void> {
+  await publishState(CHORUS_CHANNEL.channelName(code), payload)
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { RoomStatePayload, RoomTransport, TransportStatus } from '@/lib/sync/transport'
+import type { RoomTransport, SyncTransport, TransportStatus, Versioned } from '@/lib/sync/transport'
 
 /**
  * Subscribes to a room's state via the given transport and exposes the latest payload plus
@@ -21,11 +21,17 @@ import type { RoomStatePayload, RoomTransport, TransportStatus } from '@/lib/syn
  * between two different rooms without a full page load, which remounts this hook entirely anyway.
  */
 export function useRoomState(roomId: string, transport: RoomTransport) {
-  const [state, setState] = useState<RoomStatePayload | null>(null)
+  return useVersionedState(roomId, transport)
+}
+
+/** The generic core of useRoomState — the same version guard for any synced payload (a room, or a
+ * Chorus session via useChorus). */
+export function useVersionedState<T extends Versioned>(id: string, transport: SyncTransport<T>) {
+  const [state, setState] = useState<T | null>(null)
   const [status, setStatus] = useState<TransportStatus>(transport.status)
   const versionRef = useRef(-1)
 
-  const applyPayload = useCallback((payload: RoomStatePayload) => {
+  const applyPayload = useCallback((payload: T) => {
     if (payload.version <= versionRef.current) return
     versionRef.current = payload.version
     setState(payload)
@@ -38,13 +44,13 @@ export function useRoomState(roomId: string, transport: RoomTransport) {
     // so there's no separate synchronous setState call needed here — everything flows through
     // the callback, which is the sanctioned "subscribe to an external system" effect pattern.
     const unsubState = transport.onStatusChange(setStatus)
-    const unsubscribe = transport.subscribe(roomId, applyPayload)
+    const unsubscribe = transport.subscribe(id, applyPayload)
 
     return () => {
       unsubscribe()
       unsubState()
     }
-  }, [roomId, transport, applyPayload])
+  }, [id, transport, applyPayload])
 
   return { state, status, applyPayload }
 }

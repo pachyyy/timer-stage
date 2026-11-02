@@ -19,8 +19,13 @@ Live at [cuetimed.vercel.app](https://cuetimed.vercel.app) · user guide at
   can give any participant control and take it back.
 - **History** — every event's planned-vs-actual report, adjustment list and timeline, exportable
   as `.xlsx`.
+- **Chorus** — live audience Q&A. The host prepares open-text questions and presents them one at a
+  time in a separate presenter window; the audience scans a QR code (or types a 6-digit code) and
+  answers anonymously from their phones, no sign-in. The operator can hide answers, change their
+  size on screen, and run a session from its own page or from a timer room it's linked to.
 - **Accounts and credits** — optional Google sign-in; signed-in owners control their rooms from any
-  device. Rooms and extra participants are prepaid credits, topped up from the Pachy Panel.
+  device. Rooms, extra participants and Chorus sessions are prepaid credits, topped up from the
+  Pachy Panel.
 - **English and Bahasa Indonesia**, chosen per visitor.
 
 ## How it stays in sync
@@ -127,7 +132,9 @@ reference clock). Before going live:
 4. Optional: for sign-in, create a Google OAuth client with the redirect URI
    `https://<your-domain>/api/auth/callback/google` and set the three `AUTH_*` vars. For credits,
    also set `ADMIN_API_TOKEN` (shared with the panel) and the `PACHY_*` vars; leave
-   `ENTITLEMENTS_ENFORCED` off until you've watched real traffic resolve correctly.
+   `ENTITLEMENTS_ENFORCED` off until you've watched real traffic resolve correctly. Chorus
+   credits are granted through the same admin endpoint (`chorusDelta` alongside `roomDelta` /
+   `userDelta`) — the panel's `/apps/cue/quota` form needs that field added before it can top them up.
 
 `.vercelignore` keeps `video/` out of deployments — only its rendered GIFs in `public/docs/` ship.
 

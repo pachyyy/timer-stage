@@ -9,11 +9,15 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { listControllerTokens } from '@/lib/auth/local-tokens'
 import type { OwnedRoomSummary } from '@/lib/db/my-rooms'
+import { formatChorusCode } from '@/lib/chorus/model'
+import type { ChorusSessionSummary } from '@/lib/chorus/types'
+import { ChorusStatusBadge } from '@/components/chorus-controls'
 
 interface MyQuota {
   isPermanent: boolean
   roomQuota: number | null
   userQuota: number | null
+  chorusQuota: number | null
 }
 
 /**
@@ -29,6 +33,7 @@ interface MyQuota {
 export default function MyRoomsPage() {
   const { status } = useSession()
   const [rooms, setRooms] = useState<OwnedRoomSummary[] | null>(null)
+  const [chorus, setChorus] = useState<ChorusSessionSummary[] | null>(null)
   const [quota, setQuota] = useState<MyQuota | null>(null)
   const [importing, setImporting] = useState(false)
   const [archivingId, setArchivingId] = useState<string | null>(null)
@@ -41,6 +46,10 @@ export default function MyRoomsPage() {
       .then((res) => (res.ok ? res.json() : []))
       .then(setRooms)
       .catch(() => setRooms([]))
+    fetch('/api/me/chorus')
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setChorus)
+      .catch(() => setChorus([]))
     fetch('/api/me/entitlement')
       .then((res) => (res.ok ? res.json() : null))
       .then(setQuota)
@@ -111,8 +120,12 @@ export default function MyRoomsPage() {
         <>
           {quota && !quota.isPermanent && (
             <p className="text-xs text-muted-foreground">
-              {t('creditsLine', { rooms: quota.roomQuota ?? 0, users: quota.userQuota ?? 0 })}{' '}
-              {(quota.roomQuota ?? 0) <= 0 && (
+              {t('creditsLine', {
+                rooms: quota.roomQuota ?? 0,
+                users: quota.userQuota ?? 0,
+                chorus: quota.chorusQuota ?? 0,
+              })}{' '}
+              {((quota.roomQuota ?? 0) <= 0 || (quota.chorusQuota ?? 0) <= 0) && (
                 <Link href="/pricing" className="text-primary underline-offset-4 hover:underline">
                   {tCommon('buyMore')}
                 </Link>
@@ -134,6 +147,7 @@ export default function MyRoomsPage() {
             </Card>
           )}
 
+          <h2 className="-mb-3 text-sm font-medium text-muted-foreground">{t('roomsTitle')}</h2>
           {!rooms ? (
             <p className="text-muted-foreground">{t('loadingRooms')}</p>
           ) : rooms.length === 0 ? (
@@ -170,6 +184,19 @@ export default function MyRoomsPage() {
                 </details>
               )}
             </>
+          )}
+
+          <h2 className="-mb-3 text-sm font-medium text-muted-foreground">{t('chorusTitle')}</h2>
+          {!chorus ? (
+            <p className="text-muted-foreground">{tCommon('loading')}</p>
+          ) : chorus.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('noChorus')}</p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {chorus.map((session) => (
+                <ChorusRow key={session.code} session={session} />
+              ))}
+            </ul>
           )}
         </>
       )}
@@ -220,6 +247,29 @@ function RoomRow({
               <a href={`/r/${room.roomId}/control`}>{t('open')}</a>
             </Button>
           </div>
+        </CardContent>
+      </Card>
+    </li>
+  )
+}
+
+function ChorusRow({ session }: { session: ChorusSessionSummary }) {
+  const t = useTranslations('myRooms')
+  return (
+    <li>
+      <Card>
+        <CardContent className="flex items-center justify-between gap-3 py-3">
+          <div className="flex flex-col gap-1">
+            <span className="font-medium">{session.name}</span>
+            <span className="flex items-center gap-2 text-xs text-muted-foreground">
+              <ChorusStatusBadge status={session.status} />
+              <span className="font-mono">{formatChorusCode(session.code)}</span>
+              <span>· {t('questionCount', { count: session.questionCount })}</span>
+            </span>
+          </div>
+          <Button asChild size="sm" variant={session.status === 'ended' ? 'outline' : 'default'}>
+            <a href={`/c/${session.code}/control`}>{session.status === 'ended' ? t('results') : t('open')}</a>
+          </Button>
         </CardContent>
       </Card>
     </li>

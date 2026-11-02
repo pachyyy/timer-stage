@@ -1,4 +1,4 @@
-import type { RoomStatePayload, RoomTransport, TransportStatus } from './transport'
+import { ROOM_CHANNEL, type ChannelSpec, type SyncTransport, type TransportStatus, type Versioned } from './transport'
 import { PollingTransport } from './polling-transport'
 
 /**
@@ -7,18 +7,19 @@ import { PollingTransport } from './polling-transport'
  * while degraded. The version guard (see useRoomState) makes it safe for both sources to call
  * `onState` — a stale payload from either side is simply dropped.
  */
-export class CompositeTransport implements RoomTransport {
-  private polling: PollingTransport
+export class CompositeTransport<T extends Versioned> implements SyncTransport<T> {
+  private polling: PollingTransport<T>
   private _status: TransportStatus = 'connecting'
   private statusListeners = new Set<(s: TransportStatus) => void>()
   private pollingUnsub: (() => void) | null = null
   private realtimeUnsub: (() => void) | null = null
 
   constructor(
-    private realtime: RoomTransport,
+    private realtime: SyncTransport<T>,
     pollIntervalMs = 4000,
+    spec: ChannelSpec = ROOM_CHANNEL,
   ) {
-    this.polling = new PollingTransport(pollIntervalMs)
+    this.polling = new PollingTransport<T>(pollIntervalMs, spec)
   }
 
   get status() {
@@ -37,7 +38,7 @@ export class CompositeTransport implements RoomTransport {
     return () => this.statusListeners.delete(cb)
   }
 
-  subscribe(roomId: string, onState: (state: RoomStatePayload) => void): () => void {
+  subscribe(id: string, onState: (state: T) => void): () => void {
     let realtimeLive = false
 
     const stopRealtimeStatusWatch = this.realtime.onStatusChange((s) => {
@@ -51,16 +52,16 @@ export class CompositeTransport implements RoomTransport {
       } else {
         this.setStatus('degraded')
         if (!this.pollingUnsub) {
-          this.pollingUnsub = this.polling.subscribe(roomId, onState)
+          this.pollingUnsub = this.polling.subscribe(id, onState)
         }
       }
     })
 
-    this.realtimeUnsub = this.realtime.subscribe(roomId, onState)
+    this.realtimeUnsub = this.realtime.subscribe(id, onState)
 
     // Kick off degraded-mode polling immediately in case realtime never connects.
     if (!realtimeLive && !this.pollingUnsub) {
-      this.pollingUnsub = this.polling.subscribe(roomId, onState)
+      this.pollingUnsub = this.polling.subscribe(id, onState)
     }
 
     return () => {

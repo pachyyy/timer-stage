@@ -23,5 +23,10 @@ export async function GET() {
   const isPermanent = entitlement.planKey === 'permanent'
   const quota = isPermanent ? null : await getOrCreateAccountQuota(session.user.id)
 
-  return NextResponse.json({ isPermanent, roomQuota: quota?.roomQuota ?? null, userQuota: quota?.userQuota ?? null })
+  return NextResponse.json({
+    isPermanent,
+    roomQuota: quota?.roomQuota ?? null,
+    userQuota: quota?.userQuota ?? null,
+    chorusQuota: quota?.chorusQuota ?? null,
+  })
 }

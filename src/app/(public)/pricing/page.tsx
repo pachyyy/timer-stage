@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FREE_PARTICIPANTS_PER_ROOM, SEGMENTS_PER_QUOTA_ROOM } from '@/lib/entitlements/gate'
 // Prices are imported, as are the two limits above, so this page can never quote a number that
 // disagrees with the landing page or with what src/lib/entitlements/gate.ts actually enforces.
-import { EXTRA_PARTICIPANT_PRICE, ROOM_PRICE, whatsappUrl } from '@/lib/pricing'
+import { CHORUS_PRICE, EXTRA_PARTICIPANT_PRICE, ROOM_PRICE, whatsappUrl } from '@/lib/pricing'
 
 export const dynamic = 'force-dynamic'
 
@@ -53,6 +53,22 @@ export default async function PricingPage() {
             <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
               <li>• {t('participantsBullet1', { free: FREE_PARTICIPANTS_PER_ROOM })}</li>
               <li>• {t('participantsBullet2')}</li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card className="sm:col-span-2">
+          <CardHeader>
+            <CardTitle>{t('chorusTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <p className="text-2xl font-semibold">
+              {CHORUS_PRICE}{' '}
+              <span className="text-base font-normal text-muted-foreground">{t('chorusUnit')}</span>
+            </p>
+            <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
+              <li>• {t('chorusBullet1')}</li>
+              <li>• {t('chorusBullet2')}</li>
             </ul>
           </CardContent>
         </Card>

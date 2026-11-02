@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { countParticipants, getOwnerEmail, hasAnyRun, hasOpenRun } from '@/lib/db/room-limits'
-import { tryConsumeRoomQuota, tryConsumeUserQuota } from '@/lib/db/quota'
+import { tryConsumeChorusQuota, tryConsumeRoomQuota, tryConsumeUserQuota } from '@/lib/db/quota'
 import { getEntitlement } from './client'
 import type { Entitlement } from './types'
 
@@ -66,6 +66,26 @@ export async function canCreateRoom(owner: { userId: string; email: string } | n
 
   const t = await getTranslations('gate')
   return { allowed: false, entitlement, reason: t('outOfRoomCredits') }
+}
+
+/**
+ * Chorus session creation — the same shape as canCreateRoom (spends the credit the moment it says
+ * yes), drawing from the separate chorusQuota pool. One credit buys one session, and a session can
+ * be presented exactly once (its 'ended' status is terminal — see src/lib/chorus/model.ts), so
+ * there's no separate presentation lock to check later the way canStartRun does for rooms.
+ */
+export async function canCreateChorus(owner: { userId: string; email: string } | null): Promise<GateResult> {
+  if (!entitlementsEnforced()) return ALLOWED
+  if (!owner) return ALLOWED
+
+  const entitlement = await getEntitlement(owner.email)
+  if (entitlement.planKey === 'permanent') return ALLOWED
+
+  const ok = await tryConsumeChorusQuota(owner.userId)
+  if (ok) return ALLOWED
+
+  const t = await getTranslations('gate')
+  return { allowed: false, entitlement, reason: t('outOfChorusCredits') }
 }
 
 /**

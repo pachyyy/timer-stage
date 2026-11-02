@@ -1,4 +1,4 @@
-import type { RoomStatePayload, RoomTransport, TransportStatus } from './transport'
+import { ROOM_CHANNEL, type ChannelSpec, type SyncTransport, type TransportStatus, type Versioned } from './transport'
 
 /**
  * Polling fallback transport. Used standalone in early development, and as the automatic
@@ -6,13 +6,16 @@ import type { RoomStatePayload, RoomTransport, TransportStatus } from './transpo
  *
  * Uses ETag conditional requests so a poll that finds no change costs almost nothing.
  */
-export class PollingTransport implements RoomTransport {
+export class PollingTransport<T extends Versioned> implements SyncTransport<T> {
   private _status: TransportStatus = 'connecting'
   private statusListeners = new Set<(s: TransportStatus) => void>()
   private timer: ReturnType<typeof setInterval> | null = null
   private etag: string | null = null
 
-  constructor(private intervalMs = 2000) {}
+  constructor(
+    private intervalMs = 2000,
+    private spec: ChannelSpec = ROOM_CHANNEL,
+  ) {}
 
   get status() {
     return this._status
@@ -30,12 +33,12 @@ export class PollingTransport implements RoomTransport {
     return () => this.statusListeners.delete(cb)
   }
 
-  subscribe(roomId: string, onState: (state: RoomStatePayload) => void): () => void {
+  subscribe(id: string, onState: (state: T) => void): () => void {
     let cancelled = false
 
     const poll = async () => {
       try {
-        const res = await fetch(`/api/rooms/${roomId}`, {
+        const res = await fetch(this.spec.pollPath(id), {
           headers: this.etag ? { 'If-None-Match': this.etag } : {},
           cache: 'no-store',
         })
@@ -57,7 +60,7 @@ export class PollingTransport implements RoomTransport {
           return
         }
         this.etag = res.headers.get('ETag')
-        const state = (await res.json()) as RoomStatePayload
+        const state = (await res.json()) as T
         this.setStatus('live')
         onState(state)
       } catch {

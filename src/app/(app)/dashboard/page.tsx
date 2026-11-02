@@ -12,11 +12,14 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2 } from 'lucide-react'
+import { MessageSquareText, Plus, Timer, Trash2 } from 'lucide-react'
 import { setControllerToken, listControllerTokens } from '@/lib/auth/local-tokens'
 import { JoinRoomForm } from '@/components/join-room-form'
+import { ChorusCreateForm } from '@/components/chorus-create-form'
 import { parseMinutesInput } from '@/lib/timer/minutes'
+import { cn } from '@/lib/utils'
 import type { LiveRoomSummary } from '@/lib/db/my-rooms'
+import type { ChorusSessionSummary } from '@/lib/chorus/types'
 
 interface DraftTimer {
   name: string
@@ -33,6 +36,8 @@ interface LiveRoomEntry extends LiveRoomSummary {
   token?: string
 }
 
+type CreateKind = 'room' | 'chorus'
+
 export default function Home() {
   const router = useRouter()
   const [eventName, setEventName] = useState('')
@@ -47,6 +52,10 @@ export default function Home() {
   const { data: session } = useSession()
   const [liveRooms, setLiveRooms] = useState<LiveRoomEntry[] | null>(null)
   const [liveLoading, setLiveLoading] = useState(false)
+  // Live Chorus sessions, for the Running tab. Account-scoped only — there's no localStorage
+  // fallback for signed-out visitors, since creating a session always needs an account anyway.
+  const [liveChorus, setLiveChorus] = useState<ChorusSessionSummary[]>([])
+  const [kind, setKind] = useState<CreateKind>('room')
   const t = useTranslations('dashboard')
   const tCommon = useTranslations('common')
   const tNav = useTranslations('nav')
@@ -61,8 +70,10 @@ export default function Home() {
     setLiveLoading(true)
     try {
       if (session?.user) {
-        const res = await fetch('/api/me/live-rooms')
-        setLiveRooms(res.ok ? await res.json() : [])
+        const [roomsRes, chorusRes] = await Promise.all([fetch('/api/me/live-rooms'), fetch('/api/me/chorus')])
+        setLiveRooms(roomsRes.ok ? await roomsRes.json() : [])
+        const chorus: ChorusSessionSummary[] = chorusRes.ok ? await chorusRes.json() : []
+        setLiveChorus(chorus.filter((c) => c.status === 'live'))
         return
       }
 
@@ -143,79 +154,120 @@ export default function Home() {
           <TabsTrigger value="running">{t('tabRunning')}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="create">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('newRoomTitle')}</CardTitle>
-              <CardDescription>{t('newRoomDesc')}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="event-name">{t('eventNameLabel')}</Label>
-                <Input
-                  id="event-name"
-                  placeholder={t('eventNamePlaceholder')}
-                  value={eventName}
-                  onChange={(e) => setEventName(e.target.value)}
+        <TabsContent value="create" className="flex flex-col gap-4">
+          <div role="radiogroup" aria-label={t('kindLabel')} className="grid grid-cols-2 gap-3">
+            {(
+              [
+                { value: 'room', icon: Timer, title: t('kindRoom'), desc: t('kindRoomDesc') },
+                { value: 'chorus', icon: MessageSquareText, title: t('kindChorus'), desc: t('kindChorusDesc') },
+              ] as const
+            ).map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={kind === option.value}
+                onClick={() => setKind(option.value)}
+                className={cn(
+                  'flex flex-col items-start gap-1 rounded-lg border p-4 text-left transition-colors',
+                  kind === option.value ? 'border-primary bg-accent ring-1 ring-primary' : 'hover:bg-accent/50',
+                )}
+              >
+                <option.icon className="size-5 text-primary" />
+                <span className="font-medium">{option.title}</span>
+                <span className="text-xs text-muted-foreground">{option.desc}</span>
+              </button>
+            ))}
+          </div>
+
+          {kind === 'chorus' ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('newChorusTitle')}</CardTitle>
+                <CardDescription>{t('newChorusDesc')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChorusCreateForm
+                  onCreated={(created) =>
+                    router.push(`/c/${created.code}/control?t=${encodeURIComponent(created.controllerToken)}`)
+                  }
                 />
-              </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('newRoomTitle')}</CardTitle>
+                <CardDescription>{t('newRoomDesc')}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="event-name">{t('eventNameLabel')}</Label>
+                  <Input
+                    id="event-name"
+                    placeholder={t('eventNamePlaceholder')}
+                    value={eventName}
+                    onChange={(e) => setEventName(e.target.value)}
+                  />
+                </div>
 
-              <Separator />
+                <Separator />
 
-              <div className="flex flex-col gap-3">
-                <Label>{t('agendaLabel')}</Label>
-                {draftTimers.map((timer, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <Input
-                      placeholder={tCommon('segmentNamePlaceholder')}
-                      value={timer.name}
-                      onChange={(e) => updateTimer(i, { name: e.target.value })}
-                      className="flex-1"
-                    />
-                    <Input
-                      type="number"
-                      min={1}
-                      value={timer.minutes}
-                      onChange={(e) => updateTimer(i, { minutes: e.target.value })}
-                      onFocus={(e) => e.currentTarget.select()}
-                      className="w-20"
-                    />
-                    <span className="text-sm text-muted-foreground">{tCommon('minUnit')}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeTimer(i)}
-                      disabled={draftTimers.length <= 1}
-                      aria-label={t('removeSegment')}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                ))}
-                <Button variant="outline" size="sm" onClick={addTimer} className="self-start">
-                  <Plus className="size-4" /> {t('addSegment')}
+                <div className="flex flex-col gap-3">
+                  <Label>{t('agendaLabel')}</Label>
+                  {draftTimers.map((timer, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Input
+                        placeholder={tCommon('segmentNamePlaceholder')}
+                        value={timer.name}
+                        onChange={(e) => updateTimer(i, { name: e.target.value })}
+                        className="flex-1"
+                      />
+                      <Input
+                        type="number"
+                        min={1}
+                        value={timer.minutes}
+                        onChange={(e) => updateTimer(i, { minutes: e.target.value })}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="w-20"
+                      />
+                      <span className="text-sm text-muted-foreground">{tCommon('minUnit')}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeTimer(i)}
+                        disabled={draftTimers.length <= 1}
+                        aria-label={t('removeSegment')}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={addTimer} className="self-start">
+                    <Plus className="size-4" /> {t('addSegment')}
+                  </Button>
+                </div>
+
+                {error && (
+                  <p className="text-sm text-destructive">
+                    {error}
+                    {quotaBlocked && (
+                      <>
+                        {' '}
+                        <Link href="/pricing" className="font-medium underline underline-offset-2">
+                          {tCommon('buyMore')}
+                        </Link>
+                      </>
+                    )}
+                  </p>
+                )}
+
+                <Button onClick={createRoom} disabled={creating} size="lg">
+                  {creating ? t('creating') : t('createRoom')}
                 </Button>
-              </div>
-
-              {error && (
-                <p className="text-sm text-destructive">
-                  {error}
-                  {quotaBlocked && (
-                    <>
-                      {' '}
-                      <Link href="/pricing" className="font-medium underline underline-offset-2">
-                        {tCommon('buyMore')}
-                      </Link>
-                    </>
-                  )}
-                </p>
-              )}
-
-              <Button onClick={createRoom} disabled={creating} size="lg">
-                {creating ? t('creating') : t('createRoom')}
-              </Button>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="join">
@@ -239,8 +291,34 @@ export default function Home() {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               {liveLoading && <p className="text-sm text-muted-foreground">{t('checking')}</p>}
-              {!liveLoading && liveRooms?.length === 0 && (
+              {!liveLoading && liveRooms?.length === 0 && liveChorus.length === 0 && (
                 <p className="text-sm text-muted-foreground">{t('noRunning')}</p>
+              )}
+              {!liveLoading && liveChorus.length > 0 && (
+                <ul className="flex flex-col gap-2">
+                  {liveChorus.map((c) => (
+                    <li key={c.code}>
+                      <Card>
+                        <CardContent className="flex items-center justify-between gap-3 py-3">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-medium">{c.name}</span>
+                            <span className="flex items-center gap-1.5">
+                              <Badge variant="outline" className="w-fit">
+                                {t('chorusBadge')}
+                              </Badge>
+                              <Badge variant="secondary" className="w-fit">
+                                {t('statusLive')}
+                              </Badge>
+                            </span>
+                          </div>
+                          <Button asChild size="sm">
+                            <a href={`/c/${c.code}/control`}>{t('goToEvent')}</a>
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </li>
+                  ))}
+                </ul>
               )}
               {!liveLoading && liveRooms && liveRooms.length > 0 && (
                 <ul className="flex flex-col gap-2">

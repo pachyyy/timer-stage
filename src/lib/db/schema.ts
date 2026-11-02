@@ -271,6 +271,9 @@ export const accountQuota = sqliteTable('account_quota', {
     .references(() => users.id, { onDelete: 'cascade' }),
   roomQuota: integer('room_quota').notNull().default(0),
   userQuota: integer('user_quota').notNull().default(0),
+  /** Chorus (audience Q&A) session credits — priced separately from rooms. One credit = one
+   * session = one presentation; see canCreateChorus. */
+  chorusQuota: integer('chorus_quota').notNull().default(0),
   updatedAt: integer('updated_at').notNull(),
 })
 
@@ -289,13 +292,117 @@ export const quotaLedger = sqliteTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     atMs: integer('at_ms').notNull(),
-    kind: text('kind', { enum: ['room_grant', 'user_grant', 'room_consume', 'user_consume'] }).notNull(),
+    kind: text('kind', {
+      enum: ['room_grant', 'user_grant', 'room_consume', 'user_consume', 'chorus_grant', 'chorus_consume'],
+    }).notNull(),
     /** Positive for a grant, negative for a consumption. */
     delta: integer('delta').notNull(),
     roomId: text('room_id').references(() => rooms.id, { onDelete: 'set null' }),
+    /** Same idea as `roomId`, for a Chorus credit. A separate column because `roomId` is an FK to
+     * `rooms`. Null for the creation consumption itself, same reason as rooms (see canCreateChorus). */
+    chorusSessionId: text('chorus_session_id').references(() => chorusSessions.id, { onDelete: 'set null' }),
     note: text('note'),
   },
   (table) => [index('quota_ledger_user_idx').on(table.userId)],
+)
+
+/**
+ * Chorus: live audience Q&A (see src/lib/chorus/). A session is its own share unit, separate from
+ * `rooms` — it's priced separately, can exist without any timer room, and is joined by a 6-digit
+ * NUMERIC code (`id`), which is what lets one join box tell the two apart (room codes always
+ * contain a letter — see generateRoomId). `controllerToken` runs it; `presenterToken` is the
+ * read-only credential for the presenter window, which unlike the public audience view gets to
+ * see answers. `linkedRoomId` shows it as a card on that room's control page, and lets that room's
+ * controllers run it too — see checkChorusAccess.
+ */
+export const chorusSessions = sqliteTable(
+  'chorus_sessions',
+  {
+    id: text('id').primaryKey(), // 6-digit numeric join code, e.g. "482913"
+    name: text('name').notNull(),
+    controllerToken: text('controller_token').notNull(),
+    presenterToken: text('presenter_token').notNull(),
+    ownerUserId: text('owner_user_id').references(() => users.id, { onDelete: 'set null' }),
+    linkedRoomId: text('linked_room_id').references(() => rooms.id, { onDelete: 'set null' }),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+    archivedAt: integer('archived_at'),
+  },
+  (table) => [
+    index('chorus_sessions_owner_idx').on(table.ownerUserId),
+    index('chorus_sessions_room_idx').on(table.linkedRoomId),
+  ],
+)
+
+/** The host's prepared, open-text questions, presented one at a time in `position` order. */
+export const chorusQuestions = sqliteTable(
+  'chorus_questions',
+  {
+    id: text('id').primaryKey(),
+    sessionId: text('session_id')
+      .notNull()
+      .references(() => chorusSessions.id, { onDelete: 'cascade' }),
+    position: integer('position').notNull(),
+    prompt: text('prompt').notNull(),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [index('chorus_questions_session_position_idx').on(table.sessionId, table.position)],
+)
+
+/**
+ * One row per session, mirroring `room_state`: the presentation state plus the monotonic `version`
+ * every client's version guard checks. `answersVersion` is a SEPARATE counter, bumped on every new
+ * or hidden answer — answers never ride the broadcast channel (only the presenter and control
+ * windows poll for them), so a new answer must not bump `version` and make every phone refetch.
+ * 'ended' is terminal: one credit pays for one presentation.
+ */
+export const chorusState = sqliteTable(
+  'chorus_state',
+  {
+    sessionId: text('session_id')
+      .notNull()
+      .references(() => chorusSessions.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull().default(0),
+    status: text('status', { enum: ['draft', 'live', 'ended'] })
+      .notNull()
+      .default('draft'),
+    currentQuestionId: text('current_question_id'),
+    /** Presenter-window answer text size, as a percentage of the base size. Questions aren't scaled. */
+    answerFontPercent: integer('answer_font_percent').notNull().default(100),
+    presentedAtMs: integer('presented_at_ms'),
+    endedAtMs: integer('ended_at_ms'),
+    answersVersion: integer('answers_version').notNull().default(0),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.sessionId] })],
+)
+
+/**
+ * Anonymous audience answers. Never deleted — hiding sets `hiddenAt`, which only keeps it off the
+ * presenter window. `deviceKey` (a random id from the phone's localStorage) and `ipHash` (sha256 of
+ * ip + session id, never the raw IP) exist only for rate limiting — see src/lib/chorus/rate-limit.ts.
+ */
+export const chorusAnswers = sqliteTable(
+  'chorus_answers',
+  {
+    id: text('id').primaryKey(),
+    sessionId: text('session_id')
+      .notNull()
+      .references(() => chorusSessions.id, { onDelete: 'cascade' }),
+    questionId: text('question_id')
+      .notNull()
+      .references(() => chorusQuestions.id, { onDelete: 'cascade' }),
+    text: text('text').notNull(),
+    createdAtMs: integer('created_at_ms').notNull(),
+    hiddenAt: integer('hidden_at'),
+    deviceKey: text('device_key').notNull(),
+    ipHash: text('ip_hash').notNull(),
+  },
+  (table) => [
+    index('chorus_answers_question_idx').on(table.sessionId, table.questionId, table.createdAtMs),
+    index('chorus_answers_ip_idx').on(table.sessionId, table.ipHash, table.createdAtMs),
+    index('chorus_answers_device_idx').on(table.sessionId, table.deviceKey, table.createdAtMs),
+  ],
 )
 
 export type Room = typeof rooms.$inferSelect
@@ -313,3 +420,7 @@ export type NewRunEvent = typeof runEvents.$inferInsert
 export type User = typeof users.$inferSelect
 export type AccountQuota = typeof accountQuota.$inferSelect
 export type QuotaLedgerEntry = typeof quotaLedger.$inferSelect
+export type ChorusSession = typeof chorusSessions.$inferSelect
+export type ChorusQuestion = typeof chorusQuestions.$inferSelect
+export type ChorusStateRow = typeof chorusState.$inferSelect
+export type ChorusAnswer = typeof chorusAnswers.$inferSelect
