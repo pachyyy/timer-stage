@@ -33,6 +33,21 @@ export class PollingTransport<T extends Versioned> implements SyncTransport<T> {
     return () => this.statusListeners.delete(cb)
   }
 
+  /**
+   * One unconditional fetch of the current state (no ETag, so it always returns a body), or null on
+   * any failure. CompositeTransport's resync after realtime connects: a channel only ever delivers
+   * *changes*, so without this a page that connects to an idle room would never get any state.
+   */
+  async fetchSnapshot(id: string): Promise<T | null> {
+    try {
+      const res = await fetch(this.spec.pollPath(id), { cache: 'no-store' })
+      if (!res.ok) return null
+      return (await res.json()) as T
+    } catch {
+      return null
+    }
+  }
+
   subscribe(id: string, onState: (state: T) => void): () => void {
     let cancelled = false
 

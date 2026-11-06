@@ -3,9 +3,9 @@ import { PollingTransport } from './polling-transport'
 
 /**
  * Prefers the realtime transport (Ably) but falls back to polling whenever it's not connected,
- * and always fetches one authoritative snapshot on (re)connect to close any gap that opened
- * while degraded. The version guard (see useRoomState) makes it safe for both sources to call
- * `onState` — a stale payload from either side is simply dropped.
+ * and fetches one authoritative snapshot every time realtime becomes live (see `resync` below).
+ * The version guard (see useRoomState) makes it safe for both sources to call `onState` — a stale
+ * payload from either side is simply dropped.
  */
 export class CompositeTransport<T extends Versioned> implements SyncTransport<T> {
   private polling: PollingTransport<T>
@@ -40,15 +40,28 @@ export class CompositeTransport<T extends Versioned> implements SyncTransport<T>
 
   subscribe(id: string, onState: (state: T) => void): () => void {
     let realtimeLive = false
+    let closed = false
+
+    // A realtime channel only delivers changes, never the state as it already is. So every time it
+    // becomes live (first connect or reconnect) fetch one authoritative snapshot: on first connect
+    // it is the page's initial state (the fallback poller's first request may have been cancelled
+    // mid-flight when realtime won the race, which used to leave the page loading forever behind a
+    // "Live" badge), and on reconnect it closes whatever gap opened while degraded. The version
+    // guard downstream drops it if a broadcast already delivered something newer.
+    const resync = () => {
+      void this.polling.fetchSnapshot(id).then((snapshot) => {
+        if (snapshot && !closed) onState(snapshot)
+      })
+    }
 
     const stopRealtimeStatusWatch = this.realtime.onStatusChange((s) => {
+      const wasLive = realtimeLive
       realtimeLive = s === 'live'
       if (realtimeLive) {
         this.setStatus('live')
-        // realtime just became available (or reconnected) — stop the fallback poller, but
-        // first let one more poll resolve so we don't miss whatever happened while degraded.
         this.pollingUnsub?.()
         this.pollingUnsub = null
+        if (!wasLive) resync()
       } else {
         this.setStatus('degraded')
         if (!this.pollingUnsub) {
@@ -65,6 +78,7 @@ export class CompositeTransport<T extends Versioned> implements SyncTransport<T>
     }
 
     return () => {
+      closed = true
       stopRealtimeStatusWatch()
       this.realtimeUnsub?.()
       this.pollingUnsub?.()

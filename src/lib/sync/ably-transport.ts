@@ -48,10 +48,24 @@ export class AblyTransport<T extends Versioned> implements SyncTransport<T> {
     })
     this.client = client
 
+    const channel = client.channels.get(this.spec.channelName(id))
+
+    // 'live' means connected AND the channel is attached, not just connected: CompositeTransport
+    // fetches its resync snapshot the moment this goes live, and taking it before the channel is
+    // attached would leave a window where a change is in neither the snapshot nor the channel.
+    // A closed client (a previous subscribe, e.g. React Strict Mode's mount→cleanup→remount) still
+    // emits a final 'closed' — it must not overwrite the status of the client that replaced it.
+    const isCurrent = () => this.client === client
+
+    const reportLiveIfReady = () => {
+      if (isCurrent() && client.connection.state === 'connected' && channel.state === 'attached') this.setStatus('live')
+    }
+
     client.connection.on((stateChange) => {
+      if (!isCurrent()) return
       switch (stateChange.current) {
         case 'connected':
-          this.setStatus('live')
+          reportLiveIfReady()
           break
         case 'connecting':
         case 'disconnected':
@@ -65,7 +79,13 @@ export class AblyTransport<T extends Versioned> implements SyncTransport<T> {
       }
     })
 
-    const channel = client.channels.get(this.spec.channelName(id))
+    channel.on((stateChange) => {
+      if (!isCurrent()) return
+      if (stateChange.current === 'attached') reportLiveIfReady()
+      // Back to 'connecting' so CompositeTransport falls back to polling until it re-attaches.
+      else if (stateChange.current === 'suspended' || stateChange.current === 'failed') this.setStatus('connecting')
+    })
+
     const handler = (message: Ably.Message) => {
       onState(message.data as T)
     }
