@@ -59,7 +59,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
   // Only meaningful if `token` is a promoted participant's sessionToken — stays null forever for
   // the room's own (permanent, non-revocable) controllerToken. Lets a demoted co-controller's
   // page react immediately instead of leaving live controls on screen.
-  const ownRole = useOwnRole(roomId, token)
+  const ownRole = useOwnRole(roomId, token, state?.version)
   const wasDemoted = ownRole === 'viewer'
   // A signed-in account that owns this room controls it from ANY device, no token needed at all
   // (the server already enforces this — see resolveRoomAccess) — this just decides what the UI
@@ -235,7 +235,7 @@ export default function ControlPage({ params }: { params: Promise<{ roomId: stri
         .catch((err) => console.error('auto-advance failed (non-fatal)', err))
     },
   })
-  useAutoAdvancePing({ roomId, isRunning: state?.status === 'running', applyPayload })
+  useAutoAdvancePing({ roomId, state, syncedNow, applyPayload })
 
   if (resolvingAccess) {
     return (

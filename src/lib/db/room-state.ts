@@ -6,21 +6,26 @@ import * as TimerModel from '@/lib/timer/model'
 import type { RunState } from '@/lib/timer/model'
 import { closeRun, ensureOpenRun, logEvent, type RunEventDraft } from './run-log'
 
+/**
+ * Just a room's current `version`, or null if it has no state row. One indexed single-column read
+ * — what the snapshot route checks an `If-None-Match` against before paying for the full payload,
+ * so a poll that finds nothing changed costs one tiny query.
+ */
+export async function loadRoomVersion(roomId: string): Promise<number | null> {
+  const [row] = await db.select({ version: roomState.version }).from(roomState).where(eq(roomState.roomId, roomId))
+  return row?.version ?? null
+}
+
 /** Load the full broadcast-shaped payload for a room: run state + version + agenda. */
 export async function loadRoomStatePayload(roomId: string): Promise<RoomStatePayload | null> {
-  const [state] = await db.select().from(roomState).where(eq(roomState.roomId, roomId))
+  // One libSQL round trip for all three reads (and a consistent snapshot of them), instead of
+  // three sequential ones.
+  const [[state], [room], timerRows] = await db.batch([
+    db.select().from(roomState).where(eq(roomState.roomId, roomId)),
+    db.select({ name: rooms.name, ownerUserId: rooms.ownerUserId }).from(rooms).where(eq(rooms.id, roomId)),
+    db.select().from(timers).where(eq(timers.roomId, roomId)).orderBy(asc(timers.position)),
+  ])
   if (!state) return null
-
-  const [room] = await db
-    .select({ name: rooms.name, ownerUserId: rooms.ownerUserId })
-    .from(rooms)
-    .where(eq(rooms.id, roomId))
-
-  const timerRows = await db
-    .select()
-    .from(timers)
-    .where(eq(timers.roomId, roomId))
-    .orderBy(asc(timers.position))
 
   const timerPayload: TimerRow[] = timerRows.map((t) => ({
     id: t.id,

@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, primaryKey, index, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 /**
  * Rooms are the top-level share unit: one controller token (read/write) and one viewer token
@@ -188,18 +188,31 @@ export const runEvents = sqliteTable(
  * equally-valid controller credential once promoted. This is what lets the admin grant control
  * to a specific joined person without a second room-wide secret.
  */
-export const participants = sqliteTable('participants', {
-  id: text('id').primaryKey(),
-  roomId: text('room_id')
-    .notNull()
-    .references(() => rooms.id, { onDelete: 'cascade' }),
-  name: text('name').notNull(),
-  sessionToken: text('session_token').notNull(),
-  role: text('role', { enum: ['viewer', 'controller'] })
-    .notNull()
-    .default('viewer'),
-  joinedAt: integer('joined_at').notNull(),
-})
+export const participants = sqliteTable(
+  'participants',
+  {
+    id: text('id').primaryKey(),
+    roomId: text('room_id')
+      .notNull()
+      .references(() => rooms.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    sessionToken: text('session_token').notNull(),
+    role: text('role', { enum: ['viewer', 'controller'] })
+      .notNull()
+      .default('viewer'),
+    joinedAt: integer('joined_at').notNull(),
+    /** Hashed client IP at join time (see hashClientIp), for the join rate limit. Null on rows
+     * that predate it. */
+    ipHash: text('ip_hash'),
+  },
+  (table) => [
+    // Hot paths: /participants/me (role poll), checkRoomAccess's participant-token lookup, and the
+    // join gate's per-room count all filter on these columns.
+    index('participants_room_idx').on(table.roomId),
+    uniqueIndex('participants_session_token_idx').on(table.sessionToken),
+    index('participants_room_ip_idx').on(table.roomId, table.ipHash, table.joinedAt),
+  ],
+)
 
 /**
  * The four tables below are Auth.js's own expected shape for `@auth/drizzle-adapter`'s SQLite

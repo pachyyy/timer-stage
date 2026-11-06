@@ -531,6 +531,7 @@
     "actionEventEnd": "End event"
   },
   "gate": {
+    "tooManyJoins": "Too many people joined from this network just now. Try again in a few minutes.",
     "outOfRoomCredits": "You're out of room credits. Buy more on the Pricing page to create another room.",
     "roomFull": "This room is full. It allows {cap, plural, one {# participant} other {# participants}}.",
     "participantCreditsOut": "This room already has its {free, plural, one {# free participant} other {# free participants}}, and the owner is out of participant credits. Buy more on the Pricing page.",

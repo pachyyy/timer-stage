@@ -1,5 +1,4 @@
-import { createHash } from 'crypto'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getTranslations } from 'next-intl/server'
 import { resolveChorusAccess } from '@/lib/auth/session-guard'
 import { bumpChorusVersion, getPresentationRow, loadChorusControlPayload } from '@/lib/db/chorus-state'
@@ -26,16 +25,7 @@ export async function publishRespond(code: string, status = 200): Promise<NextRe
   return NextResponse.json(payload satisfies ChorusControlPayload, { status })
 }
 
-/**
- * The client's network identity for rate limiting, hashed with the session code so the stored
- * value can't be joined across sessions or reversed into an IP. Vercel puts the real client IP
- * first in x-forwarded-for.
- */
-export function hashClientIp(req: NextRequest, code: string): string {
-  const forwarded = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const ip = forwarded || req.headers.get('x-real-ip') || 'unknown'
-  return createHash('sha256').update(`${ip}:${code}`).digest('hex').slice(0, 32)
-}
+export { hashClientIp } from '@/lib/rate-limit/client-ip'
 
 /** An audience device's anonymous key (see lib/chorus/device.ts): any 8-64 character string, else null. */
 export function parseDeviceKey(value: unknown): string | null {

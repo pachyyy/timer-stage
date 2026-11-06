@@ -8,7 +8,9 @@ import {
   type ParticipantSession,
 } from '@/lib/auth/participant'
 
-const ROLE_POLL_INTERVAL_MS = 4000
+// The main trigger is a room version change (role and remove routes bump it), so this is only a
+// slow backstop for a missed broadcast.
+const ROLE_BACKSTOP_POLL_MS = 30_000
 
 type ParticipantRole = 'viewer' | 'controller'
 
@@ -18,8 +20,8 @@ function readStoredSession(roomId: string, cb: (session: ParticipantSession | nu
 
 /**
  * Manages a viewer's participant identity for one room: resumes a cached session from
- * localStorage if present, otherwise exposes `join(name)` to create one. Once joined, polls the
- * participant's own current role so a promotion (or demotion) made from the controller's
+ * localStorage if present, otherwise exposes `join(name)` to create one. Once joined, re-checks the
+ * participant's own current role whenever `roomVersion` changes (plus a slow backstop), so a promotion (or demotion) made from the controller's
  * participants panel takes effect here without a manual refresh.
  *
  * Unlike useOwnRole (which also has to cover the room's permanent, never-tracked controllerToken),
@@ -27,7 +29,7 @@ function readStoredSession(roomId: string, cb: (session: ParticipantSession | nu
  * admin removed this participant. That clears the cached session and flips `removed` so the
  * caller can show a "you were removed" notice instead of just silently re-showing the join gate.
  */
-export function useParticipant(roomId: string) {
+export function useParticipant(roomId: string, roomVersion: number | undefined) {
   const [session, setSession] = useState<ParticipantSession | null>(null)
   const [role, setRole] = useState<ParticipantRole | null>(null)
   const [checkedStorage, setCheckedStorage] = useState(false)
@@ -72,12 +74,12 @@ export function useParticipant(roomId: string) {
     }
 
     void poll()
-    const interval = setInterval(poll, ROLE_POLL_INTERVAL_MS)
+    const interval = setInterval(poll, ROLE_BACKSTOP_POLL_MS)
     return () => {
       cancelled = true
       clearInterval(interval)
     }
-  }, [roomId, session])
+  }, [roomId, session, roomVersion])
 
   const join = useCallback(
     async (name: string) => {

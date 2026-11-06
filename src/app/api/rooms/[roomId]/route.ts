@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
 import { rooms } from '@/lib/db/schema'
-import { bumpVersion, loadRoomStatePayload } from '@/lib/db/room-state'
+import { bumpVersion, loadRoomStatePayload, loadRoomVersion } from '@/lib/db/room-state'
 import { publishRoomState } from '@/lib/sync/publish'
 
 export const dynamic = 'force-dynamic'
@@ -18,17 +18,29 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = await params
+
+  // Answer "nothing changed" from the version alone, before loading the agenda — most polls end
+  // here, so this is what keeps a room full of polling screens cheap.
+  const ifNoneMatch = req.headers.get('if-none-match')
+  if (ifNoneMatch) {
+    const version = await loadRoomVersion(roomId)
+    if (version === null) return NextResponse.json({ error: 'room not found' }, { status: 404 })
+    const etag = roomEtag(version)
+    if (ifNoneMatch === etag) {
+      return new NextResponse(null, { status: 304, headers: { ETag: etag, 'Cache-Control': 'no-store' } })
+    }
+  }
+
   const payload = await loadRoomStatePayload(roomId)
   if (!payload) {
     return NextResponse.json({ error: 'room not found' }, { status: 404 })
   }
 
-  const etag = `"v${payload.version}"`
-  if (req.headers.get('if-none-match') === etag) {
-    return new NextResponse(null, { status: 304, headers: { ETag: etag } })
-  }
+  return NextResponse.json(payload, { headers: { ETag: roomEtag(payload.version), 'Cache-Control': 'no-store' } })
+}
 
-  return NextResponse.json(payload, { headers: { ETag: etag, 'Cache-Control': 'no-store' } })
+function roomEtag(version: number): string {
+  return `"v${version}"`
 }
 
 /** Renames the room. Controller-only; re-broadcasts so every open viewer/controller picks up the

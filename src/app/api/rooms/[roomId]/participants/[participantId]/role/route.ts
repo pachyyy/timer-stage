@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { db } from '@/lib/db/client'
 import { participants } from '@/lib/db/schema'
+import { bumpVersion, loadRoomStatePayload } from '@/lib/db/room-state'
+import { publishRoomState } from '@/lib/sync/publish'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +32,14 @@ export async function POST(
     .update(participants)
     .set({ role: body.role })
     .where(and(eq(participants.id, participantId), eq(participants.roomId, roomId)))
+
+  // Nothing in the broadcast payload changes, but bumping the version is what tells every open
+  // screen in the room to re-check its own role now (useParticipant / useOwnRole refetch
+  // /participants/me on each version change instead of polling it), so the affected person sees
+  // the change within one sync tick.
+  await bumpVersion(roomId)
+  const payload = await loadRoomStatePayload(roomId)
+  if (payload) await publishRoomState(roomId, payload)
 
   return NextResponse.json({ ok: true })
 }

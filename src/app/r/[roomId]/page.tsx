@@ -27,7 +27,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   const searchParams = useSearchParams()
   const token = searchParams.get('t') ?? ''
   const { state, status, activeTimer, syncedNow, applyPayload } = useRoom(roomId, token)
-  const { session, role, checkedStorage, removed, join } = useParticipant(roomId)
+  const { session, role, checkedStorage, removed, join } = useParticipant(roomId, state?.version)
   const { message, flashing } = useMessageAlert(state, syncedNow)
   const promotionFlashing = useRoleAlert(role)
   const { wakeLockError, requestFullscreen } = useStageScreen()
@@ -41,7 +41,7 @@ export default function ViewerPage({ params }: { params: Promise<{ roomId: strin
   // Backstop for the `linkToNext` agenda feature — see use-auto-advance-ping.ts's doc comment.
   // A viewer screen (this one) is often the most reliable place for this to keep running, since
   // it's usually the on-stage monitor left open for the whole show even when the controller isn't.
-  useAutoAdvancePing({ roomId, isRunning: state?.status === 'running', applyPayload })
+  useAutoAdvancePing({ roomId, state, syncedNow, applyPayload })
 
   if (status === 'not-found') {
     return (

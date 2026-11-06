@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-const POLL_INTERVAL_MS = 4000
+// The main trigger is a room version change (role and remove routes bump it), so this is only a
+// slow backstop for a missed broadcast.
+const BACKSTOP_POLL_MS = 30_000
 
 /**
- * Polls whether `token` (whatever credential the controller page is currently using) still
- * resolves to a tracked participant, and if so, what role it currently has. Returns `null` when
+ * Checks, on every room `version` change plus a slow backstop, whether `token` (whatever
+ * credential the controller page is currently using) still resolves to a tracked participant, and if so, what role it currently has. Returns `null` when
  * the token isn't a tracked participant at all — the expected, harmless result for the room's
  * original controllerToken, which is never revocable through this mechanism.
  *
@@ -21,14 +23,20 @@ const POLL_INTERVAL_MS = 4000
  * "removed" (reported as 'viewer', reusing the same demoted-controller screen/redirect ControlPage
  * already has) — a token that has never once resolved just stays null, as before.
  */
-export function useOwnRole(roomId: string, token: string) {
+export function useOwnRole(roomId: string, token: string, roomVersion: number | undefined) {
   const [role, setRole] = useState<'viewer' | 'controller' | null>(null)
   const everTrackedRef = useRef(false)
+
+  // Reset only when the credential itself changes, not on every version-triggered re-check below —
+  // otherwise a deletion (which bumps the version) would wipe the "was tracked" memory right before
+  // the 404 it is meant to interpret.
+  useEffect(() => {
+    everTrackedRef.current = false
+  }, [roomId, token])
 
   useEffect(() => {
     if (!token) return
     let cancelled = false
-    everTrackedRef.current = false
 
     const poll = async () => {
       try {
@@ -50,12 +58,12 @@ export function useOwnRole(roomId: string, token: string) {
     }
 
     void poll()
-    const interval = setInterval(poll, POLL_INTERVAL_MS)
+    const interval = setInterval(poll, BACKSTOP_POLL_MS)
     return () => {
       cancelled = true
       clearInterval(interval)
     }
-  }, [roomId, token])
+  }, [roomId, token, roomVersion])
 
   return role
 }

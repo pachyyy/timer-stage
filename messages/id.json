@@ -531,6 +531,7 @@
     "actionEventEnd": "Akhiri acara"
   },
   "gate": {
+    "tooManyJoins": "Terlalu banyak yang bergabung dari jaringan ini barusan. Coba lagi dalam beberapa menit.",
     "outOfRoomCredits": "Kredit ruangmu habis. Beli lagi di halaman Harga untuk membuat ruang baru.",
     "roomFull": "Ruang ini sudah penuh dan hanya mengizinkan {cap, plural, other {# peserta}}.",
     "participantCreditsOut": "Ruang ini sudah mencapai {free, plural, other {# peserta gratis}}, dan kredit peserta pemilik sudah habis. Beli lagi di halaman Harga.",
