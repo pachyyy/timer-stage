@@ -180,7 +180,21 @@
     "chorusTitle": "Sesi Chorus",
     "chorusUnit": "/ sesi",
     "chorusBullet1": "Tanya jawab langsung: pertanyaan sebanyak yang kamu mau, jawaban anonim, dan audiens tidak perlu masuk",
-    "chorusBullet2": "Berlaku untuk satu presentasi. Setelah diakhiri, jawabannya tetap tersimpan, dan presentasi berikutnya butuh sesi baru."
+    "chorusBullet2": "Berlaku untuk satu presentasi. Setelah diakhiri, jawabannya tetap tersimpan, dan presentasi berikutnya butuh sesi baru.",
+    "packsTitle": "Paket",
+    "packsSubtitle": "Kebanyakan acara butuh ruang sekaligus tanya jawab Chorus. Beli sebagai paket dan bayar lebih hemat daripada membeli satuan.",
+    "packEvent": "Event",
+    "packEventDesc": "Satu ruang dan satu sesi Chorus, untuk satu acara dengan tanya jawab.",
+    "packTrio": "Trio",
+    "packTrioDesc": "Tiga acara, masing-masing dengan tanya jawabnya sendiri, plus beberapa peserta tambahan.",
+    "packSeason": "Season",
+    "packSeasonDesc": "Serangkaian acara untuk host langganan, dengan kredit lebih untuk massa yang lebih besar.",
+    "packRooms": "{count} ruang",
+    "packChorus": "{count} sesi Chorus",
+    "packParticipants": "{count} peserta tambahan",
+    "packWorth": "Senilai {value}, hemat {percent}%",
+    "packBuy": "Beli lewat WhatsApp",
+    "packMessage": "Halo, saya mau beli paket Clepsy {pack} ({price}): {contents}. Email akun saya: "
   },
   "docs": {
     "title": "Dokumentasi",

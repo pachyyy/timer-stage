@@ -4,12 +4,32 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FREE_PARTICIPANTS_PER_ROOM, SEGMENTS_PER_QUOTA_ROOM } from '@/lib/entitlements/gate'
 // Prices are imported, as are the two limits above, so this page can never quote a number that
 // disagrees with the landing page or with what src/lib/entitlements/gate.ts actually enforces.
-import { CHORUS_PRICE, EXTRA_PARTICIPANT_PRICE, ROOM_PRICE, whatsappUrl } from '@/lib/pricing'
+import {
+  CHORUS_PRICE,
+  EXTRA_PARTICIPANT_PRICE,
+  PACKS,
+  ROOM_PRICE,
+  formatRupiah,
+  packSavingPercent,
+  packValueIdr,
+  whatsappUrl,
+  type Pack,
+} from '@/lib/pricing'
 
 export const dynamic = 'force-dynamic'
 
+const PACK_NAME_KEY = { event: 'packEvent', trio: 'packTrio', season: 'packSeason' } as const
+const PACK_DESC_KEY = { event: 'packEventDesc', trio: 'packTrioDesc', season: 'packSeasonDesc' } as const
+
 export default async function PricingPage() {
   const t = await getTranslations('pricing')
+
+  /** What a bundle contains, as short display lines (zero amounts left out). */
+  const packLines = (pack: Pack) => [
+    t('packRooms', { count: pack.rooms }),
+    t('packChorus', { count: pack.chorus }),
+    ...(pack.participants > 0 ? [t('packParticipants', { count: pack.participants })] : []),
+  ]
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-12">
@@ -73,6 +93,53 @@ export default async function PricingPage() {
           </CardContent>
         </Card>
       </div>
+
+      <section className="flex flex-col gap-4">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold tracking-tight">{t('packsTitle')}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t('packsSubtitle')}</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {PACKS.map((pack) => {
+            const lines = packLines(pack)
+            const name = t(PACK_NAME_KEY[pack.id])
+            const price = formatRupiah(pack.priceIdr)
+            return (
+              <Card key={pack.id} className="flex flex-col">
+                <CardHeader>
+                  <CardTitle>{name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col gap-3">
+                  <p className="text-2xl font-semibold">{price}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('packWorth', {
+                      value: formatRupiah(packValueIdr(pack)),
+                      percent: packSavingPercent(pack),
+                    })}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{t(PACK_DESC_KEY[pack.id])}</p>
+                  <ul className="flex flex-col gap-1 text-sm">
+                    {lines.map((line) => (
+                      <li key={line}>• {line}</li>
+                    ))}
+                  </ul>
+                  <Button asChild className="mt-auto">
+                    <a
+                      href={whatsappUrl(
+                        t('packMessage', { pack: name, price, contents: lines.join(', ') }),
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {t('packBuy')}
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      </section>
 
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-6 text-center">
