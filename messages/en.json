@@ -180,7 +180,21 @@
     "chorusTitle": "Chorus sessions",
     "chorusUnit": "/ session",
     "chorusBullet1": "Live audience Q&A: as many questions as you like, anonymous answers, and no sign-in for the audience",
-    "chorusBullet2": "Good for one presentation. Once you end it, the answers stay saved, and your next presentation needs a new session."
+    "chorusBullet2": "Good for one presentation. Once you end it, the answers stay saved, and your next presentation needs a new session.",
+    "packsTitle": "Bundles",
+    "packsSubtitle": "Most events want a room and a Chorus Q&A together. Buy them as a bundle and pay less than buying each one by one.",
+    "packEvent": "Event",
+    "packEventDesc": "One room and one Chorus session, for a single event with a Q&A.",
+    "packTrio": "Trio",
+    "packTrioDesc": "Three events, each with its own Q&A, plus a few extra participants.",
+    "packSeason": "Season",
+    "packSeasonDesc": "A full run of events for regular hosts, with credits to spare for bigger crowds.",
+    "packRooms": "{count, plural, one {# room} other {# rooms}}",
+    "packChorus": "{count, plural, one {# Chorus session} other {# Chorus sessions}}",
+    "packParticipants": "{count, plural, one {# extra participant} other {# extra participants}}",
+    "packWorth": "Worth {value}, save {percent}%",
+    "packBuy": "Buy on WhatsApp",
+    "packMessage": "Hi, I want to buy the Clepsy {pack} bundle ({price}): {contents}. My account email: "
   },
   "docs": {
     "title": "Documentation",
