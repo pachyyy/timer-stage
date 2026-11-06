@@ -4,7 +4,7 @@
  * useChorusControl's `applyControl` so the operator's own screen updates instantly.
  */
 import { ActionError } from './room-actions'
-import type { ChorusControlPayload } from '@/lib/chorus/types'
+import type { ChorusControlPayload, ChorusMode } from '@/lib/chorus/types'
 
 export { ActionError }
 
@@ -30,7 +30,7 @@ export interface CreatedChorus {
 }
 
 export const chorusActions = {
-  create: (input: { name: string; questions: string[]; linkRoomId?: string; roomToken?: string }) =>
+  create: (input: { name: string; mode?: ChorusMode; questions: string[]; linkRoomId?: string; roomToken?: string }) =>
     send<CreatedChorus>('POST', '/api/chorus', input),
   load: (code: string, token: string) =>
     request<ChorusControlPayload>(`/api/chorus/${code}/questions?token=${encodeURIComponent(token)}`, {
@@ -43,6 +43,15 @@ export const chorusActions = {
   goto: (code: string, token: string, questionId: string) => action(code, token, { action: 'goto', questionId }),
   end: (code: string, token: string) => action(code, token, { action: 'end' }),
   font: (code: string, token: string, deltaPercent: number) => action(code, token, { action: 'font', deltaPercent }),
+
+  // Q&A mode
+  highlight: (code: string, token: string, questionId: string) =>
+    action(code, token, { action: 'highlight', questionId }),
+  unhighlight: (code: string, token: string) => action(code, token, { action: 'unhighlight' }),
+  setIntake: (code: string, token: string, open: boolean) => action(code, token, { action: 'intake', open }),
+  /** Hide / unhide and mark answered / unanswered, for one audience question. */
+  setQuestionFlags: (code: string, token: string, questionId: string, flags: { hidden?: boolean; answered?: boolean }) =>
+    send('PATCH', `/api/chorus/${code}/qna/${questionId}`, { token, ...flags }),
 
   addQuestion: (code: string, token: string, prompt: string) =>
     send('POST', `/api/chorus/${code}/questions`, { token, prompt }),
@@ -64,6 +73,19 @@ export const chorusActions = {
     send('POST', `/api/chorus/${code}/link`, { token, roomId, roomToken }),
   unlink: (code: string, token: string) =>
     request<ChorusControlPayload>(`/api/chorus/${code}/link?token=${encodeURIComponent(token)}`, { method: 'DELETE' }),
+}
+
+/** What an anonymous phone does in a Q&A session: no token, just the code and its device key. */
+export const qnaAudience = {
+  ask: (code: string, text: string, deviceKey: string) =>
+    send<{ ok: true; id: string }>('POST', `/api/chorus/${code}/qna`, { text, deviceKey }),
+  vote: (code: string, questionId: string, deviceKey: string) =>
+    send<{ ok: true }>('POST', `/api/chorus/${code}/qna/${questionId}/vote`, { deviceKey }),
+  unvote: (code: string, questionId: string, deviceKey: string) =>
+    request<{ ok: true }>(
+      `/api/chorus/${code}/qna/${questionId}/vote?device=${encodeURIComponent(deviceKey)}`,
+      { method: 'DELETE' },
+    ),
 }
 
 /** The presenter window's URL. Opened with a fixed window name so pressing the button again

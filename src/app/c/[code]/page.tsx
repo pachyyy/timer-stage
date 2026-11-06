@@ -8,6 +8,7 @@ import { Check } from 'lucide-react'
 import { useChorus } from '@/hooks/use-chorus'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { ChorusQnaAudience } from '@/components/chorus-qna-audience'
 import { ConnectionBadge } from '@/components/connection-badge'
 import { getDeviceKey } from '@/lib/chorus/device'
 import { MAX_ANSWER_LENGTH } from '@/lib/chorus/model'
@@ -24,6 +25,7 @@ export default function ChorusAudiencePage({ params }: { params: Promise<{ code:
   const { state, status } = useChorus(code)
   const t = useTranslations('chorusAudience')
   const tConnection = useTranslations('connectionBadge')
+  const tQna = useTranslations('chorusQnaAudience')
 
   // An all-digit code that isn't a Chorus session might be a pre-Chorus timer room whose random
   // code happened to be all digits — those can't be minted any more (see generateRoomId), but any
@@ -37,7 +39,8 @@ export default function ChorusAudiencePage({ params }: { params: Promise<{ code:
       .catch(() => {})
   }, [status, code, router])
 
-  const shell = (children: ReactNode) => (
+  // `top` = a scrolling list (Q&A) instead of a single centered message.
+  const shell = (children: ReactNode, top = false) => (
     <main className="flex min-h-dvh flex-col bg-neutral-950 px-5 py-6 text-white">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-2 text-sm text-white/60">
@@ -46,7 +49,7 @@ export default function ChorusAudiencePage({ params }: { params: Promise<{ code:
         </span>
         <ConnectionBadge status={status} />
       </div>
-      <div className="flex flex-1 flex-col justify-center">{children}</div>
+      <div className={`flex flex-1 flex-col ${top ? 'pt-6' : 'justify-center'}`}>{children}</div>
     </main>
   )
 
@@ -60,6 +63,19 @@ export default function ChorusAudiencePage({ params }: { params: Promise<{ code:
   }
 
   if (!state) return shell(<p className="text-center text-white/60">{tConnection('connecting')}</p>)
+
+  // Q&A: the audience asks and votes instead of answering one question at a time.
+  if (state.mode === 'qna') {
+    if (state.status === 'live') return shell(<ChorusQnaAudience code={code} state={state} />, true)
+    const ended = state.status === 'ended'
+    return shell(
+      <div className="text-center">
+        <h1 className="text-2xl font-semibold">{ended ? tQna('endedTitle') : tQna('waitingTitle')}</h1>
+        <p className="mt-2 text-white/60">{ended ? tQna('endedDesc') : tQna('waitingDesc')}</p>
+        {!ended && <p className="mt-6 text-xs text-white/40">{tQna('anonymous')}</p>}
+      </div>,
+    )
+  }
 
   if (state.status === 'draft') {
     return shell(

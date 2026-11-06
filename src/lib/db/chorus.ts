@@ -1,11 +1,14 @@
 import { and, count, desc, eq, gte, inArray, isNull, sql } from 'drizzle-orm'
 import { db } from './client'
-import { chorusAnswers, chorusQuestions, chorusSessions, chorusState } from './schema'
+import { chorusAnswers, chorusQnaQuestions, chorusQuestions, chorusSessions, chorusState } from './schema'
 import { generateChorusCode, generateId, generateToken } from '@/lib/auth/tokens'
-import type { ChorusAnswerRow, ChorusSessionSummary } from '@/lib/chorus/types'
+import type { ChorusAnswerRow, ChorusMode, ChorusSessionSummary } from '@/lib/chorus/types'
 
 export interface CreateChorusInput {
   name: string
+  /** Defaults to 'answers'. */
+  mode?: ChorusMode
+  /** The host's prepared prompts. Always empty for a 'qna' session: the audience supplies those. */
   prompts: string[]
   ownerUserId: string | null
   linkedRoomId: string | null
@@ -30,6 +33,7 @@ export async function createChorusSession(input: CreateChorusInput) {
         name: input.name,
         controllerToken,
         presenterToken,
+        mode: input.mode ?? 'answers',
         ownerUserId: input.ownerUserId,
         linkedRoomId: input.linkedRoomId,
         createdAt: nowMs,
@@ -142,15 +146,23 @@ async function summarize(rows: (typeof chorusSessions.$inferSelect)[]): Promise<
     .from(chorusQuestions)
     .where(inArray(chorusQuestions.sessionId, codes))
     .groupBy(chorusQuestions.sessionId)
+  // 'qna' sessions count the audience's questions instead (hidden ones are not counted).
+  const qnaCounts = await db
+    .select({ sessionId: chorusQnaQuestions.sessionId, n: count() })
+    .from(chorusQnaQuestions)
+    .where(and(inArray(chorusQnaQuestions.sessionId, codes), isNull(chorusQnaQuestions.hiddenAt)))
+    .groupBy(chorusQnaQuestions.sessionId)
   const statusBy = new Map(states.map((s) => [s.sessionId, s.status]))
   const countBy = new Map(counts.map((c) => [c.sessionId, c.n]))
+  const qnaCountBy = new Map(qnaCounts.map((c) => [c.sessionId, c.n]))
 
   return rows.map((r) => ({
     code: r.id,
     name: r.name,
     status: statusBy.get(r.id) ?? 'draft',
     linkedRoomId: r.linkedRoomId,
-    questionCount: countBy.get(r.id) ?? 0,
+    mode: r.mode,
+    questionCount: (r.mode === 'qna' ? qnaCountBy : countBy).get(r.id) ?? 0,
     createdAt: r.createdAt,
   }))
 }

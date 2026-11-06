@@ -5,7 +5,7 @@ import { generateId } from '@/lib/auth/tokens'
 import { db } from '@/lib/db/client'
 import { chorusAnswers } from '@/lib/db/schema'
 import { bumpAnswersVersion, getAnswersVersion, getPresentationRow } from '@/lib/db/chorus-state'
-import { countAnswersByQuestion, listAnswers, readRateLimitInputs } from '@/lib/db/chorus'
+import { countAnswersByQuestion, getChorusSession, listAnswers, readRateLimitInputs } from '@/lib/db/chorus'
 import { hashClientIp } from '@/lib/chorus/server'
 import { normalizeAnswer } from '@/lib/chorus/model'
 import { checkAnswerRateLimit, IP_WINDOW_MS } from '@/lib/chorus/rate-limit'
@@ -66,6 +66,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
 
   const row = await getPresentationRow(code)
   if (!row) return NextResponse.json({ error: 'session not found' }, { status: 404 })
+  const session = await getChorusSession(code)
+  if (session?.mode === 'qna') return NextResponse.json({ error: t('questionClosed') }, { status: 409 })
   if (row.status !== 'live' || !row.currentQuestionId || body.questionId !== row.currentQuestionId) {
     return NextResponse.json({ error: t('questionClosed') }, { status: 409 })
   }

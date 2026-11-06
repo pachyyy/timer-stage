@@ -264,7 +264,9 @@ function ChorusRow({ session }: { session: ChorusSessionSummary }) {
             <span className="flex items-center gap-2 text-xs text-muted-foreground">
               <ChorusStatusBadge status={session.status} />
               <span className="font-mono">{formatChorusCode(session.code)}</span>
-              <span>· {t('questionCount', { count: session.questionCount })}</span>
+              <span>
+                · {session.mode === 'qna' ? t('qnaCount', { count: session.questionCount }) : t('questionCount', { count: session.questionCount })}
+              </span>
             </span>
           </div>
           <Button asChild size="sm" variant={session.status === 'ended' ? 'outline' : 'default'}>

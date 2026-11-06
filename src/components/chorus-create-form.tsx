@@ -11,9 +11,10 @@ import { Separator } from '@/components/ui/separator'
 import { chorusActions, ActionError, type CreatedChorus } from '@/lib/api/chorus-actions'
 import { setChorusTokens } from '@/lib/auth/local-tokens'
 import { MAX_PROMPT_LENGTH, MAX_QUESTIONS } from '@/lib/chorus/model'
+import type { ChorusMode } from '@/lib/chorus/types'
 
 /**
- * Title + question list for a new Chorus session. Shared by the dashboard's Create tab and the
+ * Mode, title and (for 'answers' mode) the prompt list of a new Chorus session. Shared by the dashboard's Create tab and the
  * room control page's "New session" dialog, which passes `linkRoomId`/`roomToken` so the session
  * is created already linked. Caches the new tokens before handing the result to `onCreated`.
  */
@@ -28,6 +29,7 @@ export function ChorusCreateForm({
 }) {
   const t = useTranslations('chorusCreate')
   const tCommon = useTranslations('common')
+  const [mode, setMode] = useState<ChorusMode>('answers')
   const [name, setName] = useState('')
   const [questions, setQuestions] = useState<string[]>([''])
   const [creating, setCreating] = useState(false)
@@ -44,7 +46,8 @@ export function ChorusCreateForm({
     try {
       const created = await chorusActions.create({
         name,
-        questions: questions.map((q) => q.trim()).filter(Boolean),
+        mode,
+        questions: mode === 'answers' ? questions.map((q) => q.trim()).filter(Boolean) : [],
         ...(linkRoomId ? { linkRoomId, roomToken } : {}),
       })
       setChorusTokens(created.code, created)
@@ -59,6 +62,32 @@ export function ChorusCreateForm({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
+        <Label id="chorus-mode-label">{t('modeLabel')}</Label>
+        <div role="radiogroup" aria-labelledby="chorus-mode-label" className="grid gap-2 sm:grid-cols-2">
+          {(
+            [
+              { value: 'answers', label: t('modeAnswers'), desc: t('modeAnswersDesc') },
+              { value: 'qna', label: t('modeQna'), desc: t('modeQnaDesc') },
+            ] as const
+          ).map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={mode === option.value}
+              onClick={() => setMode(option.value)}
+              className={`flex flex-col gap-0.5 rounded-lg border px-3 py-2 text-left transition-colors ${
+                mode === option.value ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+              }`}
+            >
+              <span className="text-sm font-medium">{option.label}</span>
+              <span className="text-xs text-muted-foreground">{option.desc}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor="chorus-name">{t('titleLabel')}</Label>
         <Input
           id="chorus-name"
@@ -71,7 +100,10 @@ export function ChorusCreateForm({
 
       <Separator />
 
-      <div className="flex flex-col gap-3">
+      {mode === 'qna' && <p className="text-sm text-muted-foreground">{t('qnaHint')}</p>}
+
+      {mode === 'answers' && (
+        <div className="flex flex-col gap-3">
         <Label>{t('questionsLabel')}</Label>
         {questions.map((question, i) => (
           <div key={i} className="flex items-center gap-2">
@@ -109,7 +141,8 @@ export function ChorusCreateForm({
           <Plus className="size-4" /> {t('addQuestion')}
         </Button>
         <p className="text-xs text-muted-foreground">{t('hint')}</p>
-      </div>
+        </div>
+      )}
 
       {error && (
         <p className="text-sm text-destructive">

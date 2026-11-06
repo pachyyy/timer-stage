@@ -6,9 +6,10 @@ import { resolveRoomAccess } from '@/lib/auth/session-guard'
 import { canCreateChorus } from '@/lib/entitlements/gate'
 import { createChorusSession } from '@/lib/db/chorus'
 import { MAX_NAME_LENGTH, MAX_QUESTIONS, normalizePrompt } from '@/lib/chorus/model'
+import type { ChorusMode } from '@/lib/chorus/types'
 
 /**
- * Creates a Chorus session — from the dashboard, or from a timer room's control page with
+ * Creates a Chorus session (`mode`: 'answers', the default, or 'qna'; one credit either way) — from the dashboard, or from a timer room's control page with
  * `linkRoomId` + `roomToken`, which links it to that room in the same step. Same sign-in rule as
  * POST /api/rooms: a session spends a credit, so there has to be an account to bill (skipped when
  * auth isn't configured at all, so local dev works with zero env vars).
@@ -20,9 +21,14 @@ export async function POST(req: NextRequest) {
 
   const name =
     typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, MAX_NAME_LENGTH) : tc('untitled')
-  const prompts = (Array.isArray(body.questions) ? body.questions : [])
-    .map(normalizePrompt)
-    .filter((p: string | null): p is string => p !== null)
+  // 'qna' sessions have no prepared prompts: the audience supplies the questions.
+  const mode: ChorusMode = body.mode === 'qna' ? 'qna' : 'answers'
+  const prompts =
+    mode === 'qna'
+      ? []
+      : (Array.isArray(body.questions) ? body.questions : [])
+          .map(normalizePrompt)
+          .filter((p: string | null): p is string => p !== null)
   if (prompts.length > MAX_QUESTIONS) {
     return NextResponse.json({ error: tc('tooManyQuestions', { max: MAX_QUESTIONS }) }, { status: 400 })
   }
@@ -48,6 +54,7 @@ export async function POST(req: NextRequest) {
 
   const created = await createChorusSession({
     name,
+    mode,
     prompts,
     ownerUserId: session?.user?.id ?? null,
     linkedRoomId: linkRoomId,

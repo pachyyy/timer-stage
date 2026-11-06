@@ -322,6 +322,11 @@ export const chorusSessions = sqliteTable(
     name: text('name').notNull(),
     controllerToken: text('controller_token').notNull(),
     presenterToken: text('presenter_token').notNull(),
+    /** 'answers': the host's prepared prompts, answered by the audience. 'qna': the audience asks
+     * and votes, the host highlights one. Fixed at creation; both cost one Chorus credit. */
+    mode: text('mode', { enum: ['answers', 'qna'] })
+      .notNull()
+      .default('answers'),
     ownerUserId: text('owner_user_id').references(() => users.id, { onDelete: 'set null' }),
     linkedRoomId: text('linked_room_id').references(() => rooms.id, { onDelete: 'set null' }),
     createdAt: integer('created_at').notNull(),
@@ -366,12 +371,21 @@ export const chorusState = sqliteTable(
     status: text('status', { enum: ['draft', 'live', 'ended'] })
       .notNull()
       .default('draft'),
+    /** What's on the big screen: the current prompt ('answers' mode) or the host's highlighted
+     * audience question ('qna' mode). */
     currentQuestionId: text('current_question_id'),
-    /** Presenter-window answer text size, as a percentage of the base size. Questions aren't scaled. */
+    /** Presenter-window text size, as a percentage of the base size: the answers in 'answers' mode,
+     * the highlighted question in 'qna' mode. Prompts aren't scaled. */
     answerFontPercent: integer('answer_font_percent').notNull().default(100),
     presentedAtMs: integer('presented_at_ms'),
     endedAtMs: integer('ended_at_ms'),
     answersVersion: integer('answers_version').notNull().default(0),
+    /** 'qna' only: the same idea as `answersVersion` for the audience question list. A new question,
+     * vote, hide or answered-mark bumps this and never `version`, so a vote doesn't make every phone
+     * refetch the state payload. */
+    feedVersion: integer('feed_version').notNull().default(0),
+    /** 'qna' only: false = the host paused new questions (voting continues). */
+    intakeOpen: integer('intake_open', { mode: 'boolean' }).notNull().default(true),
     updatedAt: integer('updated_at').notNull(),
   },
   (table) => [primaryKey({ columns: [table.sessionId] })],
@@ -402,6 +416,54 @@ export const chorusAnswers = sqliteTable(
     index('chorus_answers_question_idx').on(table.sessionId, table.questionId, table.createdAtMs),
     index('chorus_answers_ip_idx').on(table.sessionId, table.ipHash, table.createdAtMs),
     index('chorus_answers_device_idx').on(table.sessionId, table.deviceKey, table.createdAtMs),
+  ],
+)
+
+/**
+ * 'qna' mode: questions typed by the audience. Never deleted — hiding sets `hiddenAt` (off every
+ * phone and the presenter), answering sets `answeredAt` (a host's "done" marker). `deviceKey` /
+ * `ipHash` exist only for rate limiting, same as `chorus_answers`.
+ */
+export const chorusQnaQuestions = sqliteTable(
+  'chorus_qna_questions',
+  {
+    id: text('id').primaryKey(),
+    sessionId: text('session_id')
+      .notNull()
+      .references(() => chorusSessions.id, { onDelete: 'cascade' }),
+    text: text('text').notNull(),
+    createdAtMs: integer('created_at_ms').notNull(),
+    hiddenAt: integer('hidden_at'),
+    answeredAt: integer('answered_at'),
+    deviceKey: text('device_key').notNull(),
+    ipHash: text('ip_hash').notNull(),
+  },
+  (table) => [
+    index('chorus_qna_questions_session_idx').on(table.sessionId, table.createdAtMs),
+    index('chorus_qna_questions_ip_idx').on(table.sessionId, table.ipHash, table.createdAtMs),
+    index('chorus_qna_questions_device_idx').on(table.sessionId, table.deviceKey, table.createdAtMs),
+  ],
+)
+
+/**
+ * One up-vote per device per question — the composite primary key is what makes a double tap or a
+ * replayed request a no-op. Counts are computed with a COUNT, never stored, so they can't drift.
+ */
+export const chorusQnaVotes = sqliteTable(
+  'chorus_qna_votes',
+  {
+    questionId: text('question_id')
+      .notNull()
+      .references(() => chorusQnaQuestions.id, { onDelete: 'cascade' }),
+    sessionId: text('session_id')
+      .notNull()
+      .references(() => chorusSessions.id, { onDelete: 'cascade' }),
+    deviceKey: text('device_key').notNull(),
+    createdAtMs: integer('created_at_ms').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.questionId, table.deviceKey] }),
+    index('chorus_qna_votes_device_idx').on(table.sessionId, table.deviceKey, table.createdAtMs),
   ],
 )
 

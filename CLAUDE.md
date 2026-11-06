@@ -376,9 +376,14 @@ don't reintroduce a retired synonym when adding a new string.
 | A display showing the timer | Screen | Layar | viewer screen, penonton |
 | A row in the run timeline | Action | Tindakan | event (as a column) |
 | Prepaid balance | Credits | Kredit | plan |
-| Live audience Q&A (product name) | Chorus / Chorus session | Chorus / Sesi Chorus | Slido, poll |
-| A prepared Chorus prompt | Question | Pertanyaan | — |
-| An audience reply | Answer | Jawaban | response, message |
+| Live audience interaction (product name) | Chorus / Chorus session | Chorus / Sesi Chorus | Slido, poll |
+| Chorus type: host asks, audience answers | Answers | Jawaban | poll |
+| Chorus type: audience asks and votes, host picks | Q&A | Tanya Jawab | Slido |
+| A host-prepared prompt (Answers type) | Prompt | Prompt | question |
+| An audience reply (Answers type) | Answer | Jawaban | response, message |
+| A question typed by the audience (Q&A type) | Question | Pertanyaan | — |
+| Up-voting a Q&A question | Vote | Vote | like, upvote |
+| Putting a Q&A question on the big screen | Highlight | Sorot | pin, feature |
 | Chorus's projector screen | Presenter window | Jendela presentasi | — |
 
 This governs user-facing copy only — the `runs`/`run_events` DB tables, the `/runs` API routes,
@@ -395,12 +400,15 @@ together with the "keep marketing pages static" scaling note above if that ever 
 client-rendered locale + a lighter, cookie-presence-only check server-side, same idea as that
 note's auth-state approach).
 
-### Chorus: live audience Q&A (`src/lib/chorus/`, `src/lib/db/chorus*.ts`, `/c/[code]`)
+### Chorus: live audience interaction (`src/lib/chorus/`, `src/lib/db/chorus*.ts`, `/c/[code]`)
 
-A Slido/Menti-style feature: the host prepares open-text questions and presents them one at a time;
-the audience answers anonymously from their phones (no sign-in, no name prompt). It's its own share
-unit (`chorus_sessions`, not a kind of room) because it's priced separately and can exist without
-any timer room. Things that matter when changing it:
+A Slido/Menti-style feature with two types (`chorus_sessions.mode`, fixed at creation, one credit
+either way): **Answers** (`'answers'`), where the host prepares open-text prompts and presents them
+one at a time while the audience answers anonymously, and **Q&A** (`'qna'`), where the audience types
+its own questions, up-votes each other's, and the host highlights one for the big screen. Neither
+needs sign-in or a name prompt on the phone. It's its own share unit (`chorus_sessions`, not a kind
+of room) because it's priced separately and can exist without any timer room. Things that matter
+when changing it:
 
 - **Codes**: a session's id is a 6-digit **numeric** code; `generateRoomId` now re-rolls any
   all-digit result, so one join box (`JoinRoomForm` → `classifyJoinCode`) routes digits to `/c/` and
@@ -431,6 +439,29 @@ any timer room. Things that matter when changing it:
 - **Presenter window**: `openPresenterWindow` uses a fixed window name so the button refocuses
   rather than stacking popups. Clickers send keys to the focused (presenter) window, so it forwards
   nav keys to its opener via `postMessage` (`presenter-keys.ts`); the control window acts on them.
+
+**Q&A type** (`chorus_qna_questions` / `chorus_qna_votes`, `src/lib/chorus/qna.ts`,
+`src/lib/db/chorus-qna.ts`, `/api/chorus/[code]/qna/...`). It reuses the session, state row, access
+model and credit; the differences that matter:
+
+- **Separate tables**, not `chorus_questions` / `chorus_answers` (answers are tied to one current
+  prompt). `chorus_state.currentQuestionId` doubles as the **highlighted** audience question;
+  `applyChorusAction` takes the mode and rejects the other mode's actions (`next/prev/goto` vs
+  `highlight/unhighlight/intake`). `present` works with zero questions, because the audience supplies
+  them. A session starts in `draft`; `intakeOpen` lets the host pause new questions while voting goes on.
+- **The audience reads the list, so the feed is public** (`GET /qna`), but it still never rides the
+  broadcast channel: phones poll it with an ETag on a *third* counter, `feedVersion` (jittered about
+  every 5s, paused while the tab is hidden, optimistic votes). A new question, vote, hide or
+  answered-mark bumps `feedVersion` only. The one exception is hiding the highlighted question: it
+  clears the highlight, so it bumps `version` and publishes. If polling load ever matters, the next
+  step is a throttled Ably "list changed" ping, not broadcasting the votes.
+- **Votes** are keyed `(questionId, deviceKey)`, so a double tap or replay is a no-op, and counts
+  are a `COUNT` at read time (never a stored counter). Anonymous voting can't be made tamper-proof
+  without a login (a cleared browser is a new device); the per-device vote cap and the network cap
+  limit abuse. Ranking (`rankQuestions`: votes, then newest) is shared by every screen.
+- **The presenter window shows only the highlighted question** (plus its vote count); the full ranked
+  list, with Highlight / Answered / Hide, is on the controller only. Hidden and answered questions
+  are kept, never deleted.
 
 ## Deploying
 

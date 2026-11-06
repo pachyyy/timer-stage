@@ -6,7 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Check, Pencil, Plus, Timer, X } from 'lucide-react'
-import { useChorusAnswers, useChorusControl } from '@/hooks/use-chorus'
+import { useChorusAnswers, useChorusControl, useChorusFeed } from '@/hooks/use-chorus'
 import { chorusActions } from '@/lib/api/chorus-actions'
 import { getChorusTokens, setChorusTokens } from '@/lib/auth/local-tokens'
 import { MAX_PROMPT_LENGTH, MAX_QUESTIONS } from '@/lib/chorus/model'
@@ -16,6 +16,8 @@ import { ChorusControls } from '@/components/chorus-controls'
 import { ChorusShareCard } from '@/components/chorus-share-card'
 import { ChorusQuestionList } from '@/components/chorus-question-list'
 import { ChorusAnswersPanel } from '@/components/chorus-answers-panel'
+import { ChorusQnaControls } from '@/components/chorus-qna-controls'
+import { ChorusQnaPanel } from '@/components/chorus-qna-panel'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { ConnectionBadge } from '@/components/connection-badge'
 import { LocaleSwitcher } from '@/components/locale-switcher'
@@ -39,6 +41,7 @@ export default function ChorusControlPage({ params }: { params: Promise<{ code: 
   const tChorus = useTranslations('chorus')
   const tCommon = useTranslations('common')
   const tControls = useTranslations('chorusControls')
+  const tQna = useTranslations('chorusQnaControl')
 
   const token = useMemo(() => {
     const fromUrl = searchParams.get('t')
@@ -53,7 +56,15 @@ export default function ChorusControlPage({ params }: { params: Promise<{ code: 
   const live = state?.status === 'live'
   const ended = state?.status === 'ended'
   const currentQuestionId = live ? (state?.currentQuestion?.id ?? null) : null
-  const answersFeed = useChorusAnswers(code, token, currentQuestionId, Boolean(state) && state?.status !== 'draft')
+  const isQna = state?.mode === 'qna'
+  const answersFeed = useChorusAnswers(
+    code,
+    token,
+    currentQuestionId,
+    Boolean(state) && !isQna && state?.status !== 'draft',
+  )
+  // Q&A: the controller's feed includes hidden questions, so they can be un-hidden.
+  const qnaFeed = useChorusFeed(code, { token, intervalMs: 2000, enabled: Boolean(token) && isQna })
 
   const [newPrompt, setNewPrompt] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
@@ -75,7 +86,7 @@ export default function ChorusControlPage({ params }: { params: Promise<{ code: 
   // Arrow keys / a presentation clicker — pressed here, or in the presenter window (which
   // forwards them, see presenter-keys.ts) — move between questions while live.
   useEffect(() => {
-    if (!live) return
+    if (!live || isQna) return
     const go = (key: string) => {
       const dir = navDirection(key)
       if (!dir) return false
@@ -98,7 +109,7 @@ export default function ChorusControlPage({ params }: { params: Promise<{ code: 
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('message', onMessage)
     }
-  }, [live, code, token, applyControl])
+  }, [live, isQna, code, token, applyControl])
 
   if (status === 'not-found') {
     return (
@@ -207,6 +218,44 @@ export default function ChorusControlPage({ params }: { params: Promise<{ code: 
 
       {!state ? (
         <p className="text-muted-foreground">{t('loading')}</p>
+      ) : state.mode === 'qna' ? (
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
+          <div className="flex min-w-0 flex-col gap-6">
+            <Card>
+              <CardContent className="pt-6">
+                <ChorusQnaControls state={state} token={token} onPayload={applyControl} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {ended ? tQna('resultsTitle') : tQna('questionsTitle')}
+                  <Badge variant="secondary" className="font-normal">
+                    {tQna('count', { count: qnaFeed.questions.filter((q) => !q.hidden).length })}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <ChorusQnaPanel
+                  code={code}
+                  token={token}
+                  status={state.status}
+                  questions={qnaFeed.questions}
+                  highlightId={state.highlight?.id ?? null}
+                  onPayload={applyControl}
+                  onChanged={qnaFeed.refresh}
+                  maxHeightClass="max-h-[40rem]"
+                />
+                <p className="text-xs text-muted-foreground">{tQna('hiddenHint')}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex min-w-0 flex-col gap-6">
+            <ChorusShareCard code={code} presenterToken={presenterToken} />
+          </div>
+        </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="flex min-w-0 flex-col gap-6">

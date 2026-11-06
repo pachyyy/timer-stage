@@ -304,7 +304,7 @@ export default function Home() {
                             <span className="font-medium">{c.name}</span>
                             <span className="flex items-center gap-1.5">
                               <Badge variant="outline" className="w-fit">
-                                {t('chorusBadge')}
+                                {c.mode === 'qna' ? t('qnaBadge') : t('chorusBadge')}
                               </Badge>
                               <Badge variant="secondary" className="w-fit">
                                 {t('statusLive')}

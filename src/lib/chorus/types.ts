@@ -8,6 +8,10 @@
 
 export type ChorusStatus = 'draft' | 'live' | 'ended'
 
+/** 'answers': the host's prompts, answered by the audience. 'qna': the audience asks, votes, and
+ * the host highlights one. */
+export type ChorusMode = 'answers' | 'qna'
+
 export interface ChorusQuestionRef {
   id: string
   position: number
@@ -21,7 +25,13 @@ export interface ChorusStatePayload {
   name: string
   ownerUserId: string | null
   linkedRoomId: string | null
+  mode: ChorusMode
   status: ChorusStatus
+  /** 'qna' only: false while the host has paused new questions. Always true in 'answers' mode. */
+  intakeOpen: boolean
+  /** 'qna' only: the question the host put on the big screen (null = none). Always null in 'answers' mode. */
+  highlight: { id: string; text: string } | null
+  /** 'answers' only: the prompt on screen. Always null in 'qna' mode. */
   currentQuestion: ChorusQuestionRef | null
   /** 0-based index of `currentQuestion` among all questions, or -1 when there is none. */
   currentIndex: number
@@ -53,6 +63,25 @@ export interface ChorusAnswersPayload {
   counts: Record<string, number>
 }
 
+/** One audience question in the Q&A feed. */
+export interface QnaQuestionRow {
+  id: string
+  text: string
+  createdAtMs: number
+  votes: number
+  answered: boolean
+  /** Only ever true for the controller; everyone else is never sent hidden questions. */
+  hidden: boolean
+}
+
+export interface QnaFeedPayload {
+  feedVersion: number
+  /** Unsorted; the client ranks them (see rankQuestions) so a refresh can keep the order stable. */
+  questions: QnaQuestionRow[]
+  /** Ids this device has voted for. Empty for the controller and presenter. */
+  mine: string[]
+}
+
 /** One row of the account-level session lists (/my-rooms, the dashboard's Running tab, the room
  * card's "Link existing" picker). */
 export interface ChorusSessionSummary {
@@ -60,6 +89,8 @@ export interface ChorusSessionSummary {
   name: string
   status: ChorusStatus
   linkedRoomId: string | null
+  mode: ChorusMode
+  /** Prompts in 'answers' mode; audience questions in 'qna' mode. */
   questionCount: number
   createdAt: number
 }

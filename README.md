@@ -19,10 +19,12 @@ Live at [cuetimed.vercel.app](https://cuetimed.vercel.app) · user guide at
   can give any participant control and take it back.
 - **History** — every event's planned-vs-actual report, adjustment list and timeline, exportable
   as `.xlsx`.
-- **Chorus** — live audience Q&A. The host prepares open-text questions and presents them one at a
-  time in a separate presenter window; the audience scans a QR code (or types a 6-digit code) and
-  answers anonymously from their phones, no sign-in. The operator can hide answers, change their
-  size on screen, and run a session from its own page or from a timer room it's linked to.
+- **Chorus** — live audience interaction, in two types. **Answers**: the host prepares open-text
+  prompts and presents them one at a time in a separate presenter window, and the audience scans a QR
+  code (or types a 6-digit code) and answers anonymously from their phones, no sign-in. **Q&A**: the
+  audience asks its own questions and votes on each other's, and the host highlights one for the big
+  screen. The operator can hide entries, change the on-screen text size, and run a session from its
+  own page or from a timer room it's linked to.
 - **Accounts and credits** — optional Google sign-in; signed-in owners control their rooms from any
   device. Rooms, extra participants and Chorus sessions are prepaid credits, topped up from the
   Pachy Panel.

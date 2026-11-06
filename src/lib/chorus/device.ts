@@ -24,3 +24,29 @@ export function getDeviceKey(): string {
     return randomKey()
   }
 }
+
+/**
+ * Q&A: the ids of the questions this phone asked, so they can be marked "Yours". Kept next to the
+ * device key and just as anonymous: it never leaves the phone, and the server can't tell whose a
+ * question is.
+ */
+const OWN_PREFIX = 'clepsy:chorus-qna-mine:'
+
+export function getOwnQuestionIds(code: string): string[] {
+  try {
+    const raw = localStorage.getItem(OWN_PREFIX + code)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+export function rememberOwnQuestion(code: string, id: string) {
+  try {
+    const ids = getOwnQuestionIds(code)
+    if (!ids.includes(id)) localStorage.setItem(OWN_PREFIX + code, JSON.stringify([...ids, id]))
+  } catch {
+    // Storage blocked: the question just won't carry a "Yours" badge after a reload.
+  }
+}

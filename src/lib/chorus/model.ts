@@ -1,4 +1,4 @@
-import type { ChorusStatus } from './types'
+import type { ChorusMode, ChorusStatus } from './types'
 
 /**
  * Pure Chorus presentation logic, shared by the actions route (which applies it against the
@@ -10,6 +10,8 @@ import type { ChorusStatus } from './types'
 export const MAX_QUESTIONS = 100
 export const MAX_PROMPT_LENGTH = 300
 export const MAX_ANSWER_LENGTH = 280
+/** A question typed by the audience in Q&A mode. */
+export const MAX_ASKED_LENGTH = 300
 export const MAX_NAME_LENGTH = 200
 
 export const FONT_MIN_PERCENT = 60
@@ -18,8 +20,11 @@ export const FONT_STEP_PERCENT = 10
 
 export interface PresentationState {
   status: ChorusStatus
+  /** The current prompt ('answers') or the highlighted audience question ('qna'). */
   currentQuestionId: string | null
   answerFontPercent: number
+  /** 'qna' only: whether phones can submit new questions. Always true in 'answers' mode. */
+  intakeOpen: boolean
 }
 
 export type ChorusAction =
@@ -29,8 +34,18 @@ export type ChorusAction =
   | { action: 'goto'; questionId: string }
   | { action: 'end' }
   | { action: 'font'; deltaPercent: number }
+  // 'qna' mode only:
+  | { action: 'highlight'; questionId: string }
+  | { action: 'unhighlight' }
+  | { action: 'intake'; open: boolean }
 
-export type ChorusActionError = 'not_draft' | 'not_live' | 'no_questions' | 'unknown_question' | 'unknown_action'
+export type ChorusActionError =
+  | 'not_draft'
+  | 'not_live'
+  | 'ended'
+  | 'no_questions'
+  | 'unknown_question'
+  | 'unknown_action'
 
 export type ActionResult =
   | {
@@ -47,17 +62,43 @@ export function clampFontPercent(value: number): number {
   return Math.min(FONT_MAX_PERCENT, Math.max(FONT_MIN_PERCENT, Math.round(value)))
 }
 
-/** `questionIds` must already be in position order. */
+/** Actions that only make sense for one mode; anything else is `unknown_action` in the other. */
+const QNA_ONLY = new Set(['highlight', 'unhighlight', 'intake'])
+const ANSWERS_ONLY = new Set(['next', 'prev', 'goto'])
+
+/**
+ * `questionIds` must already be in position order ('answers': the host's prompts) or be the ids of
+ * the visible audience questions ('qna', where order doesn't matter).
+ */
 export function applyChorusAction(
   current: PresentationState,
   input: ChorusAction,
   questionIds: string[],
+  mode: ChorusMode = 'answers',
 ): ActionResult {
+  if (mode === 'qna' ? ANSWERS_ONLY.has(input.action) : QNA_ONLY.has(input.action)) {
+    return { ok: false, error: 'unknown_action' }
+  }
   switch (input.action) {
     case 'present': {
       if (current.status !== 'draft') return { ok: false, error: 'not_draft' }
+      // A Q&A room starts empty — the audience supplies the questions — so only prompts need a first one.
+      if (mode === 'qna') return { ok: true, presented: true, next: { ...current, status: 'live', currentQuestionId: null } }
       if (questionIds.length === 0) return { ok: false, error: 'no_questions' }
       return { ok: true, presented: true, next: { ...current, status: 'live', currentQuestionId: questionIds[0] } }
+    }
+    case 'highlight': {
+      if (current.status !== 'live') return { ok: false, error: 'not_live' }
+      if (!questionIds.includes(input.questionId)) return { ok: false, error: 'unknown_question' }
+      return { ok: true, next: { ...current, currentQuestionId: input.questionId } }
+    }
+    case 'unhighlight': {
+      if (current.status !== 'live') return { ok: false, error: 'not_live' }
+      return { ok: true, next: { ...current, currentQuestionId: null } }
+    }
+    case 'intake': {
+      if (current.status === 'ended') return { ok: false, error: 'ended' }
+      return { ok: true, next: { ...current, intakeOpen: input.open } }
     }
     case 'next':
     case 'prev': {

@@ -10,7 +10,8 @@ export const dynamic = 'force-dynamic'
 type ActionBody = ChorusAction & { token?: string }
 
 /**
- * Every presentation transition — present / next / prev / goto / end / font. The rules themselves
+ * Every presentation transition — present / next / prev / goto / end / font, plus highlight /
+ * unhighlight / intake for a Q&A session. The rules themselves
  * live in src/lib/chorus/model.ts's applyChorusAction; this route only authorizes, applies them
  * via mutateChorusState (server clock, version bump), broadcasts, and returns the full payload.
  */
@@ -25,8 +26,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
   const input = toAction(body)
   if (!input) return NextResponse.json({ error: 'invalid body' }, { status: 400 })
 
-  const result = await mutateChorusState<ChorusActionError>(code, (current, questionIds) => {
-    const applied = applyChorusAction(current, input, questionIds)
+  const result = await mutateChorusState<ChorusActionError>(code, (current, questionIds, mode) => {
+    const applied = applyChorusAction(current, input, questionIds, mode)
     return applied.ok ? applied : { error: applied.error }
   })
   if (!result) return NextResponse.json({ error: 'session not found' }, { status: 404 })
@@ -53,6 +54,12 @@ function toAction(body: ActionBody): ChorusAction | null {
       return typeof body.questionId === 'string' ? { action: 'goto', questionId: body.questionId } : null
     case 'font':
       return Number.isFinite(body.deltaPercent) ? { action: 'font', deltaPercent: body.deltaPercent } : null
+    case 'highlight':
+      return typeof body.questionId === 'string' ? { action: 'highlight', questionId: body.questionId } : null
+    case 'unhighlight':
+      return { action: 'unhighlight' }
+    case 'intake':
+      return typeof body.open === 'boolean' ? { action: 'intake', open: body.open } : null
     default:
       return null
   }

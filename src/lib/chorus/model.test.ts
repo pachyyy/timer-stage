@@ -14,8 +14,13 @@ import {
 } from './model'
 
 const ids = ['q1', 'q2', 'q3']
-const draft: PresentationState = { status: 'draft', currentQuestionId: null, answerFontPercent: 100 }
-const live = (currentQuestionId: string): PresentationState => ({ status: 'live', currentQuestionId, answerFontPercent: 100 })
+const draft: PresentationState = { status: 'draft', currentQuestionId: null, answerFontPercent: 100, intakeOpen: true }
+const live = (currentQuestionId: string): PresentationState => ({
+  status: 'live',
+  currentQuestionId,
+  answerFontPercent: 100,
+  intakeOpen: true,
+})
 
 describe('applyChorusAction', () => {
   it('present opens the first question and flags the transition', () => {
@@ -58,6 +63,60 @@ describe('applyChorusAction', () => {
     }
     const font = applyChorusAction(ended.next, { action: 'font', deltaPercent: 10 }, ids)
     expect(font.ok && font.next.answerFontPercent).toBe(110)
+  })
+})
+
+describe('applyChorusAction in qna mode', () => {
+  const qids = ['a', 'b']
+  const run = (state: PresentationState, input: Parameters<typeof applyChorusAction>[1]) =>
+    applyChorusAction(state, input, qids, 'qna')
+  const liveQna: PresentationState = { status: 'live', currentQuestionId: null, answerFontPercent: 100, intakeOpen: true }
+
+  it('present works with no questions and highlights nothing', () => {
+    const result = run(draft, { action: 'present' })
+    expect(result).toEqual({ ok: true, presented: true, next: { ...draft, status: 'live', currentQuestionId: null } })
+    expect(applyChorusAction(draft, { action: 'present' }, [], 'qna').ok).toBe(true)
+  })
+
+  it('highlight needs a live session and a known question', () => {
+    expect(run(draft, { action: 'highlight', questionId: 'a' })).toEqual({ ok: false, error: 'not_live' })
+    expect(run(liveQna, { action: 'highlight', questionId: 'nope' })).toEqual({ ok: false, error: 'unknown_question' })
+    const ok = run(liveQna, { action: 'highlight', questionId: 'b' })
+    expect(ok.ok && ok.next.currentQuestionId).toBe('b')
+  })
+
+  it('unhighlight clears the screen', () => {
+    const result = run({ ...liveQna, currentQuestionId: 'a' }, { action: 'unhighlight' })
+    expect(result.ok && result.next.currentQuestionId).toBeNull()
+    expect(run(draft, { action: 'unhighlight' })).toEqual({ ok: false, error: 'not_live' })
+  })
+
+  it('intake can be paused and resumed until the session ends', () => {
+    const paused = run(liveQna, { action: 'intake', open: false })
+    expect(paused.ok && paused.next.intakeOpen).toBe(false)
+    const resumed = paused.ok ? run(paused.next, { action: 'intake', open: true }) : paused
+    expect(resumed.ok && resumed.next.intakeOpen).toBe(true)
+    expect(run({ ...liveQna, status: 'ended' }, { action: 'intake', open: false })).toEqual({ ok: false, error: 'ended' })
+  })
+
+  it('prompt navigation is not a Q&A action, and the reverse', () => {
+    for (const input of [{ action: 'next' }, { action: 'prev' }, { action: 'goto', questionId: 'a' }] as const) {
+      expect(run(liveQna, input)).toEqual({ ok: false, error: 'unknown_action' })
+    }
+    for (const input of [{ action: 'unhighlight' }, { action: 'intake', open: false }] as const) {
+      expect(applyChorusAction(live('q1'), input, ids)).toEqual({ ok: false, error: 'unknown_action' })
+    }
+  })
+
+  it('ended is terminal for everything but font size', () => {
+    const ended = run(liveQna, { action: 'end' })
+    expect(ended.ok && ended.ended).toBe(true)
+    if (!ended.ok) return
+    for (const input of [{ action: 'present' }, { action: 'end' }, { action: 'unhighlight' }, { action: 'highlight', questionId: 'a' }] as const) {
+      expect(run(ended.next, input).ok).toBe(false)
+    }
+    const font = run(ended.next, { action: 'font', deltaPercent: -20 })
+    expect(font.ok && font.next.answerFontPercent).toBe(80)
   })
 })
 

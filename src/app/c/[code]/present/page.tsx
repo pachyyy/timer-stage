@@ -4,7 +4,7 @@ import { use, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { QRCodeSVG } from 'qrcode.react'
-import { useChorus, useChorusAnswers } from '@/hooks/use-chorus'
+import { useChorus, useChorusAnswers, useChorusFeed } from '@/hooks/use-chorus'
 import { useStageScreen } from '@/hooks/use-stage-screen'
 import { ConnectionBadge } from '@/components/connection-badge'
 import { ChorusAnswerWall } from '@/components/chorus-answer-wall'
@@ -28,12 +28,19 @@ export default function ChorusPresenterPage({ params }: { params: Promise<{ code
   const { state, status } = useChorus(code)
   const currentQuestionId = state?.status === 'live' ? (state.currentQuestion?.id ?? null) : null
   const { answers, forbidden } = useChorusAnswers(code, token, currentQuestionId, currentQuestionId !== null)
+  // Q&A: the presenter never lists the audience's questions, only the highlighted one, but it polls
+  // the feed (visible questions only) for that question's live vote count and the waiting total.
+  const qnaLive = state?.mode === 'qna' && state.status === 'live'
+  const feed = useChorusFeed(code, { token, intervalMs: 2000, enabled: qnaLive })
+  const highlight = state?.mode === 'qna' ? state.highlight : null
+  const highlightVotes = highlight ? (feed.questions.find((q) => q.id === highlight.id)?.votes ?? 0) : 0
   const { wakeLockError, requestFullscreen } = useStageScreen()
   const origin = useOrigin()
   const t = useTranslations('chorusPresenter')
   const tChorus = useTranslations('chorus')
   const tConnection = useTranslations('connectionBadge')
   const tScreen = useTranslations('screen')
+  const tQna = useTranslations('chorusQnaPresenter')
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -83,7 +90,43 @@ export default function ChorusPresenterPage({ params }: { params: Promise<{ code
         </div>
       )}
 
-      {state.status === 'live' && state.currentQuestion && (
+      {state.mode === 'qna' && state.status === 'live' && highlight && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-[4vh] px-[6vw] py-[6vh] text-center">
+          <span className="rounded-full bg-white/10 px-5 py-1.5 text-[clamp(0.875rem,1.4vw,1.5rem)] text-white/60">
+            {tQna('votes', { count: highlightVotes })}
+          </span>
+          <h1
+            className="leading-tight font-semibold break-words"
+            style={{ fontSize: `calc(clamp(2rem, 5.2vw, 6.5rem) * ${state.answerFontPercent / 100})` }}
+          >
+            {highlight.text}
+          </h1>
+        </div>
+      )}
+
+      {state.mode === 'qna' && state.status === 'live' && !highlight && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-8 px-8 text-center">
+          <h1 className="text-[clamp(2rem,4.5vw,4.5rem)] font-semibold">{tQna('askTitle')}</h1>
+          <div className="aspect-square h-[38vh] rounded-2xl bg-white p-[2vh]">
+            {audienceUrl && <QRCodeSVG value={audienceUrl} size={512} marginSize={0} style={{ width: '100%', height: '100%' }} />}
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-[clamp(1.25rem,2.2vw,2.25rem)] text-white/70">
+              {t('joinAt', { url: shortUrl })} {t('enterCode')}
+            </p>
+            <p className="font-mono text-[clamp(3rem,7vw,7rem)] leading-none font-bold tracking-[0.15em] tabular-nums">
+              {formatChorusCode(code)}
+            </p>
+          </div>
+          {feed.questions.length > 0 && (
+            <p className="text-[clamp(1rem,1.6vw,1.5rem)] text-white/40">
+              {tQna('waiting', { count: feed.questions.length })}
+            </p>
+          )}
+        </div>
+      )}
+
+      {state.mode === 'answers' && state.status === 'live' && state.currentQuestion && (
         <div className="flex flex-1 flex-col gap-8 overflow-hidden px-[4vw] pt-[5vh] pb-[3vh]">
           <div className="flex flex-col gap-2 pr-[12rem]">
             <span className="text-[clamp(0.875rem,1.2vw,1.25rem)] text-white/50">
@@ -103,7 +146,7 @@ export default function ChorusPresenterPage({ params }: { params: Promise<{ code
         </div>
       )}
 
-      {state.status === 'live' && (
+      {state.status === 'live' && !(state.mode === 'qna' && !highlight) && (
         <div className="fixed right-6 bottom-6 flex items-center gap-3 rounded-xl bg-black/70 p-3">
           <div className="rounded-md bg-white p-1.5">
             {audienceUrl && <QRCodeSVG value={audienceUrl} size={88} marginSize={0} />}
@@ -115,7 +158,7 @@ export default function ChorusPresenterPage({ params }: { params: Promise<{ code
         </div>
       )}
 
-      {(state.status === 'ended' || (state.status === 'live' && !state.currentQuestion)) && (
+      {(state.status === 'ended' || (state.mode === 'answers' && state.status === 'live' && !state.currentQuestion)) && (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
           <h1 className="text-[clamp(2.5rem,6vw,6rem)] font-semibold">{t('thanksTitle')}</h1>
           <p className="text-[clamp(1rem,2vw,2rem)] text-white/50">{t('thanksDesc')}</p>

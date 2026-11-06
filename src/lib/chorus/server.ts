@@ -37,6 +37,11 @@ export function hashClientIp(req: NextRequest, code: string): string {
   return createHash('sha256').update(`${ip}:${code}`).digest('hex').slice(0, 32)
 }
 
+/** An audience device's anonymous key (see lib/chorus/device.ts): any 8-64 character string, else null. */
+export function parseDeviceKey(value: unknown): string | null {
+  return typeof value === 'string' && value.length >= 8 && value.length <= 64 ? value : null
+}
+
 /** Controller-only, and the session must not have ended (an ended session is read-only — its
  * answers are the record of that one presentation). Returns an error response, or null when the
  * caller may proceed. */

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { ExternalLink, Link2, MonitorUp, Plus, Unlink } from 'lucide-react'
-import { useChorusAnswers, useChorusControl } from '@/hooks/use-chorus'
+import { useChorusAnswers, useChorusControl, useChorusFeed } from '@/hooks/use-chorus'
 import { chorusActions, openPresenterWindow } from '@/lib/api/chorus-actions'
 import { formatChorusCode } from '@/lib/chorus/model'
 import type { ChorusSessionSummary } from '@/lib/chorus/types'
@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ChorusControls, ChorusStatusBadge } from '@/components/chorus-controls'
 import { ChorusCreateForm } from '@/components/chorus-create-form'
 import { ChorusAnswersPanel } from '@/components/chorus-answers-panel'
+import { ChorusQnaControls } from '@/components/chorus-qna-controls'
+import { ChorusQnaPanel } from '@/components/chorus-qna-panel'
 
 /**
  * The room control page's Chorus card: the sessions linked to this room, and compact controls for
@@ -137,7 +139,9 @@ function LinkedSession({ code, roomToken, onUnlinked }: { code: string; roomToke
   const { state, presenterToken, applyControl } = useChorusControl(code, roomToken)
   const live = state?.status === 'live'
   const currentQuestionId = live ? (state?.currentQuestion?.id ?? null) : null
-  const { answers, refresh } = useChorusAnswers(code, roomToken, currentQuestionId, live)
+  const isQna = state?.mode === 'qna'
+  const { answers, refresh } = useChorusAnswers(code, roomToken, currentQuestionId, live && !isQna)
+  const qnaFeed = useChorusFeed(code, { token: roomToken, intervalMs: 2000, enabled: Boolean(state) && isQna })
 
   if (!state) return null
 
@@ -177,9 +181,26 @@ function LinkedSession({ code, roomToken, onUnlinked }: { code: string; roomToke
         </span>
       </div>
 
-      <ChorusControls state={state} token={roomToken} onPayload={applyControl} compact />
+      {isQna ? (
+        <ChorusQnaControls state={state} token={roomToken} onPayload={applyControl} compact />
+      ) : (
+        <ChorusControls state={state} token={roomToken} onPayload={applyControl} compact />
+      )}
 
-      {live && (
+      {isQna && state.status !== 'draft' && (
+        <ChorusQnaPanel
+          code={code}
+          token={roomToken}
+          status={state.status}
+          questions={qnaFeed.questions}
+          highlightId={state.highlight?.id ?? null}
+          onPayload={applyControl}
+          onChanged={qnaFeed.refresh}
+          maxHeightClass="max-h-64"
+        />
+      )}
+
+      {live && !isQna && (
         <div className="flex flex-col gap-2">
           <span className="text-sm text-muted-foreground">{tChorus('answersCount', { count: answers.length })}</span>
           <ChorusAnswersPanel code={code} token={roomToken} answers={answers} onChanged={refresh} maxHeightClass="max-h-64" />
