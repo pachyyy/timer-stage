@@ -44,6 +44,7 @@ export function SiteNavbar() {
 
   const LINKS = [
     { href: '/', label: t('home') },
+    { href: '/about', label: t('about') },
     { href: '/pricing', label: t('pricing') },
     { href: '/docs', label: t('docs') },
   ]

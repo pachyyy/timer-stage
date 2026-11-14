@@ -16,6 +16,7 @@ export function SiteFooter() {
       title: t('product'),
       links: [
         { href: '/', label: tNav('home') },
+        { href: '/about', label: tNav('about') },
         { href: '/pricing', label: tNav('pricing') },
         { href: '/docs', label: tNav('docs') },
       ],
