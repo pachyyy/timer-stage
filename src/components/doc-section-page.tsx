@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { ArrowLeft, ArrowRight, Lightbulb } from 'lucide-react'
+import { Reveal } from '@/components/reveal'
 import { DOC_SECTIONS, docHref, type DocSection } from '@/lib/docs/sections'
 
 /**
@@ -40,7 +41,7 @@ export async function DocSectionPage({ section }: { section: DocSection }) {
         />
       </figure>
 
-      <section>
+      <Reveal as="section" distance="sm">
         <h2 className="text-lg font-semibold">{t('stepsTitle')}</h2>
         <ol className="mt-4 flex flex-col gap-3">
           {steps.map((step, i) => (
@@ -52,14 +53,16 @@ export async function DocSectionPage({ section }: { section: DocSection }) {
             </li>
           ))}
         </ol>
-      </section>
+      </Reveal>
 
-      <aside className="flex gap-3 rounded-lg border bg-accent/40 px-4 py-3 text-sm">
-        <Lightbulb className="mt-0.5 size-4 shrink-0 text-primary" />
-        <p>
-          <span className="font-medium">{t('tipLabel')}:</span> {t(`sections.${section.key}.tip`)}
-        </p>
-      </aside>
+      <Reveal distance="sm">
+        <aside className="flex gap-3 rounded-lg border bg-accent/40 px-4 py-3 text-sm">
+          <Lightbulb className="mt-0.5 size-4 shrink-0 text-primary" />
+          <p>
+            <span className="font-medium">{t('tipLabel')}:</span> {t(`sections.${section.key}.tip`)}
+          </p>
+        </aside>
+      </Reveal>
 
       <nav className="grid gap-3 border-t pt-6 sm:grid-cols-2">
         {prev ? (

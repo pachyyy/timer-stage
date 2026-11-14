@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { ChorusIllustration, WaterClockIllustration } from '@/components/about-illustrations'
+import { Reveal } from '@/components/reveal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -41,7 +42,7 @@ export default async function AboutPage() {
         <p className="mt-2 text-muted-foreground">{t('subtitle')}</p>
       </div>
 
-      <section className="flex flex-col gap-4">
+      <Reveal as="section" className="flex flex-col gap-4">
         <h2 className="text-xl font-semibold tracking-tight">{t('storyTitle')}</h2>
         <div className="flex flex-col gap-4 leading-relaxed text-muted-foreground">
           <p>{t('story1')}</p>
@@ -49,9 +50,9 @@ export default async function AboutPage() {
           <p>{t('story3')}</p>
           <p>{t('story4')}</p>
         </div>
-      </section>
+      </Reveal>
 
-      <section className="flex flex-col gap-4">
+      <Reveal as="section" className="flex flex-col gap-4">
         <div>
           <h2 className="text-xl font-semibold tracking-tight">{t('namesTitle')}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{t('namesSubtitle')}</p>
@@ -68,21 +69,23 @@ export default async function AboutPage() {
             </Card>
           ))}
         </div>
-      </section>
+      </Reveal>
 
-      <Card>
-        <CardContent className="flex flex-col items-center gap-4 py-6 text-center">
-          <p className="text-lg font-medium">{t('closing')}</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button asChild>
-              <Link href="/login?mode=signup">{t('ctaStart')}</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/#join">{t('ctaJoin')}</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Reveal>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-4 py-6 text-center">
+            <p className="text-lg font-medium">{t('closing')}</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button asChild>
+                <Link href="/login?mode=signup">{t('ctaStart')}</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/#join">{t('ctaJoin')}</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </Reveal>
     </main>
   )
 }

@@ -245,6 +245,13 @@ set), so local dev keeps working with zero env vars. `(public)`'s `AdaptiveShell
 check: with sign-in unconfigured there's simply never a session for `useSession()` to find, so it
 always falls back to `SiteNavbar` on its own.
 
+**Scroll reveal:** sections below the fold on `/`, `/about`, `/pricing` and the docs fade in with a
+slight rise as they scroll into view — wrap content in `<Reveal>` (`src/components/reveal.tsx`;
+`as="section"` keeps the semantics, `distance="sm"` is the subtler docs variant). The hidden start
+state is CSS in `globals.css`, scoped to `scripting: enabled` + `prefers-reduced-motion:
+no-preference` and overridden for print, so content is never stuck invisible. Keep it off heroes
+(already on screen; hiding them delays first paint) and off the timer/Chorus screens entirely.
+
 Outside both groups, unaffected by any of this:
 `/r/[roomId]` — fullscreen viewer; name-gates via `useParticipant`, then renders `TimerDisplay`.
 `/r/[roomId]/control` — the operator's dashboard; owns all the mutating action calls, and keeps its
