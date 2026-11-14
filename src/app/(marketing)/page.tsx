@@ -18,6 +18,7 @@ import {
 import { auth } from '@/auth'
 import { Button } from '@/components/ui/button'
 import { JoinRoomForm } from '@/components/join-room-form'
+import { Reveal } from '@/components/reveal'
 import { FREE_PARTICIPANTS_PER_ROOM } from '@/lib/entitlements/gate'
 import { ROOM_PRICE } from '@/lib/pricing'
 
@@ -88,18 +89,18 @@ export default async function LandingPage() {
 
       {/* Join strip — the participant's way in, within a scroll of the top on a phone */}
       <section id="join" className="scroll-mt-20 border-y bg-muted/40">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
+        <Reveal className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-semibold">{t('codeCardTitle')}</h2>
             <p className="mt-1 text-muted-foreground">{t('codeCardDesc')}</p>
           </div>
           <JoinRoomForm className="w-full sm:max-w-sm" />
-        </div>
+        </Reveal>
       </section>
 
       {/* How it works */}
       <section id="how" className="scroll-mt-20">
-        <div className="mx-auto w-full max-w-5xl px-4 py-16 sm:py-24">
+        <Reveal className="mx-auto w-full max-w-5xl px-4 py-16 sm:py-24">
           <SectionHeading title={t('howTitle')} subtitle={t('howSubtitle')} />
           <ol className="mt-12 grid gap-8 md:grid-cols-3">
             {steps.map((step, i) => (
@@ -129,12 +130,12 @@ export default async function LandingPage() {
               </li>
             ))}
           </ol>
-        </div>
+        </Reveal>
       </section>
 
       {/* Features */}
       <section className="border-y bg-muted/40">
-        <div className="mx-auto w-full max-w-5xl px-4 py-16 sm:py-24">
+        <Reveal className="mx-auto w-full max-w-5xl px-4 py-16 sm:py-24">
           <SectionHeading title={t('featuresTitle')} />
           <ul className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, i) => {
@@ -150,12 +151,12 @@ export default async function LandingPage() {
               )
             })}
           </ul>
-        </div>
+        </Reveal>
       </section>
 
       {/* Use cases */}
       <section>
-        <div className="mx-auto w-full max-w-5xl px-4 py-16 sm:py-24">
+        <Reveal className="mx-auto w-full max-w-5xl px-4 py-16 sm:py-24">
           <SectionHeading title={t('useCasesTitle')} />
           <ul className="mt-12 grid gap-4 md:grid-cols-3">
             {useCases.map((useCase, i) => {
@@ -176,12 +177,12 @@ export default async function LandingPage() {
               )
             })}
           </ul>
-        </div>
+        </Reveal>
       </section>
 
       {/* Pricing teaser */}
       <section className="border-y bg-muted/40">
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-4 px-4 py-16 text-center sm:py-20">
+        <Reveal className="mx-auto flex w-full max-w-3xl flex-col items-center gap-4 px-4 py-16 text-center sm:py-20">
           <h2 className="text-3xl font-semibold tracking-tight text-balance">{t('pricingTitle')}</h2>
           <p className="max-w-xl text-balance text-muted-foreground">
             {t('pricingBody', { free: FREE_PARTICIPANTS_PER_ROOM })}
@@ -190,12 +191,12 @@ export default async function LandingPage() {
           <Button asChild variant="outline" size="lg">
             <Link href="/pricing">{t('pricingCta')}</Link>
           </Button>
-        </div>
+        </Reveal>
       </section>
 
       {/* FAQ */}
       <section>
-        <div className="mx-auto w-full max-w-3xl px-4 py-16 sm:py-24">
+        <Reveal className="mx-auto w-full max-w-3xl px-4 py-16 sm:py-24">
           <SectionHeading title={t('faqTitle')} />
           <div className="mt-10 divide-y rounded-xl border">
             {faq.map((item) => (
@@ -208,12 +209,12 @@ export default async function LandingPage() {
               </details>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Final call to action */}
       <section className="px-4 pb-16 sm:pb-24">
-        <div
+        <Reveal
           className={`mx-auto flex w-full max-w-5xl flex-col items-center gap-4 rounded-2xl px-6 py-14 text-center text-white ${BRAND_GRADIENT}`}
         >
           <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{t('finalTitle')}</h2>
@@ -231,7 +232,7 @@ export default async function LandingPage() {
               <Link href="/docs">{t('docsCta')}</Link>
             </Button>
           </div>
-        </div>
+        </Reveal>
       </section>
     </main>
   )

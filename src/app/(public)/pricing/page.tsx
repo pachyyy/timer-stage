@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import { Reveal } from '@/components/reveal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FREE_PARTICIPANTS_PER_ROOM, SEGMENTS_PER_QUOTA_ROOM } from '@/lib/entitlements/gate'
@@ -38,7 +39,7 @@ export default async function PricingPage() {
         <p className="mt-2 text-muted-foreground">{t('subtitle')}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <Reveal className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>{t('roomsTitle')}</CardTitle>
@@ -92,9 +93,9 @@ export default async function PricingPage() {
             </ul>
           </CardContent>
         </Card>
-      </div>
+      </Reveal>
 
-      <section className="flex flex-col gap-4">
+      <Reveal as="section" className="flex flex-col gap-4">
         <div className="text-center">
           <h2 className="text-xl font-semibold tracking-tight">{t('packsTitle')}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{t('packsSubtitle')}</p>
@@ -139,22 +140,24 @@ export default async function PricingPage() {
             )
           })}
         </div>
-      </section>
+      </Reveal>
 
-      <Card>
-        <CardContent className="flex flex-col items-center gap-3 py-6 text-center">
-          <p className="text-sm text-muted-foreground">{t('noCheckout')}</p>
-          <Button asChild>
-            <a
-              href={whatsappUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t('whatsappCta')}
-            </a>
-          </Button>
-        </CardContent>
-      </Card>
+      <Reveal>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-6 text-center">
+            <p className="text-sm text-muted-foreground">{t('noCheckout')}</p>
+            <Button asChild>
+              <a
+                href={whatsappUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('whatsappCta')}
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      </Reveal>
     </main>
   )
 }
