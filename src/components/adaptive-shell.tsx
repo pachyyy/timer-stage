@@ -8,7 +8,8 @@ import { AppSidebar } from '@/components/app-sidebar'
 
 /**
  * Chrome for pages that are reachable from BOTH the signed-out marketing navbar and the signed-in
- * app sidebar — today that's /pricing and /docs, linked from both SiteNavbar and AppSidebar. `/`
+ * app sidebar — today that's /pricing and /docs, linked from both SiteNavbar and AppSidebar, plus
+ * /about (SiteNavbar and SiteFooter only, deliberately not in AppSidebar). `/`
  * and `/login` don't need this: they always redirect a signed-in visitor away (see their own
  * page.tsx), so they never show anything but the navbar. dashboard/my-rooms/history/account don't
  * need it either: they always require a session (see (app)/layout.tsx), so they only ever show

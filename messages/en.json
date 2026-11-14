@@ -23,6 +23,7 @@
   },
   "nav": {
     "home": "Home",
+    "about": "About",
     "pricing": "Pricing",
     "docs": "Docs",
     "login": "Log in",
@@ -163,6 +164,26 @@
     "descSignup": "Sign up to create and control rooms from any device.",
     "continueGoogle": "Continue with Google",
     "notConfigured": "Sign-in isn't configured in this environment yet."
+  },
+  "about": {
+    "title": "About Clepsy",
+    "subtitle": "Built by event crew who needed everyone on the same page, at the same second.",
+    "storyTitle": "Why we built Clepsy",
+    "story1": "Clepsy started backstage at a church event. We were part of the crew and also helped plan how the event would run. It was fast-paced: each segment went straight into the next, with almost no breathing room.",
+    "story2": "Our rundown lived in a shared spreadsheet, and we coordinated in a WhatsApp group. That worked until something changed on the spot. A segment ran long, another got moved up, and the update had to travel through messages that half the team didn't see in time. The person on stage, the one at the sound desk and the one waiting in the wings were each working from a different version of the plan.",
+    "story3": "So in 2026 we built the tool we wished we'd had: one live rundown and one shared timer. The operator starts, pauses or adjusts it, and every screen in the room (the stage monitor, the crew's phones, the booth) shows the same number at the same moment. When the rundown shifts, everyone sees it shift.",
+    "story4": "Chorus came from the other half of running an event. Getting the audience involved usually means a second, separate app, with its own link, its own screen and its own login. We wanted the stage and the audience in one place, so Chorus sits right next to Clepsy: an operator can run a Chorus session from the same room's control screen.",
+    "namesTitle": "Where the names come from",
+    "namesSubtitle": "Both names come from ancient Athens, where people were already keeping time on stage and listening to the crowd.",
+    "clepsyTitle": "Clepsy, from <em>klepsydra</em> (κλεψύδρα)",
+    "clepsyMeaning": "“Water thief”: <em>kleptein</em>, to steal + <em>hydōr</em>, water",
+    "clepsyBody": "A klepsydra was a water clock: a clay pot that slowly drained through a small hole. In Athenian law courts, each speaker got a measured amount of water to speak in, and the pots that survive hold about six minutes. When evidence was read out, an official plugged the hole to stop the water, which made it an ancient pause button. Clepsy does the same job for your event, 2,400 years later.",
+    "chorusTitle": "Chorus, from <em>khoros</em> (χορός)",
+    "chorusMeaning": "A group that dances and sings as one voice",
+    "chorusBody": "In Greek theatre, the chorus stood between the actors and the audience. It reacted to what happened on stage and spoke for the community watching. Chorus, our live Q&A, does the same: the audience answers from their phones, and their answers appear together in the presenter window.",
+    "closing": "One clock for the stage, one voice for the crowd.",
+    "ctaStart": "Get started",
+    "ctaJoin": "Join a room"
   },
   "pricing": {
     "title": "Pricing",

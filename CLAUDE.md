@@ -229,6 +229,9 @@ redirects), so which chrome to show can't be decided by route group alone: `Adap
 (`src/components/adaptive-shell.tsx`) picks `SiteNavbar` or `AppSidebar` client-side off
 `useSession()`, so clicking "Pricing" or "Docs" from the sidebar keeps the sidebar instead of
 dropping back to the navbar.
+- `/about` — the story behind Clepsy and where the Clepsy/Chorus names come from (`about.*` in
+  `messages/*.json`, line-art SVGs in `src/components/about-illustrations.tsx`). Linked from
+  `SiteNavbar` and `SiteFooter` only — deliberately not from `AppSidebar`.
 - `/pricing` — flat pricing copy (see Pricing below).
 - `/docs` and `/docs/[section]` — the user guide: `DocsNav` beside one page per section
   (`src/lib/docs/sections.ts` is the ordered list; Overview lives at `/docs` itself), each with copy

@@ -23,6 +23,7 @@
   },
   "nav": {
     "home": "Beranda",
+    "about": "Tentang",
     "pricing": "Harga",
     "docs": "Dokumentasi",
     "login": "Masuk",
@@ -163,6 +164,26 @@
     "descSignup": "Daftar untuk membuat dan mengendalikan ruang dari perangkat mana pun.",
     "continueGoogle": "Lanjutkan dengan Google",
     "notConfigured": "Fitur masuk belum dikonfigurasi di lingkungan ini."
+  },
+  "about": {
+    "title": "Tentang Clepsy",
+    "subtitle": "Dibuat oleh kru acara yang butuh semua orang melihat rencana yang sama, di detik yang sama.",
+    "storyTitle": "Mengapa kami membuat Clepsy",
+    "story1": "Clepsy lahir di balik panggung sebuah acara gereja. Kami bagian dari kru, sekaligus ikut merancang jalannya acara. Acaranya bergerak cepat: satu segmen langsung berganti ke segmen berikutnya, hampir tanpa jeda.",
+    "story2": "Rundown kami ada di spreadsheet bersama, dan koordinasinya lewat grup WhatsApp. Semuanya lancar sampai ada perubahan mendadak. Satu segmen molor, segmen lain dimajukan, dan kabarnya harus lewat pesan yang tidak sempat dibaca separuh tim. Orang di panggung, operator sound, dan yang menunggu di samping panggung masing-masing memegang versi rencana yang berbeda.",
+    "story3": "Jadi di tahun 2026 kami membuat alat yang dulu kami harapkan ada: satu rundown langsung dan satu timer bersama. Operator memulai, menjeda, atau menyesuaikannya, dan setiap layar di ruangan (monitor panggung, ponsel kru, booth) menampilkan angka yang sama di saat yang sama. Saat rundown bergeser, semua orang melihatnya bergeser.",
+    "story4": "Chorus hadir dari sisi lain menjalankan acara. Untuk melibatkan penonton, biasanya dibutuhkan aplikasi kedua yang terpisah, dengan tautan, layar, dan akun sendiri. Kami ingin panggung dan penonton ada di satu tempat, jadi Chorus hadir berdampingan dengan Clepsy: operator bisa menjalankan sesi Chorus langsung dari layar kontrol ruang yang sama.",
+    "namesTitle": "Asal nama",
+    "namesSubtitle": "Kedua nama ini berasal dari Athena kuno, tempat orang sudah menjaga waktu di panggung dan mendengarkan suara penonton.",
+    "clepsyTitle": "Clepsy, dari <em>klepsydra</em> (κλεψύδρα)",
+    "clepsyMeaning": "“Pencuri air”: <em>kleptein</em>, mencuri + <em>hydōr</em>, air",
+    "clepsyBody": "Klepsydra adalah jam air: bejana tanah liat yang airnya keluar perlahan lewat lubang kecil. Di pengadilan Athena, setiap pembicara diberi takaran air sebagai jatah waktunya, dan bejana yang masih tersisa hari ini memuat sekitar enam menit. Saat bukti dibacakan, petugas menyumbat lubangnya untuk menghentikan air, sehingga lubang itu menjadi tombol jeda kuno. Clepsy melakukan tugas yang sama untuk acaramu, 2.400 tahun kemudian.",
+    "chorusTitle": "Chorus, dari <em>khoros</em> (χορός)",
+    "chorusMeaning": "Sekelompok orang yang menari dan bernyanyi dengan satu suara",
+    "chorusBody": "Dalam teater Yunani, chorus berdiri di antara para aktor dan penonton. Mereka menanggapi apa yang terjadi di panggung dan menyuarakan pandangan masyarakat yang menonton. Chorus, fitur tanya jawab langsung kami, melakukan hal yang sama: penonton menjawab dari ponsel mereka, dan jawaban mereka tampil bersama di jendela presentasi.",
+    "closing": "Satu jam untuk panggung, satu suara untuk penonton.",
+    "ctaStart": "Mulai",
+    "ctaJoin": "Gabung ke ruang"
   },
   "pricing": {
     "title": "Harga",
